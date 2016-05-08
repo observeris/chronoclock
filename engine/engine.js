@@ -25,6 +25,7 @@ var gDialCount = 6;
 
 var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
+var gDials = new Array();
 
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
@@ -142,11 +143,15 @@ function init() {
                 for (var i = 0; i < gDialCount; i++) {
                     var clone = new THREE.Mesh(child.geometry, child.material);
                     // here you can apply transformations, for this clone only
-                    clone.position.x = 50 * i;
-                    clone.position.y = 200;
+                    clone.position.x = 0;
+                    //50 * i;
+                    clone.position.y = 0;
+                    //200;
                     clone.position.z = 0;
 
                     scene.add(clone);
+
+                    gDials.push(clone);
                 }
 
 
@@ -203,7 +208,67 @@ function render() {
 
 
     var time = Date.now() * 0.0005;
+    var nowMS = Date.now();
     var delta = clock.getDelta();
+    var d = 0;
+    for (d = 0; d < gDials.length; d++) {
+        var dial = gDials[d];
+        // dial.rotation.x = 0;
+        // dial.rotation.y = 0;
+        // dial.rotation.z = 0;
+        // clone.position.x = ;
+        // clone.position.y = 200;
+        // clone.position.z = 0;
+        //
+        //
+        // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
+        // dial.position.x = 0;
+        // dial.position.y = 0;
+        // dial.position.z = 0;
+        dial.matrixAutoUpdate = false;
+
+        dial.matrix.identity();
+        var bbox = new THREE.Box3().setFromObject(dial);
+
+        bbox.center = new THREE.Vector3((bbox.max.x + bbox.min.x) * 0.5,
+            (bbox.max.y + bbox.min.y) * 0.5,
+            (bbox.max.z + bbox.min.z) * 0.5);
+
+        var toCenter = new THREE.Matrix4().makeTranslation(-bbox.center.x, -bbox.center.y, -bbox.center.z);
+        var fromCenter = new THREE.Matrix4().makeTranslation(+bbox.center.x, +bbox.center.y, +bbox.center.z);
+
+
+        var rotMatrix = new THREE.Matrix4().makeRotationX(Math.PI * ((nowMS % 1000) / 1000.0));
+        var transMatrix = new THREE.Matrix4().makeTranslation(50 * d, 200, 0);
+
+        var newMatrix = new THREE.Matrix4();
+
+        // newMatrix.multiply(toCenter);
+        // newMatrix.multiply(rotMatrix);
+        // newMatrix.multiply(fromCenter);
+        // newMatrix.multiply(transMatrix);
+        newMatrix.multiply(transMatrix);
+        newMatrix.multiply(fromCenter);
+        newMatrix.multiply(rotMatrix);
+        newMatrix.multiply(toCenter);
+
+
+
+
+        //dial.matrix.multiplyMatrices(rotMatrix, transMatrix);
+
+
+        dial.matrix = newMatrix;
+        //applyMatrix();
+        // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
+        // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
+
+
+        //dial.applyMatrix(new THREE.Matrix4().makeRotationX();;
+        //dial.applyMatrix(new THREE.Matrix4().makeTranslation(0, -6, 0));
+    }
+
+
     //if( object ) object.rotation.y -= 0.5 * delta;
     // light1.position.x = Math.sin( time * 0.7 ) * 100;
     // light1.position.y = Math.cos( time * 0.5 ) * 100;
