@@ -44,6 +44,30 @@ init();
 animate();
 
 /**
+ * OBJLoadPromise(): Returns a promist to load OBJ
+ * @param {String} iOBJPath relative to web root
+ * @param {THREE.LoadingManager} iLoadingManager, instance of THREE.LoadingManager()
+ * @param {function} iProgressCallback, progress callback()
+ * @return {Promise} A Promise that's resolved with an THREE object.
+ */
+function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
+    const loaderPromise = new Promise((iResolveFunc, iRejectFunc) => {
+
+        const loader = new THREE.OBJLoader(iLoadingManager);
+        loader.load(iOBJPath, (iObject) => {
+            iResolveFunc(iObject);
+        }, (xhr) => {
+            iProgressCallback(xhr);
+        }, (xhr) => {
+            iRejectFunc(xhr);
+        });
+
+    });
+
+    return loaderPromise;
+}
+
+/**
  * init(): Initialize and load the scene
  */
 function init() {
@@ -139,11 +163,12 @@ function init() {
     var onError = function( /* xhr */ ) {
 
     };
+    const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
+        onProgress);
 
-    var loader = new THREE.OBJLoader(manager);
-    loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', function(object) {
+    loaderPromise.then((object) => {
 
-        object.traverse(function(child) {
+        object.traverse((child) => {
 
             if (child instanceof THREE.Mesh) {
                 var diffuseColor = new THREE.Color(1, 1, 1);
@@ -172,7 +197,12 @@ function init() {
 
         });
 
-    }, onProgress, onError);
+    }).catch((xhr) => {
+        onError(xhr);
+    });
+
+    // const loader = new THREE.OBJLoader(manager);
+    // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
 
     window.addEventListener('resize', onWindowResize, false);
 

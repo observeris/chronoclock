@@ -1,31 +1,33 @@
+'use strict';
+
 /* global THREE */
 /* global window */
 /* global document */
 /* global Stats */
-const SCREEN_WIDTH = window.innerWidth;
-const SCREEN_HEIGHT = window.innerHeight;
-const FLOOR = -250;
+var SCREEN_WIDTH = window.innerWidth;
+var SCREEN_HEIGHT = window.innerHeight;
+var FLOOR = -250;
 
-let container;
-let stats;
+var container = void 0;
+var stats = void 0;
 
-let camera;
-let scene;
+var camera = void 0;
+var scene = void 0;
 
-let renderer;
-let mixer;
+var renderer = void 0;
+var mixer = void 0;
 
 /* Unused stuff */
 // var sceneAnimationClip;
 // var mesh;
 // var helper;
-let mouseX = 0;
-let mouseY = 0;
+var mouseX = 0;
+var mouseY = 0;
 
-let windowHalfX = window.innerWidth / 2;
-let windowHalfY = window.innerHeight / 2;
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
 
-const clock = new THREE.Clock();
+var clock = new THREE.Clock();
 
 var light1;
 var light2;
@@ -34,14 +36,37 @@ var light4;
 
 var gDialCount = 6;
 
-const gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
-const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
-const gDials = [];
+var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
+var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
+var gDials = [];
 
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 init();
 animate();
+
+/**
+ * OBJLoadPromise(): Returns a promist to load OBJ
+ * @param {String} iOBJPath relative to web root
+ * @param {THREE.LoadingManager} iLoadingManager, instance of THREE.LoadingManager()
+ * @param {function} iProgressCallback, progress callback()
+ * @return {Promise} A Promise that's resolved with an THREE object.
+ */
+function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
+    var loaderPromise = new Promise(function (iResolveFunc, iRejectFunc) {
+
+        var loader = new THREE.OBJLoader(iLoadingManager);
+        loader.load(iOBJPath, function (iObject) {
+            iResolveFunc(iObject);
+        }, function (xhr) {
+            iProgressCallback(xhr);
+        }, function (xhr) {
+            iRejectFunc(xhr);
+        });
+    });
+
+    return loaderPromise;
+}
 
 /**
  * init(): Initialize and load the scene
@@ -128,17 +153,28 @@ function init() {
         console.log(item, loaded, total);
     };
 
-    var onProgress = function (xhr) {
+    var onProgress = function onProgress(xhr) {
         if (xhr.lengthComputable) {
             var percentComplete = xhr.loaded / xhr.total * 100;
             console.log(Math.round(percentComplete, 2) + '% downloaded');
         }
     };
 
-    var onError = function () /* xhr */{};
+    var onError = function onError() /* xhr */{};
+    var loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager, onProgress);
 
-    var loader = new THREE.OBJLoader(manager);
-    loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', function (object) {
+    // new Promise((iResolveFunc, iRejectFunc) => {
+    //
+    //     const loader = new THREE.OBJLoader(manager);
+    //     loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', (iObject) => {
+    //         iResolveFunc(iObject);
+    //     }, onProgress, (xhr) => {
+    //         iRejectFunc(xhr);
+    //     });
+    //
+    // });
+
+    loaderPromise.then(function (object) {
 
         object.traverse(function (child) {
 
@@ -166,7 +202,12 @@ function init() {
                 }
             }
         });
-    }, onProgress, onError);
+    }).catch(function (xhr) {
+        onError(xhr);
+    });
+
+    // const loader = new THREE.OBJLoader(manager);
+    // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
 
     window.addEventListener('resize', onWindowResize, false);
 }
@@ -213,10 +254,10 @@ function animate() {
  */
 function render() {
 
-    const time = Date.now() * 0.0005;
-    const nowMS = Date.now();
-    let delta = clock.getDelta();
-    let d = 0;
+    var time = Date.now() * 0.0005;
+    var nowMS = Date.now();
+    var delta = clock.getDelta();
+    var d = 0;
     for (d = 0; d < gDials.length; d += 1) {
         var dial = gDials[d];
         // dial.rotation.x = 0;
