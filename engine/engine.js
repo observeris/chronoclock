@@ -21,6 +21,11 @@ var clock = new THREE.Clock();
 
 var light1, light2, light3, light4;
 
+var gDialCount = 6;
+
+var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
+var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
+
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 init();
@@ -32,9 +37,9 @@ function init() {
 
     camera = new THREE.PerspectiveCamera(30, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
 
-    camera.position.x = 0;
-    camera.position.y = 0;
-    camera.position.z = 550;
+    camera.position.x = gCameraPosition.x;
+    camera.position.y = gCameraPosition.y;
+    camera.position.z = gCameraPosition.z;
 
     scene = new THREE.Scene();
 
@@ -134,23 +139,27 @@ function init() {
 
                 child.material = material;
 
-                var clone = new THREE.Mesh(child.geometry, child.material);
-                // here you can apply transformations, for this clone only
-                clone.position.x = 100;
-                clone.position.y = 200;
-                clone.position.z = 0;
+                for (var i = 0; i < gDialCount; i++) {
+                    var clone = new THREE.Mesh(child.geometry, child.material);
+                    // here you can apply transformations, for this clone only
+                    clone.position.x = 50 * i;
+                    clone.position.y = 200;
+                    clone.position.z = 0;
 
-                scene.add(clone);
+                    scene.add(clone);
+                }
+
+
             }
 
         });
 
 
-        object.position.x = 0;
-        object.position.y = 200;
-        object.position.z = 0;
-
-        scene.add(object);
+        // object.position.x = 0;
+        // object.position.y = 200;
+        // object.position.z = 0;
+        //
+        // scene.add(object);
 
 
     }, onProgress, onError);
@@ -220,8 +229,8 @@ function render() {
     // camera.position.y = THREE.Math.clamp( camera.position.y + ( - mouseY - camera.position.y ) * .05, 0, 1000 );
 
 
-    camera.lookAt(scene.position);
-
+    // camera.lookAt(scene.position);
+    camera.lookAt(gCameraTarget);
     if (mixer) {
         //console.log( "updating mixer by " + delta );
         mixer.update(delta);
