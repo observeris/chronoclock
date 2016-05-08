@@ -1,3 +1,6 @@
+/* global THREE */
+/* global window */
+
 var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 var FLOOR = -250;
@@ -62,6 +65,7 @@ function init() {
 
     ground.receiveShadow = true;
 
+
     // RENDERER
 
     renderer = new THREE.WebGLRenderer({
@@ -109,31 +113,33 @@ function init() {
     //
 
     var manager = new THREE.LoadingManager();
-    manager.onProgress = function (item, loaded, total) {
+    manager.onProgress = function(item, loaded, total) {
 
         console.log(item, loaded, total);
+
     };
 
-    var onProgress = function (xhr) {
+    var onProgress = function(xhr) {
         if (xhr.lengthComputable) {
             var percentComplete = xhr.loaded / xhr.total * 100;
             console.log(Math.round(percentComplete, 2) + '% downloaded');
         }
     };
 
-    var onError = function (xhr) {};
+    var onError = function(xhr) {};
 
     var loader = new THREE.OBJLoader(manager);
-    loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', function (object) {
+    loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', function(object) {
 
-        object.traverse(function (child) {
+
+        object.traverse(function(child) {
 
             if (child instanceof THREE.Mesh) {
                 var diffuseColor = new THREE.Color(1, 1, 1);
 
                 var material = new THREE.MeshPhongMaterial({
                     color: diffuseColor
-                });
+                })
 
                 child.material = material;
 
@@ -150,17 +156,24 @@ function init() {
 
                     gDials.push(clone);
                 }
+
+
             }
+
         });
+
 
         // object.position.x = 0;
         // object.position.y = 200;
         // object.position.z = 0;
         //
         // scene.add(object);
+
+
     }, onProgress, onError);
 
     window.addEventListener('resize', onWindowResize, false);
+
 }
 
 function onWindowResize() {
@@ -172,12 +185,15 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
+
 }
+
 
 function onDocumentMouseMove(event) {
 
-    mouseX = event.clientX - windowHalfX;
-    mouseY = event.clientY - windowHalfY;
+    mouseX = (event.clientX - windowHalfX);
+    mouseY = (event.clientY - windowHalfY);
+
 }
 
 //
@@ -188,9 +204,11 @@ function animate() {
 
     render();
     stats.update();
+
 }
 
 function render() {
+
 
     var time = Date.now() * 0.0005;
     var nowMS = Date.now();
@@ -215,12 +233,15 @@ function render() {
         dial.matrix.identity();
         var bbox = new THREE.Box3().setFromObject(dial);
 
-        bbox.center = new THREE.Vector3((bbox.max.x + bbox.min.x) * 0.5, (bbox.max.y + bbox.min.y) * 0.5, (bbox.max.z + bbox.min.z) * 0.5);
+        bbox.center = new THREE.Vector3((bbox.max.x + bbox.min.x) * 0.5,
+            (bbox.max.y + bbox.min.y) * 0.5,
+            (bbox.max.z + bbox.min.z) * 0.5);
 
         var toCenter = new THREE.Matrix4().makeTranslation(-bbox.center.x, -bbox.center.y, -bbox.center.z);
         var fromCenter = new THREE.Matrix4().makeTranslation(+bbox.center.x, +bbox.center.y, +bbox.center.z);
 
-        var rotMatrix = new THREE.Matrix4().makeRotationX(2 * Math.PI * (nowMS % 5000 / 5000.0));
+
+        var rotMatrix = new THREE.Matrix4().makeRotationX(2 * Math.PI * ((nowMS % 5000) / 5000.0));
         var transMatrix = new THREE.Matrix4().makeTranslation(50 * d, 200, 0);
 
         var newMatrix = new THREE.Matrix4();
@@ -234,16 +255,22 @@ function render() {
         newMatrix.multiply(rotMatrix);
         newMatrix.multiply(toCenter);
 
+
+
+
         //dial.matrix.multiplyMatrices(rotMatrix, transMatrix);
+
 
         dial.matrix = newMatrix;
         //applyMatrix();
         // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
         // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
 
+
         //dial.applyMatrix(new THREE.Matrix4().makeRotationX();;
         //dial.applyMatrix(new THREE.Matrix4().makeTranslation(0, -6, 0));
     }
+
 
     //if( object ) object.rotation.y -= 0.5 * delta;
     // light1.position.x = Math.sin( time * 0.7 ) * 100;
@@ -269,6 +296,7 @@ function render() {
     // camera.position.x += ( mouseX - camera.position.x ) * .05;
     // camera.position.y = THREE.Math.clamp( camera.position.y + ( - mouseY - camera.position.y ) * .05, 0, 1000 );
 
+
     // camera.lookAt(scene.position);
     camera.lookAt(gCameraTarget);
     if (mixer) {
@@ -277,4 +305,5 @@ function render() {
     }
 
     renderer.render(scene, camera);
+
 }
