@@ -238,7 +238,7 @@ function render() {
         var fromCenter = new THREE.Matrix4().makeTranslation(+bbox.center.x, +bbox.center.y, +bbox.center.z);
 
 
-        var rotMatrix = new THREE.Matrix4().makeRotationX(Math.PI * ((nowMS % 1000) / 1000.0));
+        var rotMatrix = new THREE.Matrix4().makeRotationX(2 * Math.PI * ((nowMS % 5000) / 5000.0));
         var transMatrix = new THREE.Matrix4().makeTranslation(50 * d, 200, 0);
 
         var newMatrix = new THREE.Matrix4();
