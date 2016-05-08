@@ -122,6 +122,7 @@ function init() {
     var loader = new THREE.OBJLoader(manager);
     loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', function(object) {
 
+
         object.traverse(function(child) {
 
             if (child instanceof THREE.Mesh) {
@@ -133,6 +134,13 @@ function init() {
 
                 child.material = material;
 
+                var clone = new THREE.Mesh(child.geometry, child.material);
+                // here you can apply transformations, for this clone only
+                clone.position.x = 100;
+                clone.position.y = 200;
+                clone.position.z = 0;
+
+                scene.add(clone);
             }
 
         });
@@ -141,7 +149,9 @@ function init() {
         object.position.x = 0;
         object.position.y = 200;
         object.position.z = 0;
+
         scene.add(object);
+
 
     }, onProgress, onError);
 
