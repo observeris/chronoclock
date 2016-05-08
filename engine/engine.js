@@ -2,7 +2,6 @@
 /* global window */
 /* global document */
 /* global Stats */
-/* global requestAnimationFrame */
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
 const FLOOR = -250;
@@ -10,23 +9,23 @@ const FLOOR = -250;
 let container;
 let stats;
 
-var camera;
-var scene;
-var sceneAnimationClip;
-var renderer;
+let camera;
+let scene;
 
-var mesh;
-var helper;
+let renderer;
+let mixer;
 
-var mixer;
+/* Unused stuff */
+// var sceneAnimationClip;
+// var mesh;
+// var helper;
+let mouseX = 0;
+let mouseY = 0;
 
-var mouseX = 0;
-var mouseY = 0;
+let windowHalfX = window.innerWidth / 2;
+let windowHalfY = window.innerHeight / 2;
 
-var windowHalfX = window.innerWidth / 2;
-var windowHalfY = window.innerHeight / 2;
-
-var clock = new THREE.Clock();
+const clock = new THREE.Clock();
 
 var light1;
 var light2;
@@ -44,6 +43,9 @@ document.addEventListener('mousemove', onDocumentMouseMove, false);
 init();
 animate();
 
+/**
+ * init(): Initialize and load the scene
+ */
 function init() {
 
     container = document.getElementById('container');
@@ -169,6 +171,9 @@ function init() {
     window.addEventListener('resize', onWindowResize, false);
 }
 
+/**
+ * onWindowResize(): Callback on Window Resize
+ */
 function onWindowResize() {
 
     windowHalfX = window.innerWidth / 2;
@@ -180,14 +185,21 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+/**
+ * onDocumentMouseMove(): Callback on Mouse Move
+ * @param {Event} event : mouse event from the DOM
+ */
 function onDocumentMouseMove(event) {
 
     mouseX = event.clientX - windowHalfX;
     mouseY = event.clientY - windowHalfY;
+    console.log(mouseX.toString() + " " + mouseY.toString());
 }
 
 //
-
+/**
+ * animate(): Animation initialization/callback
+ */
 function animate() {
 
     window.requestAnimationFrame(animate);
@@ -196,6 +208,9 @@ function animate() {
     stats.update();
 }
 
+/**
+ * render(): Rendering happens here.
+ */
 function render() {
 
     const time = Date.now() * 0.0005;
