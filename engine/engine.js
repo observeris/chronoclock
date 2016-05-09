@@ -1,5 +1,9 @@
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /* global THREE */
 /* global window */
 /* global document */
@@ -39,6 +43,7 @@ var gDialCount = 6;
 var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 var gDials = [];
+var gDialRings = [];
 
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
@@ -163,16 +168,38 @@ function init() {
     var onError = function onError() /* xhr */{};
     var loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager, onProgress);
 
-    // new Promise((iResolveFunc, iRejectFunc) => {
-    //
-    //     const loader = new THREE.OBJLoader(manager);
-    //     loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', (iObject) => {
-    //         iResolveFunc(iObject);
-    //     }, onProgress, (xhr) => {
-    //         iRejectFunc(xhr);
-    //     });
-    //
-    // });
+    var DialRing = function () {
+        function DialRing(iMesh, iIndex) {
+            _classCallCheck(this, DialRing);
+
+            this.fMesh = iMesh;
+            this.fAngleRadians = 0.0;
+            this.fIndex = iIndex;
+            if (iMesh.geometry.boundingBox === null) {
+                iMesh.geometry.computeBoundingBox();
+            }
+            this.fBBOX = iMesh.geometry.boundingBox;
+            // Default pivot point is the center of bounding box.
+
+            this.fPivotPoint = new THREE.Vector3(0, 0, 0);
+            this.fPivotPoint.add(this.fBBOX.min);
+            this.fPivotPoint.add(this.fBBOX.max);
+            this.fPivotPoint.multiplyScalar(0.5);
+        }
+
+        _createClass(DialRing, [{
+            key: 'UpdatePosition',
+            value: function UpdatePosition() {}
+        }, {
+            key: 'SetAngle',
+            value: function SetAngle(iAngle) {
+                this.fAngle = iAngle;
+                this.UpdatePosition();
+            }
+        }]);
+
+        return DialRing;
+    }();
 
     loaderPromise.then(function (object) {
 
@@ -188,17 +215,19 @@ function init() {
                 child.material = material;
 
                 for (var i = 0; i < gDialCount; i += 1) {
-                    var clone = new THREE.Mesh(child.geometry, child.material);
+                    var dial = new THREE.Mesh(child.geometry, child.material);
                     // here you can apply transformations, for this clone only
-                    clone.position.x = 0;
-                    // 50 * i;
-                    clone.position.y = 0;
-                    // 200;
-                    clone.position.z = 0;
+                    dial.geometry.computeBoundingBox();
+                    dial.position.x = 0;
+                    dial.position.y = 0;
+                    dial.position.z = 0;
 
-                    scene.add(clone);
+                    scene.add(dial);
 
-                    gDials.push(clone);
+                    gDials.push(dial);
+
+                    var dialRing = new DialRing(dial, i);
+                    gDialRings.push(dialRing);
                 }
             }
         });

@@ -37,6 +37,7 @@ var gDialCount = 6;
 const gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 const gDials = [];
+const gDialRings = [];
 
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
@@ -166,6 +167,35 @@ function init() {
     const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
         onProgress);
 
+    class DialRing {
+        constructor(iMesh, iIndex) {
+            this.fMesh = iMesh;
+            this.fAngleRadians = 0.0;
+            this.fIndex = iIndex;
+            if (iMesh.geometry.boundingBox === null) {
+                iMesh.geometry.computeBoundingBox();
+            }
+            this.fBBOX = iMesh.geometry.boundingBox;
+            // Default pivot point is the center of bounding box.
+
+            this.fPivotPoint = new THREE.Vector3(0, 0, 0);
+            this.fPivotPoint.add(this.fBBOX.min);
+            this.fPivotPoint.add(this.fBBOX.max);
+            this.fPivotPoint.multiplyScalar(0.5);
+
+        }
+
+        UpdatePosition() {
+
+        }
+
+        SetAngle(iAngle) {
+            this.fAngle = iAngle;
+            this.UpdatePosition();
+
+        }
+    }
+
     loaderPromise.then((object) => {
 
         object.traverse((child) => {
@@ -180,17 +210,19 @@ function init() {
                 child.material = material;
 
                 for (var i = 0; i < gDialCount; i += 1) {
-                    var clone = new THREE.Mesh(child.geometry, child.material);
+                    var dial = new THREE.Mesh(child.geometry, child.material);
                     // here you can apply transformations, for this clone only
-                    clone.position.x = 0;
-                    // 50 * i;
-                    clone.position.y = 0;
-                    // 200;
-                    clone.position.z = 0;
+                    dial.geometry.computeBoundingBox();
+                    dial.position.x = 0;
+                    dial.position.y = 0;
+                    dial.position.z = 0;
 
-                    scene.add(clone);
+                    scene.add(dial);
 
-                    gDials.push(clone);
+                    gDials.push(dial);
+
+                    const dialRing = new DialRing(dial, i);
+                    gDialRings.push(dialRing);
                 }
 
             }
