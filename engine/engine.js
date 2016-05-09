@@ -185,15 +185,38 @@ function init() {
             this.fPivotPoint.add(this.fBBOX.min);
             this.fPivotPoint.add(this.fBBOX.max);
             this.fPivotPoint.multiplyScalar(0.5);
+
+            this.fMesh.matrixAutoUpdate = false;
+            this.fMesh.matrix.identity();
         }
 
         _createClass(DialRing, [{
             key: 'UpdatePosition',
-            value: function UpdatePosition() {}
+            value: function UpdatePosition() {
+                var toCenter = new THREE.Matrix4().makeTranslation(-this.fPivotPoint.x, -this.fPivotPoint.y, -this.fPivotPoint.z);
+                var fromCenter = new THREE.Matrix4().makeTranslation(this.fPivotPoint.x, this.fPivotPoint.y, this.fPivotPoint.z);
+
+                var rotMatrix = new THREE.Matrix4().makeRotationX(this.fAngleRadians);
+                // 2 * Math.PI * ((nowMS % 5000) / 5000.0));
+                var transMatrix = new THREE.Matrix4().makeTranslation(50 * this.fIndex, 200, 0);
+
+                var newMatrix = new THREE.Matrix4();
+
+                // newMatrix.multiply(toCenter);
+                // newMatrix.multiply(rotMatrix);
+                // newMatrix.multiply(fromCenter);
+                // newMatrix.multiply(transMatrix);
+                newMatrix.multiply(transMatrix);
+                newMatrix.multiply(fromCenter);
+                newMatrix.multiply(rotMatrix);
+                newMatrix.multiply(toCenter);
+
+                this.fMesh.matrix = newMatrix;
+            }
         }, {
             key: 'SetAngle',
             value: function SetAngle(iAngle) {
-                this.fAngle = iAngle;
+                this.fAngleRadians = iAngle;
                 this.UpdatePosition();
             }
         }]);
@@ -287,45 +310,53 @@ function render() {
     var nowMS = Date.now();
     var delta = clock.getDelta();
     var d = 0;
-    for (d = 0; d < gDials.length; d += 1) {
-        var dial = gDials[d];
-        // dial.rotation.x = 0;
-        // dial.rotation.y = 0;
-        // dial.rotation.z = 0;
-        // clone.position.x = ;
-        // clone.position.y = 200;
-        // clone.position.z = 0;
-        //
-        //
-        // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
-        // dial.position.x = 0;
-        // dial.position.y = 0;
-        // dial.position.z = 0;
-        dial.matrixAutoUpdate = false;
+    // for (d = 0; d < gDials.length; d += 1) {
+    //     var dial = gDials[d];
+    //     // dial.rotation.x = 0;
+    //     // dial.rotation.y = 0;
+    //     // dial.rotation.z = 0;
+    //     // clone.position.x = ;
+    //     // clone.position.y = 200;
+    //     // clone.position.z = 0;
+    //     //
+    //     //
+    //     // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
+    //     // dial.position.x = 0;
+    //     // dial.position.y = 0;
+    //     // dial.position.z = 0;
+    //     dial.matrixAutoUpdate = false;
+    //
+    //     dial.matrix.identity();
+    //     var bbox = new THREE.Box3().setFromObject(dial);
+    //
+    //     bbox.center = new THREE.Vector3((bbox.max.x + bbox.min.x) * 0.5,
+    //         (bbox.max.y + bbox.min.y) * 0.5,
+    //         (bbox.max.z + bbox.min.z) * 0.5);
+    //
+    //     var toCenter = new THREE.Matrix4().makeTranslation(-bbox.center.x, -bbox.center.y, -bbox.center.z);
+    //     var fromCenter = new THREE.Matrix4().makeTranslation(bbox.center.x, bbox.center.y, bbox.center.z);
+    //
+    //     var rotMatrix = new THREE.Matrix4().makeRotationX(2 * Math.PI * ((nowMS % 5000) / 5000.0));
+    //     var transMatrix = new THREE.Matrix4().makeTranslation(50 * d, 200, 0);
+    //
+    //     var newMatrix = new THREE.Matrix4();
+    //
+    //     // newMatrix.multiply(toCenter);
+    //     // newMatrix.multiply(rotMatrix);
+    //     // newMatrix.multiply(fromCenter);
+    //     // newMatrix.multiply(transMatrix);
+    //     newMatrix.multiply(transMatrix);
+    //     newMatrix.multiply(fromCenter);
+    //     newMatrix.multiply(rotMatrix);
+    //     newMatrix.multiply(toCenter);
+    //
+    //     dial.matrix = newMatrix;
+    // }
 
-        dial.matrix.identity();
-        var bbox = new THREE.Box3().setFromObject(dial);
-
-        bbox.center = new THREE.Vector3((bbox.max.x + bbox.min.x) * 0.5, (bbox.max.y + bbox.min.y) * 0.5, (bbox.max.z + bbox.min.z) * 0.5);
-
-        var toCenter = new THREE.Matrix4().makeTranslation(-bbox.center.x, -bbox.center.y, -bbox.center.z);
-        var fromCenter = new THREE.Matrix4().makeTranslation(bbox.center.x, bbox.center.y, bbox.center.z);
-
-        var rotMatrix = new THREE.Matrix4().makeRotationX(2 * Math.PI * (nowMS % 5000 / 5000.0));
-        var transMatrix = new THREE.Matrix4().makeTranslation(50 * d, 200, 0);
-
-        var newMatrix = new THREE.Matrix4();
-
-        // newMatrix.multiply(toCenter);
-        // newMatrix.multiply(rotMatrix);
-        // newMatrix.multiply(fromCenter);
-        // newMatrix.multiply(transMatrix);
-        newMatrix.multiply(transMatrix);
-        newMatrix.multiply(fromCenter);
-        newMatrix.multiply(rotMatrix);
-        newMatrix.multiply(toCenter);
-
-        dial.matrix = newMatrix;
+    for (d = 0; d < gDialRings.length; d += 1) {
+        var dialRing = gDialRings[d];
+        dialRing.SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
+        dialRing.UpdatePosition();
     }
 
     // if( object ) object.rotation.y -= 0.5 * delta;
