@@ -198,7 +198,8 @@ function init() {
             if ((t /= d / 2) < 1) {
                 return c / 2 * t * t + b;
             }
-            return -c / 2 * (--t * (t - 2) - 1) + b;
+            t -= 1;
+            return -c / 2 * (t * (t - 2) - 1) + b;
         },
         easeInCubic: function easeInCubic(t, b, c, d) {
             return c * (t /= d) * t * t + b;
@@ -288,7 +289,9 @@ function init() {
             return c / 2 * 1.0005 * (-Math.pow(2, -10 * (t - 1)) + 2) + b;
         },
         easeOutInExpo: function easeOutInExpo(t, b, c, d) {
-            if (t < d / 2) return TweenFunc.easeOutExpo(t * 2, b, c / 2, d);
+            if (t < d / 2) {
+                return TweenFunc.easeOutExpo(t * 2, b, c / 2, d);
+            }
             return TweenFunc.easeInExpo(t * 2 - d, b + c / 2, c / 2, d);
         },
         easeInCirc: function easeInCirc(t, b, c, d) {
@@ -298,38 +301,60 @@ function init() {
             return c * Math.sqrt(1 - (t = t / d - 1) * t) + b;
         },
         easeInOutCirc: function easeInOutCirc(t, b, c, d) {
-            if ((t /= d / 2) < 1) return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b;
+            if ((t /= d / 2) < 1) {
+                return -c / 2 * (Math.sqrt(1 - t * t) - 1) + b;
+            }
             return c / 2 * (Math.sqrt(1 - (t -= 2) * t) + 1) + b;
         },
         easeOutInCirc: function easeOutInCirc(t, b, c, d) {
-            if (t < d / 2) return TweenFunc.easeOutCirc(t * 2, b, c / 2, d);
+            if (t < d / 2) {
+                return TweenFunc.easeOutCirc(t * 2, b, c / 2, d);
+            }
             return TweenFunc.easeInCirc(t * 2 - d, b + c / 2, c / 2, d);
         },
         easeInElastic: function easeInElastic(t, b, c, d, a, p) {
             var s;
-            if (t == 0) return b;
-            if ((t /= d) == 1) return b + c;
-            if (!p) p = d * .3;
+            if (t === 0) {
+                return b;
+            }
+            if ((t /= d) === 1) {
+                return b + c;
+            }
+            if (!p) {
+                p = d * 0.3;
+            }
             if (!a || a < Math.abs(c)) {
                 a = c;
                 s = p / 4;
-            } else s = p / (2 * Math.PI) * Math.asin(c / a);
+            } else {
+                s = p / (2 * Math.PI) * Math.asin(c / a);
+            }
             return -(a * Math.pow(2, 10 * (t -= 1)) * Math.sin((t * d - s) * (2 * Math.PI) / p)) + b;
         },
         easeOutElastic: function easeOutElastic(t, b, c, d, a, p) {
             var s;
-            if (t == 0) return b;
-            if ((t /= d) == 1) return b + c;
-            if (!p) p = d * .3;
+            if (t === 0) {
+                return b;
+            }
+            if ((t /= d) === 1) {
+                return b + c;
+            }
+            if (!p) {
+                p = d * 0.3;
+            }
             if (!a || a < Math.abs(c)) {
                 a = c;
                 s = p / 4;
-            } else s = p / (2 * Math.PI) * Math.asin(c / a);
+            } else {
+                s = p / (2 * Math.PI) * Math.asin(c / a);
+            }
             return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b;
         },
         easeInOutElastic: function easeInOutElastic(t, b, c, d, a, p) {
             var s;
-            if (t == 0) return b;
+            if (t == 0) {
+                return b;
+            }
             if ((t /= d / 2) == 2) return b + c;
             if (!p) p = d * (.3 * 1.5);
             if (!a || a < Math.abs(c)) {
@@ -644,9 +669,15 @@ function animate() {
             gDialRings[1].ScheduleDialAdvance();
             gLastSwitchArray[1] = nowMS;
         }
+
+        if (nowMS - gLastSwitchArray[2] > 1000) {
+            gDialRings[2].fTweenFunc = "easeInOutBounce";
+            gDialRings[2].ScheduleDialAdvance();
+            gLastSwitchArray[2] = nowMS;
+        }
         gDialRings[0].ProcessAnimation(nowMS);
         gDialRings[1].ProcessAnimation(nowMS);
-        gDialRings[2].SetAngle(0);
+        gDialRings[2].ProcessAnimation(nowMS);
         gDialRings[3].SetAngle(0);
         gDialRings[4].SetAngle(0);
         gDialRings[5].SetAngle(0);
