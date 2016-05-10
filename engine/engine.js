@@ -44,6 +44,8 @@ var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 var gDials = [];
 var gDialRings = [];
+var R2D = 180.0 / Math.PI;
+var D2R = 1.0 / R2D;
 
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
@@ -168,6 +170,15 @@ function init() {
     var onError = function onError() /* xhr */{};
     var loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager, onProgress);
 
+    var AngleInterpolation = function AngleInterpolation(iStartTime, iEndTime, iStartAngle, iEndAngle) {
+        _classCallCheck(this, AngleInterpolation);
+
+        this.fStartTime = Number(iStartTime);
+        this.fEndTime = Number(iEndTime);
+        this.fStartAngle = iStartAngle;
+        this.fEndAngle = iEndAngle;
+    };
+
     var DialRing = function () {
         function DialRing(iMesh, iIndex) {
             _classCallCheck(this, DialRing);
@@ -188,13 +199,15 @@ function init() {
 
             this.fMesh.matrixAutoUpdate = false;
             this.fMesh.matrix.identity();
+            this.fAngleInterpolation = null;
         }
 
         _createClass(DialRing, [{
             key: 'UpdatePosition',
             value: function UpdatePosition() {
-                var toCenter = new THREE.Matrix4().makeTranslation(-this.fPivotPoint.x, -this.fPivotPoint.y, -this.fPivotPoint.z);
-                var fromCenter = new THREE.Matrix4().makeTranslation(this.fPivotPoint.x, this.fPivotPoint.y, this.fPivotPoint.z);
+                var pivot = this.fPivotPoint;
+                var toCenter = new THREE.Matrix4().makeTranslation(-pivot.x, -pivot.y, -pivot.z);
+                var fromCenter = new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z);
 
                 var rotMatrix = new THREE.Matrix4().makeRotationX(this.fAngleRadians);
                 // 2 * Math.PI * ((nowMS % 5000) / 5000.0));
@@ -218,6 +231,34 @@ function init() {
             value: function SetAngle(iAngle) {
                 this.fAngleRadians = iAngle;
                 this.UpdatePosition();
+            }
+        }, {
+            key: 'ScheduleAngleInterpolation',
+            value: function ScheduleAngleInterpolation(iNewAngleValue) {
+                var lerpStruct = new AngleInterpolation(Date.now(), Date.now() + 200, this.fAngleRadians, iNewAngleValue);
+                this.fAngleInterpolation = lerpStruct;
+            }
+        }, {
+            key: 'ScheduleDialAdvance',
+            value: function ScheduleDialAdvance() {
+                this.ScheduleAngleInterpolation(this.fAngleRadians + D2R * 36.0);
+            }
+        }, {
+            key: 'ProcessAnimation',
+            value: function ProcessAnimation(iCurrentTime) {
+                if (this.fAngleInterpolation !== null) {
+                    var normalizedLerpTime = (iCurrentTime - this.fAngleInterpolation.fStartTime) / (this.fAngleInterpolation.fEndTime - this.fAngleInterpolation.fStartTime);
+
+                    var lerpedAngle = this.fAngleInterpolation.fStartAngle;
+                    if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
+                        lerpedAngle = (1.0 - normalizedLerpTime) * this.fAngleInterpolation.fStartAngle + normalizedLerpTime * this.fAngleInterpolation.fEndAngle;
+                    } else if (normalizedLerpTime >= 1.0) {
+                        lerpedAngle = this.fAngleInterpolation.fEndAngle;
+                        this.fAngleInterpolation = null; // End of interpolation
+                    }
+
+                    this.SetAngle(lerpedAngle);
+                }
             }
         }]);
 
@@ -289,6 +330,8 @@ function onDocumentMouseMove(event) {
     console.log(mouseX.toString() + " " + mouseY.toString());
 }
 
+var gLastSwitch = Number(0);
+
 //
 /**
  * animate(): Animation initialization/callback
@@ -297,7 +340,46 @@ function animate() {
 
     window.requestAnimationFrame(animate);
 
+    var nowMS = Date.now();
+    var sAnimationMode = 2;
+
+    if (gDialRings.length <= 0) {
+        return;
+    }
+
+    if (sAnimationMode === 0) {
+        // Continuous animation of all
+        var d = 0;
+
+        for (d = 0; d < gDialRings.length; d += 1) {
+            var dialRing = gDialRings[d];
+            dialRing.SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
+        }
+    } else if (sAnimationMode === 1) {
+        // Variated animation of all
+
+        gDialRings[0].SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
+        gDialRings[1].SetAngle(2 * Math.PI * (nowMS % 4000 / 4000.0));
+        gDialRings[2].SetAngle(2 * Math.PI * (nowMS % 3000 / 3000.0));
+        gDialRings[3].SetAngle(2 * Math.PI * (nowMS % 2000 / 2000.0));
+        gDialRings[4].SetAngle(2 * Math.PI * (nowMS % 1000 / 1000.0));
+        gDialRings[5].SetAngle(2 * Math.PI * (nowMS % 100 / 100.0));
+    } else if (sAnimationMode === 2) {
+        // Variated animation of all
+        if (nowMS - gLastSwitch > 1000) {
+            gDialRings[0].ScheduleDialAdvance();
+            gLastSwitch = nowMS;
+        }
+        gDialRings[0].ProcessAnimation(nowMS);
+        gDialRings[1].SetAngle(0);
+        gDialRings[2].SetAngle(0);
+        gDialRings[3].SetAngle(0);
+        gDialRings[4].SetAngle(0);
+        gDialRings[5].SetAngle(0);
+    }
+
     render();
+
     stats.update();
 }
 
@@ -307,62 +389,8 @@ function animate() {
 function render() {
 
     var time = Date.now() * 0.0005;
-    var nowMS = Date.now();
+
     var delta = clock.getDelta();
-    var d = 0;
-    // for (d = 0; d < gDials.length; d += 1) {
-    //     var dial = gDials[d];
-    //     // dial.rotation.x = 0;
-    //     // dial.rotation.y = 0;
-    //     // dial.rotation.z = 0;
-    //     // clone.position.x = ;
-    //     // clone.position.y = 200;
-    //     // clone.position.z = 0;
-    //     //
-    //     //
-    //     // dial.rotation.x = Math.PI * ((nowMS % 1000) / 1000.0);
-    //     // dial.position.x = 0;
-    //     // dial.position.y = 0;
-    //     // dial.position.z = 0;
-    //     dial.matrixAutoUpdate = false;
-    //
-    //     dial.matrix.identity();
-    //     var bbox = new THREE.Box3().setFromObject(dial);
-    //
-    //     bbox.center = new THREE.Vector3((bbox.max.x + bbox.min.x) * 0.5,
-    //         (bbox.max.y + bbox.min.y) * 0.5,
-    //         (bbox.max.z + bbox.min.z) * 0.5);
-    //
-    //     var toCenter = new THREE.Matrix4().makeTranslation(-bbox.center.x, -bbox.center.y, -bbox.center.z);
-    //     var fromCenter = new THREE.Matrix4().makeTranslation(bbox.center.x, bbox.center.y, bbox.center.z);
-    //
-    //     var rotMatrix = new THREE.Matrix4().makeRotationX(2 * Math.PI * ((nowMS % 5000) / 5000.0));
-    //     var transMatrix = new THREE.Matrix4().makeTranslation(50 * d, 200, 0);
-    //
-    //     var newMatrix = new THREE.Matrix4();
-    //
-    //     // newMatrix.multiply(toCenter);
-    //     // newMatrix.multiply(rotMatrix);
-    //     // newMatrix.multiply(fromCenter);
-    //     // newMatrix.multiply(transMatrix);
-    //     newMatrix.multiply(transMatrix);
-    //     newMatrix.multiply(fromCenter);
-    //     newMatrix.multiply(rotMatrix);
-    //     newMatrix.multiply(toCenter);
-    //
-    //     dial.matrix = newMatrix;
-    // }
-
-    for (d = 0; d < gDialRings.length; d += 1) {
-        var dialRing = gDialRings[d];
-        dialRing.SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
-        dialRing.UpdatePosition();
-    }
-
-    // if( object ) object.rotation.y -= 0.5 * delta;
-    // light1.position.x = Math.sin( time * 0.7 ) * 100;
-    // light1.position.y = Math.cos( time * 0.5 ) * 100;
-    // light1.position.z = Math.cos( time * 0.3 ) * 100;
 
     light1.position.x = 0;
     light1.position.y = 100;
