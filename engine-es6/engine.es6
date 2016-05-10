@@ -176,6 +176,28 @@ function init() {
             this.fStartAngle = iStartAngle;
             this.fEndAngle = iEndAngle;
         }
+
+        function LerpAngleConst(iCurrentTime) {
+            const normalizedLerpTime = (iCurrentTime - this.fStartTime) /
+                (this.fEndTime - this.fStartTime);
+
+            let lerpedAngle = this.fStartAngle;
+            if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
+                lerpedAngle = (1.0 - normalizedLerpTime) * this.fStartAngle + (normalizedLerpTime) * this.fEndAngle;
+            } else if (normalizedLerpTime >= 1.0) {
+                lerpedAngle = this.fEndAngle;
+            }
+
+            return lerpedAngle;
+        }
+
+        function IsAnimationDoneConst(iCurrentTime) {
+            if (iCurrentTime > this.fEndTime) {
+                return true;
+            }
+
+            return false;
+        }
     }
 
     class DialRing {
@@ -241,16 +263,11 @@ function init() {
 
         ProcessAnimation(iCurrentTime) {
             if (this.fAngleInterpolation !== null) {
-                const normalizedLerpTime = (iCurrentTime - this.fAngleInterpolation.fStartTime) /
-                    (this.fAngleInterpolation.fEndTime - this.fAngleInterpolation.fStartTime);
 
-                let lerpedAngle = this.fAngleInterpolation.fStartAngle;
-                if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
-                    lerpedAngle = (1.0 - normalizedLerpTime) * this.fAngleInterpolation.fStartAngle +
-                        (normalizedLerpTime) * this.fAngleInterpolation.fEndAngle;
-                } else if (normalizedLerpTime >= 1.0) {
-                    lerpedAngle = this.fAngleInterpolation.fEndAngle;
-                    this.fAngleInterpolation = null; // End of interpolation
+                const lerpedAngle = this.fAngleInterpolation.LerpAngleConst(nowMS);
+
+                if (this.fAngleInterpolation.IsAnimationDoneConst(nowMS)) {
+                    this.fAngleInterpolation = null;
                 }
 
                 this.SetAngle(lerpedAngle);
