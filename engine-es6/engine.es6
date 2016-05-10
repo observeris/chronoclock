@@ -277,7 +277,7 @@ function init() {
         }
 
         ScheduleAngleInterpolation(iNewAngleValue) {
-            const lerpStruct = new AngleInterpolation(Date.now(), Date.now() + 200, this.fAngleRadians,
+            const lerpStruct = new AngleInterpolation(Date.now(), Date.now() + 700, this.fAngleRadians,
                 iNewAngleValue, this.fLerpType);
             this.fAngleInterpolation = lerpStruct;
         }
@@ -373,6 +373,13 @@ function onDocumentMouseMove(event) {
 }
 
 let gLastSwitch = Number(0);
+const gLastSwitchArray = [
+    Number(0),
+    Number(0),
+    Number(0),
+    Number(0),
+    Number(0)
+];
 
 //
 /**
@@ -383,7 +390,7 @@ function animate() {
     window.requestAnimationFrame(animate);
 
     const nowMS = Date.now();
-    const sAnimationMode = 2;
+    const sAnimationMode = 3;
 
     if (gDialRings.length <= 0) {
         return;
@@ -414,6 +421,24 @@ function animate() {
         }
         gDialRings[0].ProcessAnimation(nowMS);
         gDialRings[1].SetAngle(0);
+        gDialRings[2].SetAngle(0);
+        gDialRings[3].SetAngle(0);
+        gDialRings[4].SetAngle(0);
+        gDialRings[5].SetAngle(0);
+    } else if (sAnimationMode === 3) {
+        // Variated animation of all
+        if (nowMS - gLastSwitchArray[0] > 1000) {
+            gDialRings[0].ScheduleDialAdvance();
+            gLastSwitchArray[0] = nowMS;
+        }
+
+        if (nowMS - gLastSwitchArray[1] > 1000) {
+            gDialRings[1].fLerpType = "smoothstep";
+            gDialRings[1].ScheduleDialAdvance();
+            gLastSwitchArray[1] = nowMS;
+        }
+        gDialRings[0].ProcessAnimation(nowMS);
+        gDialRings[1].ProcessAnimation(nowMS);
         gDialRings[2].SetAngle(0);
         gDialRings[3].SetAngle(0);
         gDialRings[4].SetAngle(0);
