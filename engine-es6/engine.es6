@@ -169,12 +169,34 @@ function init() {
     const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
         onProgress);
 
+    /**
+     * OBJLoadPromise(): Returns a promist to load OBJ
+     * @param {Number} min relative to web root
+     * @param {Number} max, instance of THREE.LoadingManager()
+     * @param {Number} value, progress callback()
+     * @return {Number} smooth value (0-1)
+     */
+    function smoothstep(min, max, value) {
+        var x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+        return x * x * (3 - 2 * x);
+    }
+
     class AngleInterpolation {
-        constructor(iStartTime, iEndTime, iStartAngle, iEndAngle) {
+        constructor(iStartTime, iEndTime, iStartAngle, iEndAngle, iLerpType) {
             this.fStartTime = Number(iStartTime);
             this.fEndTime = Number(iEndTime);
             this.fStartAngle = iStartAngle;
             this.fEndAngle = iEndAngle;
+            this.fLerpType = iLerpType || "linear";
+        }
+
+        TransferNormalizedLerp(iT) {
+            if (this.fLerpType === "linear") {
+                return iT;
+            } else if (this.fLerpType === "smoothstep") {
+                return smoothstep(0.0, 1.0, iT);
+            }
+            return iT;
         }
 
         LerpAngleConst(iCurrentTime) {
@@ -183,7 +205,8 @@ function init() {
 
             let lerpedAngle = this.fStartAngle;
             if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
-                lerpedAngle = (1.0 - normalizedLerpTime) * this.fStartAngle + (normalizedLerpTime) * this
+                const transferdLerp = this.TransferNormalizedLerp(normalizedLerpTime);
+                lerpedAngle = (1.0 - transferdLerp) * this.fStartAngle + (transferdLerp) * this
                     .fEndAngle;
             } else if (normalizedLerpTime >= 1.0) {
                 lerpedAngle = this.fEndAngle;
@@ -202,7 +225,7 @@ function init() {
     }
 
     class DialRing {
-        constructor(iMesh, iIndex) {
+        constructor(iMesh, iIndex, iLerpType) {
             this.fMesh = iMesh;
             this.fAngleRadians = 0.0;
             this.fIndex = iIndex;
@@ -220,6 +243,7 @@ function init() {
             this.fMesh.matrixAutoUpdate = false;
             this.fMesh.matrix.identity();
             this.fAngleInterpolation = null;
+            this.fLerpType = iLerpType;
         }
 
         UpdatePosition() {
@@ -254,7 +278,7 @@ function init() {
 
         ScheduleAngleInterpolation(iNewAngleValue) {
             const lerpStruct = new AngleInterpolation(Date.now(), Date.now() + 200, this.fAngleRadians,
-                iNewAngleValue);
+                iNewAngleValue, this.fLerpType);
             this.fAngleInterpolation = lerpStruct;
         }
 
@@ -302,7 +326,7 @@ function init() {
 
                     gDials.push(dial);
 
-                    const dialRing = new DialRing(dial, i);
+                    const dialRing = new DialRing(dial, i, "linear");
                     gDialRings.push(dialRing);
                 }
 
