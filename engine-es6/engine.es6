@@ -184,6 +184,8 @@ function init() {
         	c - change needed in value
         	d - total duration of tween
         */
+
+        // Handy tweener visualizations: http://hosted.zeh.com.br/tweener/docs/en-us/misc/transitions.html
         easeNone: function(t, b, c, d) {
             return c * t / d + b;
         },
