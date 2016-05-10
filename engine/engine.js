@@ -170,14 +170,43 @@ function init() {
     var onError = function onError() /* xhr */{};
     var loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager, onProgress);
 
-    var AngleInterpolation = function AngleInterpolation(iStartTime, iEndTime, iStartAngle, iEndAngle) {
-        _classCallCheck(this, AngleInterpolation);
+    var AngleInterpolation = function () {
+        function AngleInterpolation(iStartTime, iEndTime, iStartAngle, iEndAngle) {
+            _classCallCheck(this, AngleInterpolation);
 
-        this.fStartTime = Number(iStartTime);
-        this.fEndTime = Number(iEndTime);
-        this.fStartAngle = iStartAngle;
-        this.fEndAngle = iEndAngle;
-    };
+            this.fStartTime = Number(iStartTime);
+            this.fEndTime = Number(iEndTime);
+            this.fStartAngle = iStartAngle;
+            this.fEndAngle = iEndAngle;
+        }
+
+        _createClass(AngleInterpolation, [{
+            key: 'LerpAngleConst',
+            value: function LerpAngleConst(iCurrentTime) {
+                var normalizedLerpTime = (iCurrentTime - this.fStartTime) / (this.fEndTime - this.fStartTime);
+
+                var lerpedAngle = this.fStartAngle;
+                if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
+                    lerpedAngle = (1.0 - normalizedLerpTime) * this.fStartAngle + normalizedLerpTime * this.fEndAngle;
+                } else if (normalizedLerpTime >= 1.0) {
+                    lerpedAngle = this.fEndAngle;
+                }
+
+                return lerpedAngle;
+            }
+        }, {
+            key: 'IsAnimationDoneConst',
+            value: function IsAnimationDoneConst(iCurrentTime) {
+                if (iCurrentTime > this.fEndTime) {
+                    return true;
+                }
+
+                return false;
+            }
+        }]);
+
+        return AngleInterpolation;
+    }();
 
     var DialRing = function () {
         function DialRing(iMesh, iIndex) {
@@ -247,14 +276,11 @@ function init() {
             key: 'ProcessAnimation',
             value: function ProcessAnimation(iCurrentTime) {
                 if (this.fAngleInterpolation !== null) {
-                    var normalizedLerpTime = (iCurrentTime - this.fAngleInterpolation.fStartTime) / (this.fAngleInterpolation.fEndTime - this.fAngleInterpolation.fStartTime);
 
-                    var lerpedAngle = this.fAngleInterpolation.fStartAngle;
-                    if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
-                        lerpedAngle = (1.0 - normalizedLerpTime) * this.fAngleInterpolation.fStartAngle + normalizedLerpTime * this.fAngleInterpolation.fEndAngle;
-                    } else if (normalizedLerpTime >= 1.0) {
-                        lerpedAngle = this.fAngleInterpolation.fEndAngle;
-                        this.fAngleInterpolation = null; // End of interpolation
+                    var lerpedAngle = this.fAngleInterpolation.LerpAngleConst(iCurrentTime);
+
+                    if (this.fAngleInterpolation.IsAnimationDoneConst(iCurrentTime)) {
+                        this.fAngleInterpolation = null;
                     }
 
                     this.SetAngle(lerpedAngle);

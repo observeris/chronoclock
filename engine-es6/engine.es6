@@ -177,13 +177,14 @@ function init() {
             this.fEndAngle = iEndAngle;
         }
 
-        function LerpAngleConst(iCurrentTime) {
+        LerpAngleConst(iCurrentTime) {
             const normalizedLerpTime = (iCurrentTime - this.fStartTime) /
                 (this.fEndTime - this.fStartTime);
 
             let lerpedAngle = this.fStartAngle;
             if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
-                lerpedAngle = (1.0 - normalizedLerpTime) * this.fStartAngle + (normalizedLerpTime) * this.fEndAngle;
+                lerpedAngle = (1.0 - normalizedLerpTime) * this.fStartAngle + (normalizedLerpTime) * this
+                    .fEndAngle;
             } else if (normalizedLerpTime >= 1.0) {
                 lerpedAngle = this.fEndAngle;
             }
@@ -191,7 +192,7 @@ function init() {
             return lerpedAngle;
         }
 
-        function IsAnimationDoneConst(iCurrentTime) {
+        IsAnimationDoneConst(iCurrentTime) {
             if (iCurrentTime > this.fEndTime) {
                 return true;
             }
@@ -264,9 +265,9 @@ function init() {
         ProcessAnimation(iCurrentTime) {
             if (this.fAngleInterpolation !== null) {
 
-                const lerpedAngle = this.fAngleInterpolation.LerpAngleConst(nowMS);
+                const lerpedAngle = this.fAngleInterpolation.LerpAngleConst(iCurrentTime);
 
-                if (this.fAngleInterpolation.IsAnimationDoneConst(nowMS)) {
+                if (this.fAngleInterpolation.IsAnimationDoneConst(iCurrentTime)) {
                     this.fAngleInterpolation = null;
                 }
 
