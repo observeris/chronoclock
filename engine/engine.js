@@ -39,10 +39,11 @@ var light3;
 var light4;
 
 var gDialCount = 6;
+var gDial = null;
 
 var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
-var gDialRings = [];
+
 var R2D = 180.0 / Math.PI;
 var D2R = 1.0 / R2D;
 
@@ -571,13 +572,108 @@ function init() {
         return DialRing;
     }();
 
-    var NDigitDial = function NDigitDial() {
-        _classCallCheck(this, NDigitDial);
+    var gLastSwitch = Number(0);
+    var gLastSwitchArray = [Number(0), Number(0), Number(0), Number(0), Number(0)];
 
-        this.fDialRings = [];
-    };
+    var NDigitDial = function () {
+        function NDigitDial() {
+            _classCallCheck(this, NDigitDial);
+
+            this.fDialRings = [];
+        }
+
+        _createClass(NDigitDial, [{
+            key: 'SetDials',
+            value: function SetDials(iNumberString) {
+                if (typeof iNumberString !== 'string') {
+                    throw new Error("Number must be a string");
+                }
+                if (iNumberString.length !== this.fDialRings.length) {
+                    throw new Error("String length mismatch");
+                }
+
+                var intValue = Number.parseInt(iNumberString, 10);
+                if (intValue.toString(10) !== iNumberString) {
+                    throw new Error("Not a proper integer number");
+                }
+            }
+        }, {
+            key: 'AddNewDial',
+            value: function AddNewDial(iDial) {
+                this.fDialRings.push(iDial);
+            }
+        }, {
+            key: 'Animate',
+            value: function Animate(nowMS) {
+                var sAnimationMode = 3;
+
+                if (this.fDialRings.length <= 0) {
+                    return;
+                }
+
+                if (sAnimationMode === 0) {
+                    // Continuous animation of all
+                    var d = 0;
+
+                    for (d = 0; d < this.fDialRings.length; d += 1) {
+                        var dialRing = this.fDialRings[d];
+                        dialRing.SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
+                    }
+                } else if (sAnimationMode === 1) {
+                    // Variated animation of all
+
+                    this.fDialRings[0].SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
+                    this.fDialRings[1].SetAngle(2 * Math.PI * (nowMS % 4000 / 4000.0));
+                    this.fDialRings[2].SetAngle(2 * Math.PI * (nowMS % 3000 / 3000.0));
+                    this.fDialRings[3].SetAngle(2 * Math.PI * (nowMS % 2000 / 2000.0));
+                    this.fDialRings[4].SetAngle(2 * Math.PI * (nowMS % 1000 / 1000.0));
+                    this.fDialRings[5].SetAngle(2 * Math.PI * (nowMS % 100 / 100.0));
+                } else if (sAnimationMode === 2) {
+                    // Variated animation of all
+                    if (nowMS - gLastSwitch > 1000) {
+                        this.fDialRings[0].ScheduleDialAdvance();
+                        gLastSwitch = nowMS;
+                    }
+                    this.fDialRings[0].ProcessAnimation(nowMS);
+                    this.fDialRings[1].SetAngle(0);
+                    this.fDialRings[2].SetAngle(0);
+                    this.fDialRings[3].SetAngle(0);
+                    this.fDialRings[4].SetAngle(0);
+                    this.fDialRings[5].SetAngle(0);
+                } else if (sAnimationMode === 3) {
+                    // Variated animation of all
+                    if (nowMS - gLastSwitchArray[0] > 1000) {
+                        this.fDialRings[0].ScheduleDialAdvance();
+                        gLastSwitchArray[0] = nowMS;
+                    }
+
+                    if (nowMS - gLastSwitchArray[1] > 1000) {
+                        this.fDialRings[1].fTweenFunc = "easeInOutQuad";
+                        this.fDialRings[1].ScheduleDialAdvance();
+                        gLastSwitchArray[1] = nowMS;
+                    }
+
+                    if (nowMS - gLastSwitchArray[2] > 1000) {
+                        this.fDialRings[2].fTweenFunc = "easeInOutBounce";
+                        this.fDialRings[2].ScheduleDialAdvance();
+                        gLastSwitchArray[2] = nowMS;
+                    }
+                    this.fDialRings[0].ProcessAnimation(nowMS);
+                    this.fDialRings[1].ProcessAnimation(nowMS);
+                    this.fDialRings[2].ProcessAnimation(nowMS);
+                    this.fDialRings[3].SetAngle(0);
+                    this.fDialRings[4].SetAngle(0);
+                    this.fDialRings[5].SetAngle(0);
+                }
+            }
+        }]);
+
+        return NDigitDial;
+    }();
 
     loaderPromise.then(function (object) {
+
+        gDial = new NDigitDial();
 
         object.traverse(function (child) {
 
@@ -601,7 +697,7 @@ function init() {
                     scene.add(dial);
 
                     var dialRing = new DialRing(dial, i, "easeNone");
-                    gDialRings.push(dialRing);
+                    gDial.AddNewDial(dialRing);
                 }
             }
         });
@@ -640,9 +736,6 @@ function onDocumentMouseMove(event) {
     console.log(mouseX.toString() + " " + mouseY.toString());
 }
 
-var gLastSwitch = Number(0);
-var gLastSwitchArray = [Number(0), Number(0), Number(0), Number(0), Number(0)];
-
 //
 /**
  * animate(): Animation initialization/callback
@@ -652,67 +745,10 @@ function animate() {
     window.requestAnimationFrame(animate);
 
     var nowMS = Date.now();
-    var sAnimationMode = 3;
 
-    if (gDialRings.length <= 0) {
-        return;
+    if (gDial !== null) {
+        gDial.Animate(nowMS);
     }
-
-    if (sAnimationMode === 0) {
-        // Continuous animation of all
-        var d = 0;
-
-        for (d = 0; d < gDialRings.length; d += 1) {
-            var dialRing = gDialRings[d];
-            dialRing.SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
-        }
-    } else if (sAnimationMode === 1) {
-        // Variated animation of all
-
-        gDialRings[0].SetAngle(2 * Math.PI * (nowMS % 5000 / 5000.0));
-        gDialRings[1].SetAngle(2 * Math.PI * (nowMS % 4000 / 4000.0));
-        gDialRings[2].SetAngle(2 * Math.PI * (nowMS % 3000 / 3000.0));
-        gDialRings[3].SetAngle(2 * Math.PI * (nowMS % 2000 / 2000.0));
-        gDialRings[4].SetAngle(2 * Math.PI * (nowMS % 1000 / 1000.0));
-        gDialRings[5].SetAngle(2 * Math.PI * (nowMS % 100 / 100.0));
-    } else if (sAnimationMode === 2) {
-        // Variated animation of all
-        if (nowMS - gLastSwitch > 1000) {
-            gDialRings[0].ScheduleDialAdvance();
-            gLastSwitch = nowMS;
-        }
-        gDialRings[0].ProcessAnimation(nowMS);
-        gDialRings[1].SetAngle(0);
-        gDialRings[2].SetAngle(0);
-        gDialRings[3].SetAngle(0);
-        gDialRings[4].SetAngle(0);
-        gDialRings[5].SetAngle(0);
-    } else if (sAnimationMode === 3) {
-        // Variated animation of all
-        if (nowMS - gLastSwitchArray[0] > 1000) {
-            gDialRings[0].ScheduleDialAdvance();
-            gLastSwitchArray[0] = nowMS;
-        }
-
-        if (nowMS - gLastSwitchArray[1] > 1000) {
-            gDialRings[1].fTweenFunc = "easeInOutQuad";
-            gDialRings[1].ScheduleDialAdvance();
-            gLastSwitchArray[1] = nowMS;
-        }
-
-        if (nowMS - gLastSwitchArray[2] > 1000) {
-            gDialRings[2].fTweenFunc = "easeInOutBounce";
-            gDialRings[2].ScheduleDialAdvance();
-            gLastSwitchArray[2] = nowMS;
-        }
-        gDialRings[0].ProcessAnimation(nowMS);
-        gDialRings[1].ProcessAnimation(nowMS);
-        gDialRings[2].ProcessAnimation(nowMS);
-        gDialRings[3].SetAngle(0);
-        gDialRings[4].SetAngle(0);
-        gDialRings[5].SetAngle(0);
-    }
-
     render();
 
     stats.update();
