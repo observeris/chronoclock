@@ -42,7 +42,6 @@ var gDialCount = 6;
 
 var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
-var gDials = [];
 var gDialRings = [];
 var R2D = 180.0 / Math.PI;
 var D2R = 1.0 / R2D;
@@ -572,6 +571,12 @@ function init() {
         return DialRing;
     }();
 
+    var NDigitDial = function NDigitDial() {
+        _classCallCheck(this, NDigitDial);
+
+        this.fDialRings = [];
+    };
+
     loaderPromise.then(function (object) {
 
         object.traverse(function (child) {
@@ -594,8 +599,6 @@ function init() {
                     dial.position.z = 0;
 
                     scene.add(dial);
-
-                    gDials.push(dial);
 
                     var dialRing = new DialRing(dial, i, "easeNone");
                     gDialRings.push(dialRing);

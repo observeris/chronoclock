@@ -36,7 +36,6 @@ var gDialCount = 6;
 
 const gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
-const gDials = [];
 const gDialRings = [];
 const R2D = 180.0 / Math.PI;
 const D2R = 1.0 / R2D;
@@ -561,6 +560,13 @@ function init() {
 
     }
 
+    class NDigitDial {
+        constructor() {
+            this.fDialRings = [];
+        }
+
+    }
+
     loaderPromise.then((object) => {
 
         object.traverse((child) => {
@@ -583,8 +589,6 @@ function init() {
                     dial.position.z = 0;
 
                     scene.add(dial);
-
-                    gDials.push(dial);
 
                     const dialRing = new DialRing(dial, i, "easeNone");
                     gDialRings.push(dialRing);
