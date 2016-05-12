@@ -303,6 +303,15 @@ const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 const R2D = 180.0 / Math.PI;
 const D2R = 1.0 / R2D;
 
+const NumberToAngle = (iNumber) => {
+
+    const angle = (5 - iNumber) * 36 * D2R;
+
+    // 0 - 5
+    // 5*36 - 0
+    return angle;
+};
+
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 init();
@@ -683,17 +692,22 @@ function init() {
                     scene.add(dial);
 
                     const dialRing = new DialRing(dial, i, "easeNone");
+                    dialRing.ScheduleAngleInterpolation(0);
                     gDial.AddNewDial(dialRing);
                 }
 
                 window.setInterval(() => {
                     if (gDial !== null) {
                         for (let d = 0; d < gDial.fDialRings.length; d += 1) {
-                            const randAngle = Math.random() * Math.PI * 2;
-                            gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+                            // const randAngle = Math.random() * Math.PI * 2;
+                            // gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+
+                            const randNumber = Math.floor(Math.random() * 9.0);
+                            gDial.fDialRings[d].ScheduleAngleInterpolation(
+                                NumberToAngle(randNumber));
                         }
                     }
-                }, 2000);
+                }, 1000);
             }
 
         });

@@ -306,6 +306,15 @@ var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 var R2D = 180.0 / Math.PI;
 var D2R = 1.0 / R2D;
 
+var NumberToAngle = function NumberToAngle(iNumber) {
+
+    var angle = (5 - iNumber) * 36 * D2R;
+
+    // 0 - 5
+    // 5*36 - 0
+    return angle;
+};
+
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 init();
@@ -695,17 +704,21 @@ function init() {
                     scene.add(dial);
 
                     var dialRing = new DialRing(dial, i, "easeNone");
+                    dialRing.ScheduleAngleInterpolation(0);
                     gDial.AddNewDial(dialRing);
                 }
 
                 window.setInterval(function () {
                     if (gDial !== null) {
                         for (var d = 0; d < gDial.fDialRings.length; d += 1) {
-                            var randAngle = Math.random() * Math.PI * 2;
-                            gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+                            // const randAngle = Math.random() * Math.PI * 2;
+                            // gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+
+                            var randNumber = Math.floor(Math.random() * 9.0);
+                            gDial.fDialRings[d].ScheduleAngleInterpolation(NumberToAngle(randNumber));
                         }
                     }
-                }, 2000);
+                }, 1000);
             }
         });
     }).catch(function (xhr) {
