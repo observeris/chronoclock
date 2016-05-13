@@ -516,6 +516,19 @@ function init() {
                 console.log("ERROR : No Tween Function " + iTweenFunc + " !");
             }
             this.fTweenFunc = iTweenFunc;
+            this.fForceAnimationDirection = 2;
+            // -1, if the digit increase, it will always be one step.
+            // -1, if the digit decreases, it will always be NINE steps.
+
+            // 1 = Forces all angles to be bigger than current angles.
+            // E.g. when asked to lerp from 20 degrees to 1, will lerp to 361
+            // 0 = No Forcing;
+            // -1 = Forces all angles to be smaller than current angles.
+            // E.g. when asked to lerp from 20 degrees to 1, will lerp to -359
+            // 2 = Forces minimal spin direction.
+            // Evaluates 1 and -1 option and picks one that results in minimal change.
+            // 3 = Forces minimal spin direction.
+            // Evaluates 1 and -1 option and picks one that results in maximal change.
         }
 
         _createClass(DialRing, [{
@@ -551,7 +564,49 @@ function init() {
         }, {
             key: 'ScheduleAngleInterpolation',
             value: function ScheduleAngleInterpolation(iNewAngleValue) {
-                var lerpStruct = new AngleInterpolation(Date.now(), Date.now() + 700, this.fAngleRadians, iNewAngleValue, this.fTweenFunc);
+                var _this = this;
+
+                var PositiveAngleDirection = function PositiveAngleDirection(iNewAngle) {
+                    var newAngle = iNewAngle;
+                    while (newAngle < _this.fAngleRadians) {
+                        newAngle += Math.PI * 2;
+                    }
+                    return newAngle;
+                };
+
+                var NegativeAngleDirection = function NegativeAngleDirection(iNewAngle) {
+                    var newAngle = iNewAngle;
+                    while (newAngle > _this.fAngleRadians) {
+                        newAngle -= Math.PI * 2;
+                    }
+                    return newAngle;
+                };
+
+                var newAngleRadians = iNewAngleValue;
+                if (this.fForceAnimationDirection === 1) {
+                    newAngleRadians = PositiveAngleDirection(iNewAngleValue);
+                } else if (this.fForceAnimationDirection === -1) {
+                    newAngleRadians = NegativeAngleDirection(iNewAngleValue);
+                } else if (this.fForceAnimationDirection === 2 || this.fForceAnimationDirection === 3) {
+                    var forceMINUSNewAngle = NegativeAngleDirection(iNewAngleValue);
+                    var forcePLUSNewAngle = PositiveAngleDirection(iNewAngleValue);
+
+                    // this.fForceAnimationDirection === 2 Pick one angle that results in *less* rotation
+                    // this.fForceAnimationDirection === 3 Pick one angle that results in *more* rotation
+
+                    if (Math.abs(forceMINUSNewAngle - this.fAngleRadians) < Math.abs(forcePLUSNewAngle - this.fAngleRadians)) {
+                        if (this.fForceAnimationDirection === 2) {
+                            newAngleRadians = forceMINUSNewAngle;
+                        } else {
+                            newAngleRadians = forcePLUSNewAngle;
+                        }
+                    } else if (this.fForceAnimationDirection === 3) {
+                        newAngleRadians = forcePLUSNewAngle;
+                    } else {
+                        newAngleRadians = forceMINUSNewAngle;
+                    }
+                }
+                var lerpStruct = new AngleInterpolation(Date.now(), Date.now() + 700, this.fAngleRadians, newAngleRadians, this.fTweenFunc);
                 this.fAngleInterpolation = lerpStruct;
             }
         }, {
