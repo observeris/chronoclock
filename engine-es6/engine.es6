@@ -296,6 +296,7 @@ var light4;
 
 const gDialCount = 6;
 let gDial = null;
+let gCounter = 0;
 
 const gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
@@ -589,13 +590,11 @@ function init() {
                 throw new Error("Number must have exactly as many digits as dials");
             }
 
-            const intValue = Number.parseInt(iNumberString, 10);
-            if (intValue.toString(10) !== iNumberString) {
-                throw new Error("Not a proper integer number");
-            }
-
             for (let i = 0; i < iNumberString.length; i += 1) {
                 const digit = Number.parseInt(iNumberString.charAt(i), 10);
+                if (Number.isNaN(digit) === true) {
+                    throw new Error("Digit in number is not a number!");
+                }
                 gDial.fDialRings[i].ScheduleAngleInterpolation(
                     NumberToAngle(digit));
             }
@@ -719,15 +718,27 @@ function init() {
                     gDial.AddNewDial(dialRing);
                 }
 
+                // window.setInterval(() => {
+                //     if (gDial !== null) {
+                //         for (let d = 0; d < gDial.fDialRings.length; d += 1) {
+                //             // const randAngle = Math.random() * Math.PI * 2;
+                //             // gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+                //
+                //             const randNumber = Math.floor(Math.random() * 9.0);
+                //             gDial.fDialRings[d].ScheduleAngleInterpolation(
+                //                 NumberToAngle(randNumber));
+                //         }
+                //     }
+                // }, 1000);
+
                 window.setInterval(() => {
                     if (gDial !== null) {
-                        for (let d = 0; d < gDial.fDialRings.length; d += 1) {
-                            // const randAngle = Math.random() * Math.PI * 2;
-                            // gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+                        try {
 
-                            const randNumber = Math.floor(Math.random() * 9.0);
-                            gDial.fDialRings[d].ScheduleAngleInterpolation(
-                                NumberToAngle(randNumber));
+                            gDial.SetDialsFromInt(gCounter);
+                            gCounter += 1;
+                        } catch (e) {
+                            console.log("EXCEPTION: " + e.message);
                         }
                     }
                 }, 1000);
