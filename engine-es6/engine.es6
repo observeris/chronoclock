@@ -305,10 +305,12 @@ const D2R = 1.0 / R2D;
 
 const NumberToAngle = (iNumber) => {
 
+    // Converting number to dial angle to display that number.
+    // 0 degrees rotation - number 5
+    // 5*36 degrees rotation - number 0
+
     const angle = (5 - iNumber) * 36 * D2R;
 
-    // 0 - 5
-    // 5*36 - 0
     return angle;
 };
 
@@ -578,12 +580,13 @@ function init() {
             this.fDialRings = [];
         }
 
-        SetDials(iNumberString) {
+        SetDialsFromExactString(iNumberString) {
             if (typeof iNumberString !== 'string') {
                 throw new Error("Number must be a string");
             }
+
             if (iNumberString.length !== this.fDialRings.length) {
-                throw new Error("String length mismatch");
+                throw new Error("Number must have exactly as many digits as dials");
             }
 
             const intValue = Number.parseInt(iNumberString, 10);
@@ -591,6 +594,26 @@ function init() {
                 throw new Error("Not a proper integer number");
             }
 
+            for (let i = 0; i < iNumberString.length; i += 1) {
+                const digit = Number.parseInt(iNumberString.charAt(i), 10);
+                gDial.fDialRings[i].ScheduleAngleInterpolation(
+                    NumberToAngle(digit));
+            }
+
+        }
+
+        SetDialsFromInt(iInteger) {
+            var integerString = iInteger.toString(10);
+
+            if (integerString.length > this.fDialRings.length) {
+                throw new Error("Cannot represent the number! Too Large");
+            }
+
+            while (integerString.length < this.fDialRings.length) {
+                integerString = "0" + integerString;
+            }
+
+            this.SetDialsFromExactString(integerString);
         }
 
         AddNewDial(iDial) {

@@ -308,10 +308,12 @@ var D2R = 1.0 / R2D;
 
 var NumberToAngle = function NumberToAngle(iNumber) {
 
+    // Converting number to dial angle to display that number.
+    // 0 degrees rotation - number 5
+    // 5*36 degrees rotation - number 0
+
     var angle = (5 - iNumber) * 36 * D2R;
 
-    // 0 - 5
-    // 5*36 - 0
     return angle;
 };
 
@@ -586,19 +588,40 @@ function init() {
         }
 
         _createClass(NDigitDial, [{
-            key: 'SetDials',
-            value: function SetDials(iNumberString) {
+            key: 'SetDialsFromExactString',
+            value: function SetDialsFromExactString(iNumberString) {
                 if (typeof iNumberString !== 'string') {
                     throw new Error("Number must be a string");
                 }
+
                 if (iNumberString.length !== this.fDialRings.length) {
-                    throw new Error("String length mismatch");
+                    throw new Error("Number must have exactly as many digits as dials");
                 }
 
                 var intValue = Number.parseInt(iNumberString, 10);
                 if (intValue.toString(10) !== iNumberString) {
                     throw new Error("Not a proper integer number");
                 }
+
+                for (var i = 0; i < iNumberString.length; i += 1) {
+                    var digit = Number.parseInt(iNumberString.charAt(i), 10);
+                    gDial.fDialRings[i].ScheduleAngleInterpolation(NumberToAngle(digit));
+                }
+            }
+        }, {
+            key: 'SetDialsFromInt',
+            value: function SetDialsFromInt(iInteger) {
+                var integerString = iInteger.toString(10);
+
+                if (integerString.length > this.fDialRings.length) {
+                    throw new Error("Cannot represent the number! Too Large");
+                }
+
+                while (integerString.length < this.fDialRings.length) {
+                    integerString = "0" + integerString;
+                }
+
+                this.SetDialsFromExactString(integerString);
             }
         }, {
             key: 'AddNewDial',
