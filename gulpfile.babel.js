@@ -1,10 +1,12 @@
 const gulp = require('gulp');
 const util = require('gulp-util');
 // const  concat = require('gulp-concat');
-// const  browserify = require('gulp-browserify');
+const browserify = require('gulp-browserify');
 const babel = require('gulp-babel');
+const source = require('vinyl-source-stream');
 const rename = require('gulp-rename');
 const print = require('gulp-print');
+const shell = require('gulp-shell');
 
 const fs = require('fs');
 const path = require('path');
@@ -85,7 +87,8 @@ function babelFolderTree(iBabelSourcePath, iBabelDestinationPath) {
             .pipe(print(babelDestination));
     });
 
-    return merge(tasks);
+    //return merge(tasks);
+    return tasks;
 
 }
 /**
@@ -104,7 +107,7 @@ function babelSourceFolderArray(iBabelSourcePath) {
 }
 
 const kBabelSourcePath = "engine-es6";
-const kBabelDestinationPath = "engine";
+const kBabelDestinationPath = "engine-babel-result";
 
 gulp.task("babel", () => {
     babelFolderTree(kBabelSourcePath, kBabelDestinationPath);
@@ -115,4 +118,8 @@ gulp.task("watch", () => {
     gulp.watch(babelSourceFolderArray(kBabelSourcePath), ['babel']);
 });
 
-gulp.task('default', ['babel', 'watch']);
+// gulp.task("browserify", ["babel"], shell.task([
+//     'browserify engine-babel-result/*.js -o engine/main.js',
+// ]));
+
+gulp.task('default', ['browserify', 'watch']);

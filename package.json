@@ -24,5 +24,10 @@
     "gulp-print": "^2.0.1",
     "gulp-rename": "^1.2.2",
     "merge-stream": "^1.0.0"
+  },
+  "devDependencies": {
+    "gulp-browserify": "^0.5.1",
+    "gulp-shell": "^0.5.2",
+    "vinyl-source-stream": "^1.1.0"
   }
 }
