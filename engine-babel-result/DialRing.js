@@ -24,7 +24,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var DialRing = function () {
-    function DialRing(iMesh, iIndex, iTweenFunc) {
+    function DialRing(iMesh, iIndex, iTargetWorldSpaceBoundingBox, iTweenFunc) {
         _classCallCheck(this, DialRing);
 
         this.fMesh = iMesh;
@@ -33,6 +33,24 @@ var DialRing = function () {
         if (iMesh.geometry.boundingBox === null) {
             iMesh.geometry.computeBoundingBox();
         }
+
+        this.fTargetWorldSpaceBoundingBox = iTargetWorldSpaceBoundingBox;
+
+        // Place the geometry so its center is at the center of target bounding box.
+        // And so the width (delta X) is the same as width (delta X) of target boundingBox;
+
+        var targetWidth = this.fTargetWorldSpaceBoundingBox.max.x - this.fTargetWorldSpaceBoundingBox.min.x;
+        if (targetWidth < 0.00001) {
+            throw new Error("Incorrect target BBOX parameter");
+        }
+
+        var objectWidth = this.fMesh.geometry.boundingBox.max.x - this.fMesh.geometry.boundingBox.min.x;
+        if (objectWidth < 0.00001) {
+            throw new Error("Invalid mesh - too thin!");
+        }
+
+        var scaleTransform = targetWidth / objectWidth;
+
         this.fBBOX = iMesh.geometry.boundingBox;
         // Default pivot point is the center of bounding box.
 
@@ -74,7 +92,6 @@ var DialRing = function () {
             var fromCenter = new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z);
 
             var rotMatrix = new THREE.Matrix4().makeRotationX(this.fAngleRadians);
-            // 2 * Math.PI * ((nowMS % 5000) / 5000.0));
             var transMatrix = new THREE.Matrix4().makeTranslation(50 * this.fIndex, 200, 0);
 
             var newMatrix = new THREE.Matrix4();

@@ -7,13 +7,32 @@ import AngleInterpolation from './AngleInterpolation';
 import * as DigitLib from './DigitLib';
 
 export default class DialRing {
-    constructor(iMesh, iIndex, iTweenFunc) {
+    constructor(iMesh, iIndex, iTargetWorldSpaceBoundingBox, iTweenFunc) {
         this.fMesh = iMesh;
         this.fAngleRadians = 0.0;
         this.fIndex = iIndex;
         if (iMesh.geometry.boundingBox === null) {
             iMesh.geometry.computeBoundingBox();
         }
+
+        this.fTargetWorldSpaceBoundingBox = iTargetWorldSpaceBoundingBox;
+
+        // Place the geometry so its center is at the center of target bounding box.
+        // And so the width (delta X) is the same as width (delta X) of target boundingBox;
+
+        const targetWidth =
+            this.fTargetWorldSpaceBoundingBox.max.x - this.fTargetWorldSpaceBoundingBox.min.x;
+        if (targetWidth < 0.00001) {
+            throw new Error("Incorrect target BBOX parameter");
+        }
+
+        const objectWidth = this.fMesh.geometry.boundingBox.max.x - this.fMesh.geometry.boundingBox.min.x;
+        if (objectWidth < 0.00001) {
+            throw new Error("Invalid mesh - too thin!");
+        }
+
+        const scaleTransform = targetWidth / objectWidth;
+
         this.fBBOX = iMesh.geometry.boundingBox;
         // Default pivot point is the center of bounding box.
 
@@ -55,7 +74,6 @@ export default class DialRing {
             new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z);
 
         var rotMatrix = new THREE.Matrix4().makeRotationX(this.fAngleRadians);
-        // 2 * Math.PI * ((nowMS % 5000) / 5000.0));
         var transMatrix = new THREE.Matrix4().makeTranslation(50 * this.fIndex, 200, 0);
 
         var newMatrix = new THREE.Matrix4();

@@ -200,7 +200,17 @@ function init() {
 
                     scene.add(dial);
 
-                    var dialRing = new _DialRing2.default(dial, i, "easeNone");
+                    var targetBBOX = new THREE.Box3({
+                        x: 50 * i - 25,
+                        y: 0,
+                        z: -100
+                    }, {
+                        x: 50 * i + 25,
+                        y: 400,
+                        z: 100
+                    });
+
+                    var dialRing = new _DialRing2.default(dial, i, targetBBOX, "easeNone");
                     dialRing.ScheduleAngleInterpolation(0);
                     gDial.AddNewDial(dialRing);
                 }
