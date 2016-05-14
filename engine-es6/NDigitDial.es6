@@ -1,3 +1,5 @@
+import * as DigitLib from './DigitLib';
+
 let gLastSwitch = Number(0);
 const gLastSwitchArray = [
     Number(0),
@@ -6,19 +8,6 @@ const gLastSwitchArray = [
     Number(0),
     Number(0)
 ];
-const R2D = 180.0 / Math.PI;
-const D2R = 1.0 / R2D;
-
-const NumberToAngle = (iNumber) => {
-
-    // Converting number to dial angle to display that number.
-    // 0 degrees rotation - number 5
-    // 5*36 degrees rotation - number 0
-
-    const angle = (5 - iNumber) * 36 * D2R;
-
-    return angle;
-};
 
 export default class NDigitDial {
     constructor() {
@@ -40,7 +29,7 @@ export default class NDigitDial {
                 throw new Error("Digit in number is not a number!");
             }
             this.fDialRings[i].ScheduleAngleInterpolation(
-                NumberToAngle(digit));
+                DigitLib.NumberToAngle(digit));
         }
 
     }
@@ -64,7 +53,9 @@ export default class NDigitDial {
     }
 
     Animate(nowMS) {
-        const sAnimationMode = 4;
+        const sAnimationMode = 4; // All modes other than 4 are just for debugging.
+        // Animations should be set externally,
+        // and all this class has to do is call ProcessAnimation() on all the rings
 
         if (this.fDialRings.length <= 0) {
             return;

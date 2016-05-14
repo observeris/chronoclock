@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -6,23 +6,16 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _DigitLib = require('./DigitLib');
+
+var DigitLib = _interopRequireWildcard(_DigitLib);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var gLastSwitch = Number(0);
 var gLastSwitchArray = [Number(0), Number(0), Number(0), Number(0), Number(0)];
-var R2D = 180.0 / Math.PI;
-var D2R = 1.0 / R2D;
-
-var NumberToAngle = function NumberToAngle(iNumber) {
-
-    // Converting number to dial angle to display that number.
-    // 0 degrees rotation - number 5
-    // 5*36 degrees rotation - number 0
-
-    var angle = (5 - iNumber) * 36 * D2R;
-
-    return angle;
-};
 
 var NDigitDial = function () {
     function NDigitDial() {
@@ -32,7 +25,7 @@ var NDigitDial = function () {
     }
 
     _createClass(NDigitDial, [{
-        key: "SetDialsFromExactString",
+        key: 'SetDialsFromExactString',
         value: function SetDialsFromExactString(iNumberString) {
             if (typeof iNumberString !== 'string') {
                 throw new Error("Number must be a string");
@@ -47,11 +40,11 @@ var NDigitDial = function () {
                 if (Number.isNaN(digit) === true) {
                     throw new Error("Digit in number is not a number!");
                 }
-                this.fDialRings[i].ScheduleAngleInterpolation(NumberToAngle(digit));
+                this.fDialRings[i].ScheduleAngleInterpolation(DigitLib.NumberToAngle(digit));
             }
         }
     }, {
-        key: "SetDialsFromInt",
+        key: 'SetDialsFromInt',
         value: function SetDialsFromInt(iInteger) {
             var integerString = iInteger.toString(10);
 
@@ -66,14 +59,16 @@ var NDigitDial = function () {
             this.SetDialsFromExactString(integerString);
         }
     }, {
-        key: "AddNewDial",
+        key: 'AddNewDial',
         value: function AddNewDial(iDial) {
             this.fDialRings.push(iDial);
         }
     }, {
-        key: "Animate",
+        key: 'Animate',
         value: function Animate(nowMS) {
-            var sAnimationMode = 4;
+            var sAnimationMode = 4; // All modes other than 4 are just for debugging.
+            // Animations should be set externally,
+            // and all this class has to do is call ProcessAnimation() on all the rings
 
             if (this.fDialRings.length <= 0) {
                 return;

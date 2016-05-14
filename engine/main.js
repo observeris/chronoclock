@@ -59,7 +59,7 @@ var AngleInterpolation = function () {
 }();
 
 exports.default = AngleInterpolation;
-},{"./TweenFunc":4}],2:[function(require,module,exports){
+},{"./TweenFunc":5}],2:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -75,12 +75,15 @@ var _AngleInterpolation = require('./AngleInterpolation');
 
 var _AngleInterpolation2 = _interopRequireDefault(_AngleInterpolation);
 
+var _DigitLib = require('./DigitLib');
+
+var DigitLib = _interopRequireWildcard(_DigitLib);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var R2D = 180.0 / Math.PI;
-var D2R = 1.0 / R2D;
 
 var DialRing = function () {
     function DialRing(iMesh, iIndex, iTweenFunc) {
@@ -206,7 +209,7 @@ var DialRing = function () {
     }, {
         key: 'ScheduleDialAdvance',
         value: function ScheduleDialAdvance() {
-            this.ScheduleAngleInterpolation(this.fAngleRadians + D2R * 36.0);
+            this.ScheduleAngleInterpolation(this.fAngleRadians + DigitLib.DegreesToRadians(36.0));
         }
     }, {
         key: 'ProcessAnimation',
@@ -228,23 +231,16 @@ var DialRing = function () {
 }();
 
 exports.default = DialRing;
-},{"./AngleInterpolation":1,"./TweenFunc":4}],3:[function(require,module,exports){
+},{"./AngleInterpolation":1,"./DigitLib":3,"./TweenFunc":5}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var gLastSwitch = Number(0);
-var gLastSwitchArray = [Number(0), Number(0), Number(0), Number(0), Number(0)];
 var R2D = 180.0 / Math.PI;
 var D2R = 1.0 / R2D;
 
-var NumberToAngle = function NumberToAngle(iNumber) {
+var NumberToAngle = exports.NumberToAngle = function NumberToAngle(iNumber) {
 
     // Converting number to dial angle to display that number.
     // 0 degrees rotation - number 5
@@ -255,6 +251,35 @@ var NumberToAngle = function NumberToAngle(iNumber) {
     return angle;
 };
 
+var DegreesToRadians = exports.DegreesToRadians = function DegreesToRadians(iDegrees) {
+
+    return D2R * iDegrees;
+};
+
+var RadiansToDegrees = exports.RadiansToDegrees = function RadiansToDegrees(iRadians) {
+
+    return R2D * iRadians;
+};
+},{}],4:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+var _DigitLib = require('./DigitLib');
+
+var DigitLib = _interopRequireWildcard(_DigitLib);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var gLastSwitch = Number(0);
+var gLastSwitchArray = [Number(0), Number(0), Number(0), Number(0), Number(0)];
+
 var NDigitDial = function () {
     function NDigitDial() {
         _classCallCheck(this, NDigitDial);
@@ -263,7 +288,7 @@ var NDigitDial = function () {
     }
 
     _createClass(NDigitDial, [{
-        key: "SetDialsFromExactString",
+        key: 'SetDialsFromExactString',
         value: function SetDialsFromExactString(iNumberString) {
             if (typeof iNumberString !== 'string') {
                 throw new Error("Number must be a string");
@@ -278,11 +303,11 @@ var NDigitDial = function () {
                 if (Number.isNaN(digit) === true) {
                     throw new Error("Digit in number is not a number!");
                 }
-                this.fDialRings[i].ScheduleAngleInterpolation(NumberToAngle(digit));
+                this.fDialRings[i].ScheduleAngleInterpolation(DigitLib.NumberToAngle(digit));
             }
         }
     }, {
-        key: "SetDialsFromInt",
+        key: 'SetDialsFromInt',
         value: function SetDialsFromInt(iInteger) {
             var integerString = iInteger.toString(10);
 
@@ -297,14 +322,16 @@ var NDigitDial = function () {
             this.SetDialsFromExactString(integerString);
         }
     }, {
-        key: "AddNewDial",
+        key: 'AddNewDial',
         value: function AddNewDial(iDial) {
             this.fDialRings.push(iDial);
         }
     }, {
-        key: "Animate",
+        key: 'Animate',
         value: function Animate(nowMS) {
-            var sAnimationMode = 4;
+            var sAnimationMode = 4; // All modes other than 4 are just for debugging.
+            // Animations should be set externally,
+            // and all this class has to do is call ProcessAnimation() on all the rings
 
             if (this.fDialRings.length <= 0) {
                 return;
@@ -375,7 +402,7 @@ var NDigitDial = function () {
 }();
 
 exports.default = NDigitDial;
-},{}],4:[function(require,module,exports){
+},{"./DigitLib":3}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -638,7 +665,7 @@ var TweenFunc = exports.TweenFunc = {
         return TweenFunc.easeInBounce(t * 2 - d, b + c / 2, c / 2, d);
     }
 };
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var _DialRing = require('./DialRing');
@@ -692,9 +719,6 @@ var gCounter = 0;
 
 var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
-
-// const R2D = 180.0 / Math.PI;
-// const D2R = 1.0 / R2D;
 
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
@@ -965,4 +989,4 @@ function render() {
 
     renderer.render(scene, camera);
 }
-},{"./DialRing":2,"./NDigitDial":3}]},{},[1,2,3,4,5]);
+},{"./DialRing":2,"./NDigitDial":4}]},{},[1,2,3,4,5,6]);

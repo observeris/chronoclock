@@ -43,9 +43,6 @@ let gCounter = 0;
 const gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 
-// const R2D = 180.0 / Math.PI;
-// const D2R = 1.0 / R2D;
-
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 init();

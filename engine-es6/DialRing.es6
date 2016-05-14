@@ -4,9 +4,7 @@ import {
 } from './TweenFunc';
 
 import AngleInterpolation from './AngleInterpolation';
-
-const R2D = 180.0 / Math.PI;
-const D2R = 1.0 / R2D;
+import * as DigitLib from './DigitLib';
 
 export default class DialRing {
     constructor(iMesh, iIndex, iTweenFunc) {
@@ -129,7 +127,7 @@ export default class DialRing {
     }
 
     ScheduleDialAdvance() {
-        this.ScheduleAngleInterpolation(this.fAngleRadians + D2R * 36.0);
+        this.ScheduleAngleInterpolation(this.fAngleRadians + DigitLib.DegreesToRadians(36.0));
     }
 
     ProcessAnimation(iCurrentTime) {
