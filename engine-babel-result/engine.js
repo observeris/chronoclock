@@ -7,6 +7,12 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _TweenFunc = require('./TweenFunc');
 
+var _AngleInterpolation = require('./AngleInterpolation');
+
+var _AngleInterpolation2 = _interopRequireDefault(_AngleInterpolation);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var SCREEN_WIDTH = window.innerWidth;
@@ -183,53 +189,6 @@ function init() {
     var onError = function onError() /* xhr */{};
     var loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager, onProgress);
 
-    var AngleInterpolation = function () {
-        function AngleInterpolation(iStartTime, iEndTime, iStartAngle, iEndAngle, iTweenFunc) {
-            _classCallCheck(this, AngleInterpolation);
-
-            this.fStartTime = Number(iStartTime);
-            this.fEndTime = Number(iEndTime);
-            this.fStartAngle = iStartAngle;
-            this.fEndAngle = iEndAngle;
-
-            this.fTweenFunc = iTweenFunc;
-        }
-
-        _createClass(AngleInterpolation, [{
-            key: 'LerpAngleConst',
-            value: function LerpAngleConst(iCurrentTime) {
-                var normalizedLerpTime = (iCurrentTime - this.fStartTime) / (this.fEndTime - this.fStartTime);
-
-                var t = iCurrentTime - this.fStartTime;
-                var b = this.fStartAngle;
-                var c = this.fEndAngle - this.fStartAngle;
-                var d = this.fEndTime - this.fStartTime;
-
-                var lerpedAngle = this.fStartAngle;
-                if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
-                    var tweenFunc = _TweenFunc.TweenFunc[this.fTweenFunc];
-
-                    lerpedAngle = tweenFunc(t, b, c, d);
-                } else if (normalizedLerpTime >= 1.0) {
-                    lerpedAngle = this.fEndAngle;
-                }
-
-                return lerpedAngle;
-            }
-        }, {
-            key: 'IsAnimationDoneConst',
-            value: function IsAnimationDoneConst(iCurrentTime) {
-                if (iCurrentTime > this.fEndTime) {
-                    return true;
-                }
-
-                return false;
-            }
-        }]);
-
-        return AngleInterpolation;
-    }();
-
     var DialRing = function () {
         function DialRing(iMesh, iIndex, iTweenFunc) {
             _classCallCheck(this, DialRing);
@@ -348,7 +307,7 @@ function init() {
                         newAngleRadians = forceMINUSNewAngle;
                     }
                 }
-                var lerpStruct = new AngleInterpolation(Date.now(), Date.now() + 700, this.fAngleRadians, newAngleRadians, this.fTweenFunc);
+                var lerpStruct = new _AngleInterpolation2.default(Date.now(), Date.now() + 700, this.fAngleRadians, newAngleRadians, this.fTweenFunc);
                 this.fAngleInterpolation = lerpStruct;
             }
         }, {

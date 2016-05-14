@@ -7,6 +7,8 @@ import {
     TweenFunc
 } from './TweenFunc';
 
+import AngleInterpolation from './AngleInterpolation';
+
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
 const FLOOR = -250;
@@ -186,46 +188,7 @@ function init() {
     const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
         onProgress);
 
-    class AngleInterpolation {
-        constructor(iStartTime, iEndTime, iStartAngle, iEndAngle, iTweenFunc) {
-            this.fStartTime = Number(iStartTime);
-            this.fEndTime = Number(iEndTime);
-            this.fStartAngle = iStartAngle;
-            this.fEndAngle = iEndAngle;
 
-            this.fTweenFunc = iTweenFunc;
-        }
-
-        LerpAngleConst(iCurrentTime) {
-            const normalizedLerpTime = (iCurrentTime - this.fStartTime) /
-                (this.fEndTime - this.fStartTime);
-
-            const t = iCurrentTime - this.fStartTime;
-            const b = this.fStartAngle;
-            const c = this.fEndAngle - this.fStartAngle;
-            const d = this.fEndTime - this.fStartTime;
-
-            let lerpedAngle = this.fStartAngle;
-            if (normalizedLerpTime >= 0.0 && normalizedLerpTime < 1.0) {
-                const tweenFunc = TweenFunc[this.fTweenFunc];
-
-                lerpedAngle = tweenFunc(t, b, c, d);
-
-            } else if (normalizedLerpTime >= 1.0) {
-                lerpedAngle = this.fEndAngle;
-            }
-
-            return lerpedAngle;
-        }
-
-        IsAnimationDoneConst(iCurrentTime) {
-            if (iCurrentTime > this.fEndTime) {
-                return true;
-            }
-
-            return false;
-        }
-    }
 
     class DialRing {
         constructor(iMesh, iIndex, iTweenFunc) {
