@@ -111,15 +111,12 @@ var DialRing = function () {
             throw new Error("Invalid mesh - too thin!");
         }
 
-        var scaleTransform = targetWidth / objectWidth;
+        this.fScaleFactor = targetWidth / objectWidth;
 
         this.fBBOX = iMesh.geometry.boundingBox;
         // Default pivot point is the center of bounding box.
 
-        this.fPivotPoint = new THREE.Vector3(0, 0, 0);
-        this.fPivotPoint.add(this.fBBOX.min);
-        this.fPivotPoint.add(this.fBBOX.max);
-        this.fPivotPoint.multiplyScalar(0.5);
+        this.fPivotPoint = this.fBBOX.center();
 
         this.fMesh.matrixAutoUpdate = false;
         this.fMesh.matrix.identity();
@@ -151,20 +148,27 @@ var DialRing = function () {
         value: function UpdatePosition() {
             var pivot = this.fPivotPoint;
             var toCenter = new THREE.Matrix4().makeTranslation(-pivot.x, -pivot.y, -pivot.z);
-            var fromCenter = new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z);
+            // var fromCenter =
+            //     new THREE.Matrix4().makeTranslation(pivot.x, pivot.y, pivot.z);
 
             var rotMatrix = new THREE.Matrix4().makeRotationX(this.fAngleRadians);
-            var transMatrix = new THREE.Matrix4().makeTranslation(50 * this.fIndex, 200, 0);
-
+            var scaleMatrix = new THREE.Matrix4().makeScale(this.fScaleFactor, this.fScaleFactor, this.fScaleFactor);
             var newMatrix = new THREE.Matrix4();
 
             // newMatrix.multiply(toCenter);
             // newMatrix.multiply(rotMatrix);
             // newMatrix.multiply(fromCenter);
             // newMatrix.multiply(transMatrix);
-            newMatrix.multiply(transMatrix);
-            newMatrix.multiply(fromCenter);
+            // newMatrix.multiply(transMatrix);
+            // newMatrix.multiply(fromCenter);
+
+            var newPivotPosition = this.fTargetWorldSpaceBoundingBox.center(); //50 * this.fIndex, 200, 0
+
+            var transToNewPivotMatrix = new THREE.Matrix4().makeTranslation(newPivotPosition.x, newPivotPosition.y, newPivotPosition.z);
+
+            newMatrix.multiply(transToNewPivotMatrix);
             newMatrix.multiply(rotMatrix);
+            newMatrix.multiply(scaleMatrix);
             newMatrix.multiply(toCenter);
 
             this.fMesh.matrix = newMatrix;
@@ -887,11 +891,11 @@ function init() {
 
                     var targetBBOX = new THREE.Box3({
                         x: 50 * i - 25,
-                        y: 0,
+                        y: -200,
                         z: -100
                     }, {
                         x: 50 * i + 25,
-                        y: 400,
+                        y: 200,
                         z: 100
                     });
 

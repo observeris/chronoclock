@@ -202,11 +202,11 @@ function init() {
 
                     var targetBBOX = new THREE.Box3({
                         x: 50 * i - 25,
-                        y: 0,
+                        y: -200,
                         z: -100
                     }, {
                         x: 50 * i + 25,
-                        y: 400,
+                        y: 200,
                         z: 100
                     });
 
