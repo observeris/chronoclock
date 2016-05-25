@@ -2,9 +2,20 @@ For more information about running files locally, visit https://github.com/mrdoo
 
 # To Build:
 
-Run:
+Run the following:
+## Terminal 1:
 
 ```
-$ gulp babel; browserify engine-babel-result/*.js -o engine/main.js
-$ python -m SimpleHTTPServer 
+$ python -m SimpleHTTPServer
+```
+## Terminal 2:
+
+```
+$ gulp watch
+```
+
+## Terminal 3:
+
+```
+$ webpack --progress --colors --watch 
 ```

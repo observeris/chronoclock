@@ -24,5 +24,5 @@ var DegreesToRadians = exports.DegreesToRadians = function DegreesToRadians(iDeg
 
 var RadiansToDegrees = exports.RadiansToDegrees = function RadiansToDegrees(iRadians) {
 
-    return R2D * iRadians;
+    return R2D * iRadians * 1.0;
 };

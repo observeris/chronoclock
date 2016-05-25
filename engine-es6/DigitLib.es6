@@ -19,5 +19,5 @@ export const DegreesToRadians = (iDegrees) => {
 
 export const RadiansToDegrees = (iRadians) => {
 
-    return R2D * iRadians;
+    return R2D * iRadians * 1.0;
 };
