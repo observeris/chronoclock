@@ -200,12 +200,20 @@ function init() {
 
                     scene.add(dial);
 
+                    var separatorGap = 0.0;
+                    var gapWidth = 10;
+                    if (i >= 2 && i < 4) {
+                        separatorGap = gapWidth;
+                    } else if (i >= 4) {
+                        separatorGap = gapWidth * 2;
+                    }
+
                     var targetBBOX = new THREE.Box3({
-                        x: 50 * i - 25,
+                        x: 50 * i - 20 + separatorGap,
                         y: -200,
                         z: -100
                     }, {
-                        x: 50 * i + 25,
+                        x: 50 * i + 20 + separatorGap,
                         y: 200,
                         z: 100
                     });
