@@ -8,14 +8,19 @@ var _NDigitDial = require('./NDigitDial');
 
 var _NDigitDial2 = _interopRequireDefault(_NDigitDial);
 
+var _DigitLib = require('./DigitLib');
+
+var DigitLib = _interopRequireWildcard(_DigitLib);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/* global THREE */
+var SCREEN_WIDTH = window.innerWidth; /* global THREE */
 /* global window */
 /* global document */
 /* global Stats */
 
-var SCREEN_WIDTH = window.innerWidth;
 var SCREEN_HEIGHT = window.innerHeight;
 var FLOOR = -250;
 
@@ -52,6 +57,9 @@ var gCounter = 0;
 var gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 var gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 
+var gZeroMoment = 0;
+var gLastSecondsLeft = 0;
+
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 init();
@@ -84,6 +92,7 @@ function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
  * init(): Initialize and load the scene
  */
 function init() {
+    gZeroMoment = Date.now() + 120000;
 
     container = document.getElementById('container');
 
@@ -225,26 +234,33 @@ function init() {
 
                 // window.setInterval(() => {
                 //     if (gDial !== null) {
-                //         for (let d = 0; d < gDial.fDialRings.length; d += 1) {
-                //             // const randAngle = Math.random() * Math.PI * 2;
-                //             // gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+                //         try {
                 //
-                //             const randNumber = Math.floor(Math.random() * 9.0);
-                //             gDial.fDialRings[d].ScheduleAngleInterpolation(
-                //                 NumberToAngle(randNumber));
+                //             gDial.SetDialsFromInt(gCounter);
+                //             gCounter += 1;
+                //         } catch (e) {
+                //             console.log("EXCEPTION: " + e.message);
                 //         }
                 //     }
                 // }, 1000);
 
                 window.setInterval(function () {
-                    if (gDial !== null) {
-                        try {
-
-                            gDial.SetDialsFromInt(gCounter);
-                            gCounter += 1;
-                        } catch (e) {
-                            console.log("EXCEPTION: " + e.message);
+                    if (gDial === null) {
+                        return;
+                    }
+                    try {
+                        var seconds = Math.floor((gZeroMoment - Date.now()) / 1000);
+                        if (seconds === gLastSecondsLeft) {
+                            return;
                         }
+
+                        var aHHMMSSString = DigitLib.toHHMMSS(String(seconds));
+
+                        gDial.SetDialsFromExactString(aHHMMSSString);
+                        gLastSecondsLeft = seconds;
+                        gCounter += 1;
+                    } catch (e) {
+                        console.log("EXCEPTION: " + e.message);
                     }
                 }, 1000);
             }

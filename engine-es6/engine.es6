@@ -5,6 +5,7 @@
 
 import DialRing from './DialRing';
 import NDigitDial from './NDigitDial';
+import * as DigitLib from './DigitLib';
 
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
@@ -43,6 +44,9 @@ let gCounter = 0;
 const gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
 const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
 
+let gZeroMoment = 0;
+let gLastSecondsLeft = 0;
+
 document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 init();
@@ -76,6 +80,7 @@ function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
  * init(): Initialize and load the scene
  */
 function init() {
+    gZeroMoment = Date.now() + 120000;
 
     container = document.getElementById('container');
 
@@ -221,27 +226,35 @@ function init() {
 
                 // window.setInterval(() => {
                 //     if (gDial !== null) {
-                //         for (let d = 0; d < gDial.fDialRings.length; d += 1) {
-                //             // const randAngle = Math.random() * Math.PI * 2;
-                //             // gDial.fDialRings[d].ScheduleAngleInterpolation(randAngle);
+                //         try {
                 //
-                //             const randNumber = Math.floor(Math.random() * 9.0);
-                //             gDial.fDialRings[d].ScheduleAngleInterpolation(
-                //                 NumberToAngle(randNumber));
+                //             gDial.SetDialsFromInt(gCounter);
+                //             gCounter += 1;
+                //         } catch (e) {
+                //             console.log("EXCEPTION: " + e.message);
                 //         }
                 //     }
                 // }, 1000);
 
                 window.setInterval(() => {
-                    if (gDial !== null) {
-                        try {
-
-                            gDial.SetDialsFromInt(gCounter);
-                            gCounter += 1;
-                        } catch (e) {
-                            console.log("EXCEPTION: " + e.message);
-                        }
+                    if (gDial === null) {
+                        return;
                     }
+                    try {
+                        const seconds = Math.floor((gZeroMoment - Date.now()) / 1000);
+                        if (seconds === gLastSecondsLeft) {
+                            return;
+                        }
+
+                        const aHHMMSSString = DigitLib.toHHMMSS(String(seconds));
+
+                        gDial.SetDialsFromExactString(aHHMMSSString);
+                        gLastSecondsLeft = seconds;
+                        gCounter += 1;
+                    } catch (e) {
+                        console.log("EXCEPTION: " + e.message);
+                    }
+
                 }, 1000);
             }
 

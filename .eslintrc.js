@@ -16,7 +16,8 @@ module.exports = {
         "new-cap": 0,
         "padded-blocks": 0,
         "space-in-parens": 0,
-        "arrow-parens": 0
+        "arrow-parens": 0,
+        "camelcase": 0
     },
     "globals": {
         "angular": true,
