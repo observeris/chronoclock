@@ -138,7 +138,7 @@
 	 * init(): Initialize and load the scene
 	 */
 	function init() {
-	    gZeroMoment = Date.now() + 120000;
+	    gZeroMoment = Date.now() + 1200 * 1000; // 20 minutes into the future
 
 	    container = document.getElementById('container');
 
