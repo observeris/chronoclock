@@ -474,7 +474,7 @@
 	            console.log("ERROR : No Tween Function " + iTweenFunc + " !");
 	        }
 	        this.fTweenFunc = iTweenFunc;
-	        this.fForceAnimationDirection = 2;
+	        this.fForceAnimationDirection = 3;
 	        // -1, if the digit increase, it will always be one step.
 	        // -1, if the digit decreases, it will always be NINE steps.
 
@@ -483,9 +483,9 @@
 	        // 0 = No Forcing;
 	        // -1 = Forces all angles to be smaller than current angles.
 	        // E.g. when asked to lerp from 20 degrees to 1, will lerp to -359
-	        // 2 = Forces minimal spin direction. (SHOULD BE DEFAULT I THINK)
+	        // 2 = Forces minimal spin direction. (SHOULD BE DEFAULT FOR POSITIVE DIRECTION)
 	        // Evaluates 1 and -1 option and picks one that results in minimal change.
-	        // 3 = Forces maximal spin direction.
+	        // 3 = Forces maximal spin direction. (SHOULD BE DEFAULT FOR NEGATIVE DIRECTION / COUNTDOWN)
 	        // Evaluates 1 and -1 option and picks one that results in maximal change.
 	    }
 
