@@ -31,7 +31,7 @@ function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
     return loaderPromise;
 }
 
-class MainEngine {
+export default class MainEngine {
     constructor(iDocument, iWindow) {
         this.window = iWindow;
         this.document = iDocument;
@@ -348,5 +348,3 @@ class MainEngine {
         this.renderer.render(this.scene, this.camera);
     }
 }
-
-const gEngine = new MainEngine(document, window);

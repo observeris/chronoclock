@@ -1,5 +1,5 @@
 module.exports = {
-    entry: "./engine-babel-result/engine.js",
+    entry: "./engine-babel-result/main.js",
 
     output: {
         path: __dirname + "/engine",
