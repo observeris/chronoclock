@@ -100,7 +100,7 @@ var DialRing = function () {
             // newMatrix.multiply(transMatrix);
             // newMatrix.multiply(fromCenter);
 
-            var newPivotPosition = this.fTargetWorldSpaceBoundingBox.center(); //50 * this.fIndex, 200, 0
+            var newPivotPosition = this.fTargetWorldSpaceBoundingBox.center();
 
             var transToNewPivotMatrix = new THREE.Matrix4().makeTranslation(newPivotPosition.x, newPivotPosition.y, newPivotPosition.z);
 

@@ -1,56 +1,11 @@
 /* global THREE */
-/* global window */
-/* global document */
 /* global Stats */
+/* global document */
+/* global window */
 
 import DialRing from './DialRing';
 import NDigitDial from './NDigitDial';
 import * as DigitLib from './DigitLib';
-
-const SCREEN_WIDTH = window.innerWidth;
-const SCREEN_HEIGHT = window.innerHeight;
-const FLOOR = -250;
-
-let container;
-let stats;
-
-let camera;
-let scene;
-
-let renderer;
-let mixer;
-
-/* Unused stuff */
-// var sceneAnimationClip;
-// var mesh;
-// var helper;
-let mouseX = 0;
-let mouseY = 0;
-
-let windowHalfX = window.innerWidth / 2;
-let windowHalfY = window.innerHeight / 2;
-
-const clock = new THREE.Clock();
-
-var light1;
-var light2;
-var light3;
-var light4;
-
-const gDialCount = 6;
-let gDial = null;
-let gCounter = 0;
-
-const gCameraPosition = new THREE.Vector3(gDialCount / 2 * 50, 0, 550);
-const gCameraTarget = new THREE.Vector3(gDialCount / 2 * 50, 0, 0);
-
-let gZeroMoment = 0;
-let gLastSecondsLeft = 0;
-
-document.addEventListener('mousemove', onDocumentMouseMove, false);
-
-init();
-animate();
 
 /**
  * OBJLoadPromise(): Returns a promist to load OBJ
@@ -76,282 +31,322 @@ function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
     return loaderPromise;
 }
 
-/**
- * init(): Initialize and load the scene
- */
-function init() {
-    gZeroMoment = Date.now() + 1200 * 1000; // 20 minutes into the future
+class MainEngine {
+    constructor(iDocument, iWindow) {
+        this.window = iWindow;
+        this.document = iDocument;
 
-    container = document.getElementById('container');
+        this.SCREEN_WIDTH = this.window.innerWidth;
+        this.SCREEN_HEIGHT = this.window.innerHeight;
+        this.FLOOR = -250;
 
-    camera = new THREE.PerspectiveCamera(30, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
+        this.container = null;
+        this.stats = null;
 
-    camera.position.x = gCameraPosition.x;
-    camera.position.y = gCameraPosition.y;
-    camera.position.z = gCameraPosition.z;
+        this.camera = null;
+        this.scene = null;
 
-    scene = new THREE.Scene();
+        this.renderer = null;
+        this.mixer = null;
 
-    scene.fog = new THREE.Fog(0xffffff, 2000, 10000);
+        this.mouseX = 0;
+        this.mouseY = 0;
 
-    // cene.add( camera );
+        this.windowHalfX = this.window.innerWidth / 2;
+        this.windowHalfY = this.window.innerHeight / 2;
 
-    // GROUND
+        this.clock = new THREE.Clock();
+        this.light1 = null;
+        this.light2 = null;
+        this.light3 = null;
+        this.light4 = null;
 
-    var geometry = new THREE.PlaneBufferGeometry(16000, 16000);
-    var material = new THREE.MeshPhongMaterial({
-        emissive: 0x000000
-    });
+        this.gDialCount = 6;
+        this.gDial = null;
+        this.gCounter = 0;
 
-    var ground = new THREE.Mesh(geometry, material);
-    ground.position.set(0, FLOOR, 0);
-    ground.rotation.x = -Math.PI / 2;
-    /* scene.add( ground );*/
+        this.gCameraPosition = new THREE.Vector3(this.gDialCount / 2 * 50, 0, 550);
+        this.gCameraTarget = new THREE.Vector3(this.gDialCount / 2 * 50, 0, 0);
 
-    ground.receiveShadow = true;
+        this.gZeroMoment = 0;
+        this.gLastSecondsLeft = 0;
 
-    // RENDERER
+        this.document.addEventListener('mousemove', (event) => {
+            this.onDocumentMouseMove(event);
+        }, false);
 
-    renderer = new THREE.WebGLRenderer({
-        antialias: true
-    });
-    renderer.setClearColor(scene.fog.color);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-    renderer.domElement.style.position = "relative";
+        this.init();
 
-    container.appendChild(renderer.domElement);
+        this.animate();
+    }
 
-    renderer.gammaInput = true;
-    renderer.gammaOutput = true;
+    /**
+     * init(): Initialize and load the scene
+     */
+    init() {
+        this.gZeroMoment = Date.now() + 1200 * 1000; // 20 minutes into the future
 
-    renderer.shadowMap.enabled = true;
+        this.container = this.document.getElementById('container');
 
-    var sphere = new THREE.SphereGeometry(10.5, 16, 8);
-    light1 = new THREE.PointLight(0xffffff, 2, 550);
-    light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-        color: 0xff0040
-    })));
-    scene.add(light1);
-    light2 = new THREE.PointLight(0x004040, 2, 550);
-    light2.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-        color: 0x0040ff
-    })));
-    scene.add(light2);
-    light3 = new THREE.PointLight(0x300f00, 2, 550);
-    light3.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-        color: 0x80ff80
-    })));
-    scene.add(light3);
-    light4 = new THREE.PointLight(0xff0000, 2, 550);
-    light4.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-        color: 0xffaa00
-    })));
-    scene.add(light4);
+        this.camera = new THREE.PerspectiveCamera(30, this.SCREEN_WIDTH / this.SCREEN_HEIGHT, 1, 10000);
 
-    // STATS
+        this.camera.position.x = this.gCameraPosition.x;
+        this.camera.position.y = this.gCameraPosition.y;
+        this.camera.position.z = this.gCameraPosition.z;
 
-    stats = new Stats();
-    container.appendChild(stats.dom);
+        this.scene = new THREE.Scene();
 
-    //
+        this.scene.fog = new THREE.Fog(0xffffff, 2000, 10000);
 
-    var manager = new THREE.LoadingManager();
-    manager.onProgress = function(item, loaded, total) {
+        // cene.add( camera );
 
-        console.log(item, loaded, total);
+        // GROUND
 
-    };
-
-    var onProgress = function(xhr) {
-        if (xhr.lengthComputable) {
-            var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log(Math.round(percentComplete, 2) + '% downloaded');
-        }
-    };
-
-    var onError = function( /* xhr */ ) {
-
-    };
-    const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
-        onProgress);
-
-    loaderPromise.then((object) => {
-
-        gDial = new NDigitDial();
-
-        object.traverse((child) => {
-
-            if (child instanceof THREE.Mesh) {
-                var diffuseColor = new THREE.Color(1, 1, 1);
-
-                var material = new THREE.MeshPhongMaterial({
-                    color: diffuseColor
-                });
-
-                child.material = material;
-
-                for (var i = 0; i < gDialCount; i += 1) {
-                    var dial = new THREE.Mesh(child.geometry, child.material);
-                    // here you can apply transformations, for this clone only
-                    dial.geometry.computeBoundingBox();
-                    dial.position.x = 0;
-                    dial.position.y = 0;
-                    dial.position.z = 0;
-
-                    scene.add(dial);
-
-                    let separatorGap = 0.0;
-                    const gapWidth = 10;
-                    if (i >= 2 && i < 4) {
-                        separatorGap = gapWidth;
-                    } else if (i >= 4) {
-                        separatorGap = gapWidth * 2;
-                    }
-
-                    const targetBBOX = new THREE.Box3({
-                        x: 50 * i - 20 + separatorGap,
-                        y: -200,
-                        z: -100
-                    }, {
-                        x: 50 * i + 20 + separatorGap,
-                        y: 200,
-                        z: 100
-                    });
-
-                    const dialRing = new DialRing(dial, i, targetBBOX, "easeNone");
-                    dialRing.ScheduleAngleInterpolation(0);
-                    gDial.AddNewDial(dialRing);
-                }
-
-                // window.setInterval(() => {
-                //     if (gDial !== null) {
-                //         try {
-                //
-                //             gDial.SetDialsFromInt(gCounter);
-                //             gCounter += 1;
-                //         } catch (e) {
-                //             console.log("EXCEPTION: " + e.message);
-                //         }
-                //     }
-                // }, 1000);
-
-                window.setInterval(() => {
-                    if (gDial === null) {
-                        return;
-                    }
-                    try {
-                        const seconds = Math.floor((gZeroMoment - Date.now()) / 1000);
-                        if (seconds === gLastSecondsLeft) {
-                            return;
-                        }
-
-                        const aHHMMSSString = DigitLib.toHHMMSS(String(seconds));
-
-                        gDial.SetDialsFromExactString(aHHMMSSString);
-                        gLastSecondsLeft = seconds;
-                        gCounter += 1;
-                    } catch (e) {
-                        console.log("EXCEPTION: " + e.message);
-                    }
-
-                }, 1000);
-            }
-
+        var geometry = new THREE.PlaneBufferGeometry(16000, 16000);
+        var material = new THREE.MeshPhongMaterial({
+            emissive: 0x000000
         });
 
-    }).catch((xhr) => {
-        onError(xhr);
-    });
+        var ground = new THREE.Mesh(geometry, material);
+        ground.position.set(0, this.FLOOR, 0);
+        ground.rotation.x = -Math.PI / 2;
+        /* scene.add( ground );*/
 
-    // const loader = new THREE.OBJLoader(manager);
-    // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
+        ground.receiveShadow = true;
 
-    window.addEventListener('resize', onWindowResize, false);
+        // RENDERER
 
-}
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true
+        });
+        this.renderer.setClearColor(this.scene.fog.color);
+        this.renderer.setPixelRatio(this.window.devicePixelRatio);
+        this.renderer.setSize(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
+        this.renderer.domElement.style.position = "relative";
 
-/**
- * onWindowResize(): Callback on Window Resize
- */
-function onWindowResize() {
+        this.container.appendChild(this.renderer.domElement);
 
-    windowHalfX = window.innerWidth / 2;
-    windowHalfY = window.innerHeight / 2;
+        this.renderer.gammaInput = true;
+        this.renderer.gammaOutput = true;
 
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+        this.renderer.shadowMap.enabled = true;
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
+        var sphere = new THREE.SphereGeometry(10.5, 16, 8);
+        this.light1 = new THREE.PointLight(0xffffff, 2, 550);
+        this.light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+            color: 0xff0040
+        })));
+        this.scene.add(this.light1);
+        this.light2 = new THREE.PointLight(0x004040, 2, 550);
+        this.light2.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+            color: 0x0040ff
+        })));
+        this.scene.add(this.light2);
+        this.light3 = new THREE.PointLight(0x300f00, 2, 550);
+        this.light3.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+            color: 0x80ff80
+        })));
+        this.scene.add(this.light3);
+        this.light4 = new THREE.PointLight(0xff0000, 2, 550);
+        this.light4.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+            color: 0xffaa00
+        })));
+        this.scene.add(this.light4);
 
-}
+        // STATS
 
-/**
- * onDocumentMouseMove(): Callback on Mouse Move
- * @param {Event} event : mouse event from the DOM
- */
-function onDocumentMouseMove(event) {
+        this.stats = new Stats();
+        this.container.appendChild(this.stats.dom);
 
-    mouseX = (event.clientX - windowHalfX);
-    mouseY = (event.clientY - windowHalfY);
-    console.log(mouseX.toString() + " " + mouseY.toString());
+        var manager = new THREE.LoadingManager();
+        manager.onProgress = function(item, loaded, total) {
 
-}
+            console.log(item, loaded, total);
 
-//
-/**
- * animate(): Animation initialization/callback
- */
-function animate() {
+        };
 
-    window.requestAnimationFrame(animate);
+        var onProgress = function(xhr) {
+            if (xhr.lengthComputable) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log(Math.round(percentComplete, 2) + '% downloaded');
+            }
+        };
 
-    const nowMS = Date.now();
+        var onError = function( /* xhr */ ) {
 
-    if (gDial !== null) {
-        gDial.Animate(nowMS);
+        };
+        const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
+            onProgress);
+
+        loaderPromise.then((object) => {
+
+            this.gDial = new NDigitDial();
+
+            object.traverse((child) => {
+
+                if (child instanceof THREE.Mesh) {
+                    var diffuseColor = new THREE.Color(1, 1, 1);
+
+                    var material = new THREE.MeshPhongMaterial({
+                        color: diffuseColor
+                    });
+
+                    child.material = material;
+
+                    for (var i = 0; i < this.gDialCount; i += 1) {
+                        var dial = new THREE.Mesh(child.geometry, child.material);
+                        // here you can apply transformations, for this clone only
+                        dial.geometry.computeBoundingBox();
+                        dial.position.x = 0;
+                        dial.position.y = 0;
+                        dial.position.z = 0;
+
+                        this.scene.add(dial);
+
+                        let separatorGap = 0.0;
+                        const gapWidth = 10;
+                        if (i >= 2 && i < 4) {
+                            separatorGap = gapWidth;
+                        } else if (i >= 4) {
+                            separatorGap = gapWidth * 2;
+                        }
+
+                        const targetBBOX = new THREE.Box3({
+                            x: 50 * i - 20 + separatorGap,
+                            y: -200,
+                            z: -100
+                        }, {
+                            x: 50 * i + 20 + separatorGap,
+                            y: 200,
+                            z: 100
+                        });
+
+                        const dialRing = new DialRing(dial, i, targetBBOX, "easeNone");
+                        dialRing.ScheduleAngleInterpolation(0);
+                        this.gDial.AddNewDial(dialRing);
+                    }
+
+                    this.window.setInterval(() => {
+                        if (this.gDial === null) {
+                            return;
+                        }
+                        try {
+                            const seconds = Math.floor((this.gZeroMoment - Date.now()) /
+                                1000);
+                            if (seconds === this.LastSecondsLeft) {
+                                return;
+                            }
+
+                            const aHHMMSSString = DigitLib.toHHMMSS(String(
+                                seconds));
+
+                            this.gDial.SetDialsFromExactString(aHHMMSSString);
+                            this.LastSecondsLeft = seconds;
+                            this.gCounter += 1;
+                        } catch (e) {
+                            console.log("EXCEPTION: " + e.message);
+                        }
+
+                    }, 1000);
+                }
+
+            });
+
+        }).catch((xhr) => {
+            onError(xhr);
+        });
+
+        // const loader = new THREE.OBJLoader(manager);
+        // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
+
+        this.window.addEventListener('resize', () => {
+            this.onWindowResize();
+        }, false);
     }
-    render();
 
-    stats.update();
+    /**
+     * onWindowResize(): Callback on Window Resize
+     */
+    onWindowResize() {
 
-}
+        this.windowHalfX = this.window.innerWidth / 2;
+        this.windowHalfY = this.indow.innerHeight / 2;
 
-/**
- * render(): Rendering happens here.
- */
-function render() {
+        this.camera.aspect = this.window.innerWidth / this.window.innerHeight;
+        this.camera.updateProjectionMatrix();
 
-    const time = Date.now() * 0.0005;
-
-    let delta = clock.getDelta();
-
-    light1.position.x = 0;
-    light1.position.y = 100;
-    light1.position.z = 250;
-
-    light2.position.x = Math.cos(time * 0.3) * 100;
-    light2.position.y = Math.sin(time * 0.5) * 100;
-    light2.position.z = Math.sin(time * 0.7) * 100;
-    light3.position.x = Math.sin(time * 0.7) * 100;
-    light3.position.y = Math.cos(time * 0.3) * 100;
-    light3.position.z = Math.sin(time * 0.5) * 100;
-    light4.position.x = Math.sin(time * 0.3) * 300;
-    light4.position.y = Math.cos(time * 0.7) * 400;
-    light4.position.z = Math.sin(time * 0.5) * 300;
-
-    delta = 0.75 * clock.getDelta();
-
-    // camera.position.x += ( mouseX - camera.position.x ) * .05;
-    // camera.position.y = THREE.Math.clamp( camera.position.y + ( - mouseY - camera.position.y ) * .05, 0, 1000 );
-
-    // camera.lookAt(scene.position);
-    camera.lookAt(gCameraTarget);
-    if (mixer) {
-        // console.log( "updating mixer by " + delta );
-        mixer.update(delta);
+        this.enderer.setSize(this.window.innerWidth, this.window.innerHeight);
     }
 
-    renderer.render(scene, camera);
+    /**
+     * onDocumentMouseMove(): Callback on Mouse Move
+     * @param {Event} event : mouse event from the DOM
+     */
+    onDocumentMouseMove(event) {
 
+        this.mouseX = (event.clientX - this.windowHalfX);
+        this.mouseY = (event.clientY - this.windowHalfY);
+        console.log(this.mouseX.toString() + " " + this.mouseY.toString());
+
+    }
+
+    //
+    /**
+     * animate(): Animation initialization/callback
+     */
+    animate() {
+
+        this.window.requestAnimationFrame(() => {
+            this.animate();
+        });
+
+        const nowMS = Date.now();
+
+        if (this.gDial !== null) {
+            this.gDial.Animate(nowMS);
+        }
+
+        this.render();
+
+        this.stats.update();
+    }
+
+    render() {
+
+        const time = Date.now() * 0.0005;
+
+        let delta = this.clock.getDelta();
+
+        this.light1.position.x = 0;
+        this.light1.position.y = 100;
+        this.light1.position.z = 250;
+
+        this.light2.position.x = Math.cos(time * 0.3) * 100;
+        this.light2.position.y = Math.sin(time * 0.5) * 100;
+        this.light2.position.z = Math.sin(time * 0.7) * 100;
+
+        this.light3.position.x = Math.sin(time * 0.7) * 100;
+        this.light3.position.y = Math.cos(time * 0.3) * 100;
+        this.light3.position.z = Math.sin(time * 0.5) * 100;
+
+        this.light4.position.x = Math.sin(time * 0.3) * 300;
+        this.light4.position.y = Math.cos(time * 0.7) * 400;
+        this.light4.position.z = Math.sin(time * 0.5) * 300;
+
+        delta = 0.75 * this.clock.getDelta();
+
+        // camera.position.x += ( mouseX - camera.position.x ) * .05;
+        // camera.position.y = THREE.Math.clamp( camera.position.y + ( - mouseY - camera.position.y ) * .05, 0, 1000 );
+
+        // camera.lookAt(scene.position);
+        this.camera.lookAt(this.gCameraTarget);
+        if (this.mixer) {
+            // console.log( "updating mixer by " + delta );
+            this.mixer.update(delta);
+        }
+
+        this.renderer.render(this.scene, this.camera);
+    }
 }
+
+const gEngine = new MainEngine(document, window);

@@ -81,7 +81,7 @@ export default class DialRing {
         // newMatrix.multiply(transMatrix);
         // newMatrix.multiply(fromCenter);
 
-        const newPivotPosition = this.fTargetWorldSpaceBoundingBox.center(); //50 * this.fIndex, 200, 0
+        const newPivotPosition = this.fTargetWorldSpaceBoundingBox.center();
 
         var transToNewPivotMatrix = new THREE.Matrix4().makeTranslation(newPivotPosition.x,
             newPivotPosition.y, newPivotPosition.z);
