@@ -1,7 +1,5 @@
 /* global THREE */
 /* global Stats */
-/* global document */
-/* global window */
 
 import DialRing from './DialRing';
 import NDigitDial from './NDigitDial';
