@@ -109,6 +109,30 @@
 	    return loaderPromise;
 	}
 
+	/**
+	 * OBJLoadPromise(): Returns a promist to load OBJ
+	 * @param {String} iCOLLADAPath relative to web root
+	 * @param {THREE.LoadingManager} iLoadingManager, instance of THREE.LoadingManager()
+	 * @param {function} iProgressCallback, progress callback()
+	 * @return {Promise} A Promise that's resolved with an THREE object.
+	 */
+	function COLLADALoadPromise(iCOLLADAPath, iLoadingManager, iProgressCallback) {
+	    var loaderPromise = new Promise(function (iResolveFunc, iRejectFunc) {
+
+	        var loader = new THREE.ColladaLoader();
+
+	        loader.load(iCOLLADAPath, function (iColladaStuff) {
+	            iResolveFunc(iColladaStuff);
+	        }, function (xhr) {
+	            iProgressCallback(xhr);
+	        }, function (xhr) {
+	            iRejectFunc(xhr);
+	        });
+	    });
+
+	    return loaderPromise;
+	}
+
 	var MainEngine = function () {
 	    function MainEngine(iDocument, iWindow) {
 	        var _this = this;
@@ -332,6 +356,19 @@
 	                    }
 	                });
 	            }).catch(function (xhr) {
+	                onError(xhr);
+	            });
+
+	            var tickerLoaderPromise = COLLADALoadPromise('assets/models/dae/ticker/ticker.dae', manager, onProgress);
+
+	            tickerLoaderPromise.then(function (iColladaStuff) {
+	                var model = iColladaStuff.scene;
+	                var animations = iColladaStuff.animations;
+	                var kfAnimationsLength = iColladaStuff.animations.length;
+	                model.scale.x = model.scale.y = model.scale.z = 0.125; // 1/8 scale, modeled in cm
+	                console.log("COLLADA LOAD OK");
+	            }).catch(function (xhr) {
+	                console.error("COLLADA LOAD FAILED");
 	                onError(xhr);
 	            });
 

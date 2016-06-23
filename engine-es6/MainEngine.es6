@@ -29,6 +29,31 @@ function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
     return loaderPromise;
 }
 
+/**
+ * OBJLoadPromise(): Returns a promist to load OBJ
+ * @param {String} iCOLLADAPath relative to web root
+ * @param {THREE.LoadingManager} iLoadingManager, instance of THREE.LoadingManager()
+ * @param {function} iProgressCallback, progress callback()
+ * @return {Promise} A Promise that's resolved with an THREE object.
+ */
+function COLLADALoadPromise(iCOLLADAPath, iLoadingManager, iProgressCallback) {
+    const loaderPromise = new Promise((iResolveFunc, iRejectFunc) => {
+
+        const loader = new THREE.ColladaLoader();
+
+        loader.load(iCOLLADAPath, (iColladaStuff) => {
+            iResolveFunc(iColladaStuff);
+        }, (xhr) => {
+            iProgressCallback(xhr);
+        }, (xhr) => {
+            iRejectFunc(xhr);
+        });
+
+    });
+
+    return loaderPromise;
+}
+
 export default class MainEngine {
     constructor(iDocument, iWindow) {
         this.window = iWindow;
@@ -253,6 +278,23 @@ export default class MainEngine {
         }).catch((xhr) => {
             onError(xhr);
         });
+
+        const tickerLoaderPromise = COLLADALoadPromise('assets/models/dae/ticker/ticker.dae',
+            manager,
+            onProgress);
+
+        tickerLoaderPromise.then((iColladaStuff) => {
+            const model = iColladaStuff.scene;
+            const animations = iColladaStuff.animations;
+            const kfAnimationsLength = iColladaStuff.animations.length;
+            model.scale.x = model.scale.y = model.scale.z = 0.125; // 1/8 scale, modeled in cm
+            console.log("COLLADA LOAD OK");
+
+        }).catch((xhr) => {
+            console.error("COLLADA LOAD FAILED");
+            onError(xhr);
+        });
+
 
         // const loader = new THREE.OBJLoader(manager);
         // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
