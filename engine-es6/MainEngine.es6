@@ -287,14 +287,22 @@ export default class MainEngine {
             const model = iColladaStuff.scene;
             const animations = iColladaStuff.animations;
             const kfAnimationsLength = iColladaStuff.animations.length;
-            model.scale.x = model.scale.y = model.scale.z = 0.125; // 1/8 scale, modeled in cm
+
+            model.position.x = -100;
+            model.position.y = 0;
+            model.position.z = 0;
+
+            model.scale.x = model.scale.y = model.scale.z = 10.125; // 1/8 scale, modeled in cm
+
+            model.rotateY(Math.PI / 2);
+
             console.log("COLLADA LOAD OK");
 
+            this.scene.add(model);
         }).catch((xhr) => {
             console.error("COLLADA LOAD FAILED");
             onError(xhr);
         });
-
 
         // const loader = new THREE.OBJLoader(manager);
         // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
