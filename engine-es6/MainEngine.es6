@@ -69,6 +69,11 @@ export default class MainEngine {
         this.camera = null;
         this.scene = null;
 
+        this.kfAnimationsLength = 0;
+        this.kfAnimations = [];
+        this.kfLastTimeStamp = 0;
+        this.kfProgress = 0;
+
         this.renderer = null;
         this.mixer = null;
 
@@ -285,8 +290,6 @@ export default class MainEngine {
 
         tickerLoaderPromise.then((iColladaStuff) => {
             const model = iColladaStuff.scene;
-            const animations = iColladaStuff.animations;
-            const kfAnimationsLength = iColladaStuff.animations.length;
 
             model.position.x = -100;
             model.position.y = 0;
@@ -296,9 +299,25 @@ export default class MainEngine {
 
             model.rotateY(Math.PI / 2);
 
+            // KeyFrame Animations
+            this.kfAnimationsLength = iColladaStuff.animations.length;
+
+            for (var i = 0; i < this.kfAnimationsLength; i += 1) {
+
+                var animation = iColladaStuff.animations[i];
+
+                const kfAnimation = new THREE.KeyFrameAnimation(animation);
+                kfAnimation.timeScale = 1;
+                this.kfAnimations.push(kfAnimation);
+
+            }
+
             console.log("COLLADA LOAD OK");
 
             this.scene.add(model);
+
+            this.keyframeAnimationStart();
+
         }).catch((xhr) => {
             console.error("COLLADA LOAD FAILED");
             onError(xhr);
@@ -338,7 +357,75 @@ export default class MainEngine {
 
     }
 
-    //
+    keyframeAnimationStart() {
+
+        for (let i = 0; i < this.kfAnimationsLength; i += 1) {
+
+            const animation = this.kfAnimations[i];
+
+            for (let h = 0; h < animation.hierarchy.length; h += 1) {
+
+                const keys = animation.data.hierarchy[h].keys;
+                const sids = animation.data.hierarchy[h].sids;
+                const obj = animation.hierarchy[h];
+
+                if (keys.length && sids) {
+                    for (var s = 0; s < sids.length; s += 1) {
+
+                        const sid = sids[s];
+                        const next = animation.getNextKeyWith(sid, h, 0);
+
+                        if (next) {
+                            next.apply(sid);
+                        }
+                    }
+                    obj.matrixAutoUpdate = false;
+                    animation.data.hierarchy[h].node.updateMatrix();
+                    obj.matrixWorldNeedsUpdate = true;
+                }
+
+            }
+
+            animation.loop = false;
+            animation.play();
+        }
+    }
+
+    keyframeAnimationAnimate(timestamp) {
+        if (this.kfAnimationsLength <= 0) {
+            return;
+        }
+
+        const kAnimationDurationInSeconds = 6.66;
+        const frameTime = (timestamp - this.kfLastTimeStamp) * 0.001;
+
+        if (this.kfProgress >= 0 && this.kfProgress < kAnimationDurationInSeconds) {
+
+            for (let i = 0; i < this.kfAnimationsLength; i += 1) {
+
+                this.kfAnimations[i].update(frameTime);
+
+            }
+
+        } else if (this.kfProgress >= kAnimationDurationInSeconds) {
+
+            for (let i = 0; i < this.kfAnimationsLength; i += 1) {
+
+                this.kfAnimations[i].stop();
+
+            }
+
+            this.kfProgress = 0;
+            this.keyframeAnimationStart();
+
+        }
+
+        this.kfProgress += frameTime;
+        this.kfLastTimeStamp = timestamp;
+
+        console.log("Progress: ", this.kfProgress);
+    }
+
     /**
      * animate(): Animation initialization/callback
      */
@@ -353,6 +440,8 @@ export default class MainEngine {
         if (this.gDial !== null) {
             this.gDial.Animate(nowMS);
         }
+
+        this.keyframeAnimationAnimate(nowMS);
 
         this.render();
 
