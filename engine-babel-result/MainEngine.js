@@ -48,6 +48,30 @@ function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
     return loaderPromise;
 }
 
+/**
+ * OBJLoadPromise(): Returns a promist to load OBJ
+ * @param {String} iCOLLADAPath relative to web root
+ * @param {THREE.LoadingManager} iLoadingManager, instance of THREE.LoadingManager()
+ * @param {function} iProgressCallback, progress callback()
+ * @return {Promise} A Promise that's resolved with an THREE object.
+ */
+function COLLADALoadPromise(iCOLLADAPath, iLoadingManager, iProgressCallback) {
+    var loaderPromise = new Promise(function (iResolveFunc, iRejectFunc) {
+
+        var loader = new THREE.ColladaLoader();
+
+        loader.load(iCOLLADAPath, function (iColladaStuff) {
+            iResolveFunc(iColladaStuff);
+        }, function (xhr) {
+            iProgressCallback(xhr);
+        }, function (xhr) {
+            iRejectFunc(xhr);
+        });
+    });
+
+    return loaderPromise;
+}
+
 var MainEngine = function () {
     function MainEngine(iDocument, iWindow) {
         var _this = this;
@@ -66,6 +90,11 @@ var MainEngine = function () {
 
         this.camera = null;
         this.scene = null;
+
+        this.kfAnimationsLength = 0;
+        this.kfAnimations = [];
+        this.kfLastTimeStamp = 0;
+        this.kfProgress = 0;
 
         this.renderer = null;
         this.mixer = null;
@@ -274,6 +303,41 @@ var MainEngine = function () {
                 onError(xhr);
             });
 
+            var tickerLoaderPromise = COLLADALoadPromise('assets/models/dae/ticker/ticker.dae', manager, onProgress);
+
+            tickerLoaderPromise.then(function (iColladaStuff) {
+                var model = iColladaStuff.scene;
+
+                model.position.x = -100;
+                model.position.y = 0;
+                model.position.z = 0;
+
+                model.scale.x = model.scale.y = model.scale.z = 10.125; // 1/8 scale, modeled in cm
+
+                model.rotateY(Math.PI / 2);
+
+                // KeyFrame Animations
+                _this2.kfAnimationsLength = iColladaStuff.animations.length;
+
+                for (var i = 0; i < _this2.kfAnimationsLength; i += 1) {
+
+                    var animation = iColladaStuff.animations[i];
+
+                    var kfAnimation = new THREE.KeyFrameAnimation(animation);
+                    kfAnimation.timeScale = 1;
+                    _this2.kfAnimations.push(kfAnimation);
+                }
+
+                console.log("COLLADA LOAD OK");
+
+                _this2.scene.add(model);
+
+                _this2.keyframeAnimationStart();
+            }).catch(function (xhr) {
+                console.error("COLLADA LOAD FAILED");
+                onError(xhr);
+            });
+
             // const loader = new THREE.OBJLoader(manager);
             // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
 
@@ -312,8 +376,73 @@ var MainEngine = function () {
             this.mouseY = event.clientY - this.windowHalfY;
             console.log(this.mouseX.toString() + " " + this.mouseY.toString());
         }
+    }, {
+        key: 'keyframeAnimationStart',
+        value: function keyframeAnimationStart() {
 
-        //
+            for (var i = 0; i < this.kfAnimationsLength; i += 1) {
+
+                var animation = this.kfAnimations[i];
+
+                for (var h = 0; h < animation.hierarchy.length; h += 1) {
+
+                    var keys = animation.data.hierarchy[h].keys;
+                    var sids = animation.data.hierarchy[h].sids;
+                    var obj = animation.hierarchy[h];
+
+                    if (keys.length && sids) {
+                        for (var s = 0; s < sids.length; s += 1) {
+
+                            var sid = sids[s];
+                            var next = animation.getNextKeyWith(sid, h, 0);
+
+                            if (next) {
+                                next.apply(sid);
+                            }
+                        }
+                        obj.matrixAutoUpdate = false;
+                        animation.data.hierarchy[h].node.updateMatrix();
+                        obj.matrixWorldNeedsUpdate = true;
+                    }
+                }
+
+                animation.loop = false;
+                animation.play();
+            }
+        }
+    }, {
+        key: 'keyframeAnimationAnimate',
+        value: function keyframeAnimationAnimate(timestamp) {
+            if (this.kfAnimationsLength <= 0) {
+                return;
+            }
+
+            var kAnimationDurationInSeconds = 6.66;
+            var frameTime = (timestamp - this.kfLastTimeStamp) * 0.001;
+
+            if (this.kfProgress >= 0 && this.kfProgress < kAnimationDurationInSeconds) {
+
+                for (var i = 0; i < this.kfAnimationsLength; i += 1) {
+
+                    this.kfAnimations[i].update(frameTime);
+                }
+            } else if (this.kfProgress >= kAnimationDurationInSeconds) {
+
+                for (var _i = 0; _i < this.kfAnimationsLength; _i += 1) {
+
+                    this.kfAnimations[_i].stop();
+                }
+
+                this.kfProgress = 0;
+                this.keyframeAnimationStart();
+            }
+
+            this.kfProgress += frameTime;
+            this.kfLastTimeStamp = timestamp;
+
+            console.log("Progress: ", this.kfProgress);
+        }
+
         /**
          * animate(): Animation initialization/callback
          */
@@ -332,6 +461,8 @@ var MainEngine = function () {
             if (this.gDial !== null) {
                 this.gDial.Animate(nowMS);
             }
+
+            this.keyframeAnimationAnimate(nowMS);
 
             this.render();
 
