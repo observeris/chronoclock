@@ -283,7 +283,7 @@ export default class MainEngine {
         }).catch((xhr) => {
             onError(xhr);
         });
-
+        // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
         const tickerLoaderPromise = COLLADALoadPromise('assets/models/dae/ticker/ticker.dae',
             manager,
             onProgress);

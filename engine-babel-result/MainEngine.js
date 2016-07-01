@@ -302,7 +302,7 @@ var MainEngine = function () {
             }).catch(function (xhr) {
                 onError(xhr);
             });
-
+            // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
             var tickerLoaderPromise = COLLADALoadPromise('assets/models/dae/ticker/ticker.dae', manager, onProgress);
 
             tickerLoaderPromise.then(function (iColladaStuff) {
