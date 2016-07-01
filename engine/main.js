@@ -44,9 +44,16 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
+	module.exports = __webpack_require__(1);
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
-	var _MainEngine = __webpack_require__(1);
+	var _MainEngine = __webpack_require__(2);
 
 	var _MainEngine2 = _interopRequireDefault(_MainEngine);
 
@@ -56,7 +63,7 @@
 	/* global window */
 
 /***/ },
-/* 1 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -68,15 +75,15 @@
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /* global THREE */
 	/* global Stats */
 
-	var _DialRing = __webpack_require__(2);
+	var _DialRing = __webpack_require__(3);
 
 	var _DialRing2 = _interopRequireDefault(_DialRing);
 
-	var _NDigitDial = __webpack_require__(6);
+	var _NDigitDial = __webpack_require__(7);
 
 	var _NDigitDial2 = _interopRequireDefault(_NDigitDial);
 
-	var _DigitLib = __webpack_require__(5);
+	var _DigitLib = __webpack_require__(6);
 
 	var DigitLib = _interopRequireWildcard(_DigitLib);
 
@@ -575,7 +582,7 @@
 	exports.default = MainEngine;
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -587,13 +594,13 @@
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /* global THREE */
 
 
-	var _TweenFunc = __webpack_require__(3);
+	var _TweenFunc = __webpack_require__(4);
 
-	var _AngleInterpolation = __webpack_require__(4);
+	var _AngleInterpolation = __webpack_require__(5);
 
 	var _AngleInterpolation2 = _interopRequireDefault(_AngleInterpolation);
 
-	var _DigitLib = __webpack_require__(5);
+	var _DigitLib = __webpack_require__(6);
 
 	var DigitLib = _interopRequireWildcard(_DigitLib);
 
@@ -772,7 +779,7 @@
 	exports.default = DialRing;
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1039,7 +1046,7 @@
 	};
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1050,7 +1057,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _TweenFunc = __webpack_require__(3);
+	var _TweenFunc = __webpack_require__(4);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -1104,7 +1111,7 @@
 	exports.default = AngleInterpolation;
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1155,7 +1162,7 @@
 	};
 
 /***/ },
-/* 6 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1166,7 +1173,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _DigitLib = __webpack_require__(5);
+	var _DigitLib = __webpack_require__(6);
 
 	var DigitLib = _interopRequireWildcard(_DigitLib);
 
