@@ -93,8 +93,8 @@ export default class MainEngine {
         this.gDial = null;
         this.gCounter = 0;
 
-        this.gCameraPosition = new THREE.Vector3(this.gDialCount / 2 * 50, 0, 550);
-        this.gCameraTarget = new THREE.Vector3(this.gDialCount / 2 * 50, 0, 0);
+        this.gCameraPosition = new THREE.Vector3(this.gDialCount / 2 * 50 + 200, 100, 1250);
+        this.gCameraTarget = new THREE.Vector3(this.gDialCount / 2 * 50, 50, 0);
 
         this.gZeroMoment = 0;
         this.gLastSecondsLeft = 0;
@@ -284,20 +284,21 @@ export default class MainEngine {
             onError(xhr);
         });
         // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
-        const tickerLoaderPromise = COLLADALoadPromise('assets/models/dae/ticker/ticker.dae',
+        const tickerLoaderPromise = COLLADALoadPromise(
+            'assets/models/dae/gear-system/animatedmechanism.dae',
             manager,
             onProgress);
 
         tickerLoaderPromise.then((iColladaStuff) => {
             const model = iColladaStuff.scene;
 
-            model.position.x = -100;
+            model.position.x = 120;
             model.position.y = 0;
             model.position.z = 0;
 
-            model.scale.x = model.scale.y = model.scale.z = 10.125; // 1/8 scale, modeled in cm
-
-            model.rotateY(Math.PI / 2);
+            model.scale.x = model.scale.y = model.scale.z = 1.325; // 1/8 scale, modeled in cm
+            model.scale.x = 1.6;
+            model.rotateX(-Math.PI / 2);
 
             // KeyFrame Animations
             this.kfAnimationsLength = iColladaStuff.animations.length;
@@ -396,7 +397,7 @@ export default class MainEngine {
             return;
         }
 
-        const kAnimationDurationInSeconds = 6.66;
+        const kAnimationDurationInSeconds = 3.40;
         const frameTime = (timestamp - this.kfLastTimeStamp) * 0.001;
 
         if (this.kfProgress >= 0 && this.kfProgress < kAnimationDurationInSeconds) {
