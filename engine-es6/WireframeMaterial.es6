@@ -9,6 +9,8 @@ export default class WireframeMaterial {
             vertexShader: vertShader,
             fragmentShader: fragShader
         });
+
+        this.fMaterial.extensions.derivatives = true;
     }
 
     static SetupWireframeShaderAttributes(ioGeometry) {

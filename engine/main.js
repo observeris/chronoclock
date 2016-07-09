@@ -213,6 +213,9 @@
 	        this.gZeroMoment = 0;
 	        this.gLastSecondsLeft = 0;
 
+	        this.fOBJWireFrame = false;
+	        this.fCOLLADAWireFrame = true;
+
 	        this.document.addEventListener('mousemove', function (event) {
 	            _this.onDocumentMouseMove(event);
 	        }, false);
@@ -335,11 +338,13 @@
 	                            color: diffuseColor
 	                        });
 
-	                        _WireframeMaterial2.default.SetupWireframeShaderAttributes(child.geometry);
-
-	                        var wireframeMaterial = new _WireframeMaterial2.default();
-	                        child.material = material; // wireframeMaterial; //material;
-
+	                        if (_this2.fOBJWireFrame) {
+	                            _WireframeMaterial2.default.SetupWireframeShaderAttributes(child.geometry);
+	                            var wireframeMaterial = new _WireframeMaterial2.default();
+	                            child.material = wireframeMaterial.fMaterial;
+	                        } else {
+	                            child.material = material;
+	                        }
 	                        for (var i = 0; i < _this2.gDialCount; i += 1) {
 	                            var dial = new _three2.default.Mesh(child.geometry, child.material);
 	                            // here you can apply transformations, for this clone only
@@ -423,6 +428,21 @@
 	                    _this2.kfAnimations.push(kfAnimation);
 	                }
 
+	                model.traverse(function (child) {
+
+	                    if (child instanceof _three2.default.Mesh) {
+
+	                        if (_this2.fCOLLADAWireFrame) {
+	                            var _geometry = new _three2.default.BufferGeometry().fromGeometry(child.geometry);
+
+	                            _WireframeMaterial2.default.SetupWireframeShaderAttributes(_geometry);
+	                            var wireframeMaterial = new _WireframeMaterial2.default();
+
+	                            child.geometry = _geometry;
+	                            child.material = wireframeMaterial.fMaterial;
+	                        }
+	                    }
+	                });
 	                console.log("COLLADA LOAD OK");
 
 	                _this2.scene.add(model);
@@ -4705,6 +4725,8 @@
 	            vertexShader: _WireframeVertexShader2.default,
 	            fragmentShader: _WireframeFragmentShader2.default
 	        });
+
+	        this.fMaterial.extensions.derivatives = true;
 	    }
 
 	    _createClass(WireframeMaterial, null, [{

@@ -108,6 +108,9 @@ export default class MainEngine {
         this.gZeroMoment = 0;
         this.gLastSecondsLeft = 0;
 
+        this.fOBJWireFrame = false;
+        this.fCOLLADAWireFrame = true;
+
         this.document.addEventListener('mousemove', (event) => {
             this.onDocumentMouseMove(event);
         }, false);
@@ -228,11 +231,13 @@ export default class MainEngine {
                         color: diffuseColor
                     });
 
-                    WireframeMaterial.SetupWireframeShaderAttributes(child.geometry);
-
-                    const wireframeMaterial = new WireframeMaterial();
-                    child.material = material; // wireframeMaterial; //material;
-
+                    if (this.fOBJWireFrame) {
+                        WireframeMaterial.SetupWireframeShaderAttributes(child.geometry);
+                        const wireframeMaterial = new WireframeMaterial();
+                        child.material = wireframeMaterial.fMaterial;
+                    } else {
+                        child.material = material;
+                    }
                     for (var i = 0; i < this.gDialCount; i += 1) {
                         var dial = new THREE.Mesh(child.geometry, child.material);
                         // here you can apply transformations, for this clone only
@@ -325,6 +330,21 @@ export default class MainEngine {
 
             }
 
+            model.traverse((child) => {
+
+                if (child instanceof THREE.Mesh) {
+
+                    if (this.fCOLLADAWireFrame) {
+                        const geometry = new THREE.BufferGeometry().fromGeometry(child.geometry);
+
+                        WireframeMaterial.SetupWireframeShaderAttributes(geometry);
+                        const wireframeMaterial = new WireframeMaterial();
+
+                        child.geometry = geometry;
+                        child.material = wireframeMaterial.fMaterial;
+                    }
+                }
+            });
             console.log("COLLADA LOAD OK");
 
             this.scene.add(model);
