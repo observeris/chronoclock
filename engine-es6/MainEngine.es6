@@ -1,10 +1,17 @@
-/* global THREE */
 /* global Stats */
 
 import DialRing from './DialRing';
 import NDigitDial from './NDigitDial';
 import * as DigitLib from './DigitLib';
 import WireframeMaterial from './WireframeMaterial';
+import THREE from 'three';
+import OBJLoader from 'OBJLoader';
+import KeyFrameAnimation from 'collada/KeyFrameAnimation';
+import ColladaLoader from 'collada/ColladaLoader';
+
+ColladaLoader(THREE);
+KeyFrameAnimation(THREE);
+OBJLoader(THREE);
 
 /**
  * OBJLoadPromise(): Returns a promist to load OBJ
@@ -75,7 +82,6 @@ export default class MainEngine {
         this.kfAnimations = [];
         this.kfLastTimeStamp = 0;
         this.kfProgress = 0;
-
 
         this.renderer = null;
         this.mixer = null;
@@ -222,7 +228,10 @@ export default class MainEngine {
                         color: diffuseColor
                     });
 
-                    child.material = material;
+                    WireframeMaterial.SetupWireframeShaderAttributes(child.geometry);
+
+                    const wireframeMaterial = new WireframeMaterial();
+                    child.material = material; // wireframeMaterial; //material;
 
                     for (var i = 0; i < this.gDialCount; i += 1) {
                         var dial = new THREE.Mesh(child.geometry, child.material);
@@ -427,7 +436,7 @@ export default class MainEngine {
         this.kfProgress += frameTime;
         this.kfLastTimeStamp = timestamp;
 
-        console.log("Progress: ", this.kfProgress);
+        // console.log("Progress: ", this.kfProgress);
     }
 
     /**

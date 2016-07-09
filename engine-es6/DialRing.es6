@@ -1,4 +1,5 @@
-/* global THREE */
+import THREE from 'three';
+
 import {
     TweenFunc
 } from './TweenFunc';
