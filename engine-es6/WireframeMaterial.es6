@@ -1,6 +1,6 @@
 import THREE from 'three';
-import vertShader from 'WireframeVertexShader.vert';
-import fragShader from 'WireframeFragmentShader.vert';
+import vertShader from './WireframeVertexShader.vert';
+import fragShader from './WireframeFragmentShader.frag';
 
 export default class WireframeMaterial {
     constructor() {

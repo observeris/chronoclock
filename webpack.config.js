@@ -1,3 +1,5 @@
+var path = require('path');
+
 module.exports = {
     context: __dirname,
     module: {
@@ -29,6 +31,7 @@ module.exports = {
         filename: "./main.js"
     },
     resolve: {
+        root: path.resolve('./three/build'),
         extensions: ["", ".webpack.js", ".web.js", ".js", ".es6"]
     }
 };
