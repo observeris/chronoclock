@@ -87,6 +87,10 @@
 
 	var DigitLib = _interopRequireWildcard(_DigitLib);
 
+	var _WireframeMaterial = __webpack_require__(8);
+
+	var _WireframeMaterial2 = _interopRequireDefault(_WireframeMaterial);
+
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -159,6 +163,7 @@
 	        this.camera = null;
 	        this.scene = null;
 
+	        // Keyframe animation stuff: (gets loaded from COLLADA)
 	        this.kfAnimationsLength = 0;
 	        this.kfAnimations = [];
 	        this.kfLastTimeStamp = 0;
@@ -423,7 +428,7 @@
 	        value: function onWindowResize() {
 
 	            this.windowHalfX = this.window.innerWidth / 2;
-	            this.windowHalfY = this.indow.innerHeight / 2;
+	            this.windowHalfY = this.window.innerHeight / 2;
 
 	            this.camera.aspect = this.window.innerWidth / this.window.innerHeight;
 	            this.camera.updateProjectionMatrix();
@@ -1306,6 +1311,64 @@
 	}();
 
 	exports.default = NDigitDial;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _three = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"three\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+	var _three2 = _interopRequireDefault(_three);
+
+	var _WireframeVertexShader = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"WireframeVertexShader.vert\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+	var _WireframeVertexShader2 = _interopRequireDefault(_WireframeVertexShader);
+
+	var _WireframeFragmentShader = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"WireframeFragmentShader.vert\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
+
+	var _WireframeFragmentShader2 = _interopRequireDefault(_WireframeFragmentShader);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var WireframeMaterial = function () {
+	    function WireframeMaterial() {
+	        _classCallCheck(this, WireframeMaterial);
+
+	        this.fMaterial = new _three2.default.ShaderMaterial({
+	            uniforms: {},
+	            vertexShader: _WireframeVertexShader2.default,
+	            fragmentShader: _WireframeFragmentShader2.default
+	        });
+	    }
+
+	    _createClass(WireframeMaterial, null, [{
+	        key: 'SetupWireframeShaderAttributes',
+	        value: function SetupWireframeShaderAttributes(ioGeometry) {
+
+	            var vectors = [new _three2.default.Vector3(1, 0, 0), new _three2.default.Vector3(0, 1, 0), new _three2.default.Vector3(0, 0, 1)];
+	            var position = ioGeometry.attributes.position;
+	            var centers = new Float32Array(position.count * 3);
+	            for (var i = 0, l = position.count; i < l; i += 1.0) {
+	                vectors[i % 3].toArray(centers, i * 3);
+	            }
+	            ioGeometry.addAttribute('center', new _three2.default.BufferAttribute(centers, 3));
+	        }
+	    }]);
+
+	    return WireframeMaterial;
+	}();
+
+	exports.default = WireframeMaterial;
 
 /***/ }
 /******/ ]);

@@ -14,55 +14,55 @@ class PBRMaterial {
         this.uniforms = {
             base_color_constant: {
                 type: 'c',
-                value: new THREE.Color(0x006AA4),
+                value: new THREE.Color(0x006AA4)
             },
             roughness_constant: {
                 type: 'f',
-                value: 0.25,
+                value: 0.25
             },
             metalicity: {
                 type: 'f',
-                value: 0.0,
+                value: 0.0
             },
             specular_level: {
                 type: 'f',
                 value: 0.04,
                 min: 0.02,
-                max: 0.08,
+                max: 0.08
             },
             light_color: {
                 type: 'c',
-                value: new THREE.Color(0xFFFFFF),
+                value: new THREE.Color(0xFFFFFF)
             },
             light_direction: {
                 type: 'c',
-                value: new THREE.Color(0xCCCCCC),
+                value: new THREE.Color(0xCCCCCC)
             },
             light_intensity: {
                 type: 'f',
-                value: 1.0,
+                value: 1.0
             },
             use_textures: {
                 type: 'i',
                 value: 0,
                 min: 0,
                 max: 1,
-                hidden: true,
+                hidden: true
             },
             brdf_map: {
                 type: 't',
-                value: null,
+                value: null
             },
             ibl_map: {
                 type: 't',
-                value: null,
+                value: null
             },
             ibl_exposure: {
                 type: 'f',
                 value: 2.2,
                 min: 0.0,
                 max: 3.0,
-                hidden: true,
+                hidden: true
             }
         };
     }

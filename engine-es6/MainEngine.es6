@@ -4,6 +4,7 @@
 import DialRing from './DialRing';
 import NDigitDial from './NDigitDial';
 import * as DigitLib from './DigitLib';
+import WireframeMaterial from './WireframeMaterial';
 
 /**
  * OBJLoadPromise(): Returns a promist to load OBJ
@@ -69,10 +70,12 @@ export default class MainEngine {
         this.camera = null;
         this.scene = null;
 
+        // Keyframe animation stuff: (gets loaded from COLLADA)
         this.kfAnimationsLength = 0;
         this.kfAnimations = [];
         this.kfLastTimeStamp = 0;
         this.kfProgress = 0;
+
 
         this.renderer = null;
         this.mixer = null;
@@ -338,7 +341,7 @@ export default class MainEngine {
     onWindowResize() {
 
         this.windowHalfX = this.window.innerWidth / 2;
-        this.windowHalfY = this.indow.innerHeight / 2;
+        this.windowHalfY = this.window.innerHeight / 2;
 
         this.camera.aspect = this.window.innerWidth / this.window.innerHeight;
         this.camera.updateProjectionMatrix();
