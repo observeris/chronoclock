@@ -31,7 +31,7 @@ module.exports = {
         filename: "./main.js"
     },
     resolve: {
-        root: path.resolve('./three/build'),
+        root: path.resolve('./external/three/build'),
         extensions: ["", ".webpack.js", ".web.js", ".js", ".es6"]
     }
 };
