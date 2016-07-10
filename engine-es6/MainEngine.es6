@@ -110,6 +110,7 @@ export default class MainEngine {
 
         this.fOBJWireFrame = false;
         this.fCOLLADAWireFrame = true;
+        this.fAnimateCamera = true;
 
         this.document.addEventListener('mousemove', (event) => {
             this.onDocumentMouseMove(event);
@@ -509,6 +510,11 @@ export default class MainEngine {
         // camera.position.y = THREE.Math.clamp( camera.position.y + ( - mouseY - camera.position.y ) * .05, 0, 1000 );
 
         // camera.lookAt(scene.position);
+        if (this.fAnimateCamera) {
+            this.camera.position.x = this.gCameraPosition.x + Math.cos(time * 0.8) * 400;
+            this.camera.position.y = this.gCameraPosition.y + Math.cos(time * 0.5) * 200;
+            this.camera.position.z = this.gCameraPosition.z + Math.cos(time * 0.7) * 50;
+        }
         this.camera.lookAt(this.gCameraTarget);
         if (this.mixer) {
             // console.log( "updating mixer by " + delta );
