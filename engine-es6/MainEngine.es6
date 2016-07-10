@@ -8,6 +8,7 @@ import THREE from 'three';
 import OBJLoader from 'OBJLoader';
 import KeyFrameAnimation from 'collada/KeyFrameAnimation';
 import ColladaLoader from 'collada/ColladaLoader';
+import PBRMaterial from './PBRMaterial';
 
 ColladaLoader(THREE);
 KeyFrameAnimation(THREE);

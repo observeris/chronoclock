@@ -2,12 +2,12 @@
 
 import {
     generateImageBasedLight
-} from 'cpina/common/ibl/ImageBasedLightGenerator';
-import PBRFrag from 'cpina/common/ibl/PhysicallyBased.frag';
-import PBRVert from 'cpina/common/StandardRawTBN.vert';
-import iblMapUrl2 from 'cpina/HDR/textures/Newport_Loft_Ref.hdr';
+} from './cpina/common/ibl/ImageBasedLightGenerator';
+import PBRFrag from './cpina/common/ibl/PhysicallyBased.frag';
+import PBRVert from './cpina/common/StandardRawTBN.vert';
+import iblMapUrl from './cpina/HDR/textures/Newport_Loft_Ref.hdr';
 
-class PBRMaterial {
+export default class PBRMaterial {
     constructor() {
         this.material = null;
         this.context = null;

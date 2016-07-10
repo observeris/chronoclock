@@ -33,7 +33,9 @@ module.exports = {
     resolve: {
         root: [
             path.resolve('./external/three/build'),
-            path.resolve('./external/three/modules')
+            path.resolve('./external/three/modules'),
+            path.resolve('./external/vdc'),
+            path.resolve('./external/superagent')
         ],
         extensions: ["", ".webpack.js", ".web.js", ".js", ".es6"]
     }
