@@ -3,6 +3,9 @@ var path = require('path');
 // 1) output.publicPath: "/engine"
 // 2) loader: "file?name=/[hash].[ext]",
 
+// Loaders need to be installed: either as a packaga.json dep or manually:
+// > npm install --save-dev glslify-loader raw-loader
+// > npm install --save-dev babel-loader babel-core babel-preset-es2015 
 module.exports = {
     context: __dirname,
     module: {
