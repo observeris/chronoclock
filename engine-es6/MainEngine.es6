@@ -249,7 +249,7 @@ export default class MainEngine {
                         child.material = wireframeMaterial.fMaterial;
                     } else {
                         child.material = this.fPBRMaterialHandler.fMaterial;
-                        child.material = defaultPhongMaterial;
+                        //child.material = defaultPhongMaterial;
                     }
                     for (var i = 0; i < this.gDialCount; i += 1) {
                         var dial = new THREE.Mesh(child.geometry, child.material);

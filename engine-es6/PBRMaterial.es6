@@ -13,11 +13,11 @@ export default class PBRMaterial {
         this.uniforms = {
             base_color_constant: {
                 type: 'c',
-                value: new THREE.Color(0x006AA4)
+                value: new THREE.Color(0xFFFFFF)
             },
             roughness_constant: {
                 type: 'f',
-                value: 0.25
+                value: 1.0
             },
             metalicity: {
                 type: 'f',

@@ -359,7 +359,7 @@
 	                            child.material = wireframeMaterial.fMaterial;
 	                        } else {
 	                            child.material = _this2.fPBRMaterialHandler.fMaterial;
-	                            child.material = defaultPhongMaterial;
+	                            //child.material = defaultPhongMaterial;
 	                        }
 	                        for (var i = 0; i < _this2.gDialCount; i += 1) {
 	                            var dial = new _three2.default.Mesh(child.geometry, child.material);
@@ -5836,11 +5836,11 @@
 	        this.uniforms = {
 	            base_color_constant: {
 	                type: 'c',
-	                value: new _three2.default.Color(0x006AA4)
+	                value: new _three2.default.Color(0xFFFFFF)
 	            },
 	            roughness_constant: {
 	                type: 'f',
-	                value: 0.25
+	                value: 1.0
 	            },
 	            metalicity: {
 	                type: 'f',

@@ -8,7 +8,7 @@ varying mat3 vTBN;
 
 void main() {
     vUV = uv;
-    vN = normalMatrix * normal;
+    vN = normal;
     vTBN = makeTBN(normalMatrix, normal, tangent);
 
     vec4 P4 = modelViewMatrix * vec4(position, 1.0);
