@@ -1,4 +1,7 @@
 var path = require('path');
+// For the file loader URL to get `/engine/` appended to it:
+// 1) output.publicPath: "/engine"
+// 2) loader: "file?name=/[hash].[ext]",
 
 module.exports = {
     context: __dirname,
