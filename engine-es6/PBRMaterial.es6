@@ -1,15 +1,14 @@
-/* global THREE */
-
 import {
     generateImageBasedLight
 } from './cpina/common/ibl/ImageBasedLightGenerator';
 import PBRFrag from './cpina/common/ibl/PhysicallyBased.frag';
 import PBRVert from './cpina/common/StandardRawTBN.vert';
 import iblMapUrl from './cpina/HDR/textures/Newport_Loft_Ref.hdr';
+import THREE from 'three';
 
 export default class PBRMaterial {
     constructor() {
-        this.material = null;
+        this.fMaterial = null;
         this.context = null;
         this.uniforms = {
             base_color_constant: {
@@ -67,9 +66,9 @@ export default class PBRMaterial {
         };
     }
 
-    setup(context) {
-        this.context = context;
-        const makeIBLPromise = generateImageBasedLight(context, iblMapUrl);
+    generateMaterial(renderSystem) {
+        this.context = renderSystem;
+        const makeIBLPromise = generateImageBasedLight(renderSystem, iblMapUrl);
 
         makeIBLPromise.then(({
             ibl,
@@ -83,7 +82,7 @@ export default class PBRMaterial {
 
         });
 
-        this.material = new THREE.RawShaderMaterial({
+        this.fMaterial = new THREE.RawShaderMaterial({
             vertexShader: PBRVert,
             fragmentShader: PBRFrag,
             uniforms: this.uniforms

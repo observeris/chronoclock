@@ -15,7 +15,7 @@ module.exports = {
             loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
         }, {
             test: /\.(jpg|png|gif|hdr)$/,
-            loader: "file",
+            loader: "file?name=engine/[name]-[hash].[ext]",
         }, {
             test: /\.(frag|vert|glsl)$/,
             loaders: ["raw", "glslify"]

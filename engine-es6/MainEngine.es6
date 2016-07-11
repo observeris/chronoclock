@@ -364,6 +364,15 @@ export default class MainEngine {
         this.window.addEventListener('resize', () => {
             this.onWindowResize();
         }, false);
+
+        const renderSystem = {
+            scene: this.scene,
+            renderer: this.renderer
+        };
+
+        const pbrMat = new PBRMaterial();
+        pbrMat.generateMaterial(renderSystem);
+
     }
 
     /**
@@ -377,7 +386,7 @@ export default class MainEngine {
         this.camera.aspect = this.window.innerWidth / this.window.innerHeight;
         this.camera.updateProjectionMatrix();
 
-        this.enderer.setSize(this.window.innerWidth, this.window.innerHeight);
+        this.renderer.setSize(this.window.innerWidth, this.window.innerHeight);
     }
 
     /**

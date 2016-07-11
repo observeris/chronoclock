@@ -102,7 +102,7 @@
 
 	var _KeyFrameAnimation2 = _interopRequireDefault(_KeyFrameAnimation);
 
-	var _ColladaLoader = __webpack_require__(14);
+	var _ColladaLoader = __webpack_require__(15);
 
 	var _ColladaLoader2 = _interopRequireDefault(_ColladaLoader);
 
@@ -464,6 +464,14 @@
 	            this.window.addEventListener('resize', function () {
 	                _this2.onWindowResize();
 	            }, false);
+
+	            var renderSystem = {
+	                scene: this.scene,
+	                renderer: this.renderer
+	            };
+
+	            var pbrMat = new _PBRMaterial2.default();
+	            pbrMat.generateMaterial(renderSystem);
 	        }
 
 	        /**
@@ -480,7 +488,7 @@
 	            this.camera.aspect = this.window.innerWidth / this.window.innerHeight;
 	            this.camera.updateProjectionMatrix();
 
-	            this.enderer.setSize(this.window.innerWidth, this.window.innerHeight);
+	            this.renderer.setSize(this.window.innerWidth, this.window.innerHeight);
 	        }
 
 	        /**
@@ -5278,7 +5286,7 @@
 	 */
 	'use strict';
 
-	var _AnimationHandler = __webpack_require__(15);
+	var _AnimationHandler = __webpack_require__(14);
 
 	var _AnimationHandler2 = _interopRequireDefault(_AnimationHandler);
 
@@ -5496,102 +5504,6 @@
 /***/ function(module, exports) {
 
 	/**
-	 * @author Tim Knip / http://www.floorplanner.com/ / tim at floorplanner.com
-	 * @author Tony Parisi / http://www.tonyparisi.com/
-	 */'use strict';module.exports=function(THREE){THREE.ColladaLoader=function(){var COLLADA=null;var scene=null;var visualScene;var kinematicsModel;var readyCallbackFunc=null;var sources={};var images={};var animations={};var controllers={};var geometries={};var materials={};var effects={};var cameras={};var lights={};var animData;var kinematics;var visualScenes;var kinematicsModels;var baseUrl;var morphs;var skins;var flip_uv=true;var preferredShading=THREE.SmoothShading;var options={ // Force Geometry to always be centered at the local origin of the
-	// containing Mesh.
-	centerGeometry:false, // Axis conversion is done for geometries, animations, and controllers.
-	// If we ever pull cameras or lights out of the COLLADA file, they'll
-	// need extra work.
-	convertUpAxis:false,subdivideFaces:true,upAxis:'Y', // For reflective or refractive materials we'll use this cubemap
-	defaultEnvMap:null};var colladaUnit=1.0;var colladaUp='Y';var upConversion=null;function load(url,readyCallback,progressCallback,failCallback){var length=0;if(document.implementation&&document.implementation.createDocument){var request=new XMLHttpRequest();request.onreadystatechange=function(){if(request.readyState===4){if(request.status===0||request.status===200){if(request.response){readyCallbackFunc=readyCallback;parse(request.response,undefined,url);}else {if(failCallback){failCallback({type:'error',url:url});}else {console.error("ColladaLoader: Empty or non-existing file ("+url+")");}}}else {if(failCallback){failCallback({type:'error',url:url});}else {console.error('ColladaLoader: Couldn\'t load "'+url+'" ('+request.status+')');}}}else if(request.readyState===3){if(progressCallback){if(length===0){length=request.getResponseHeader("Content-Length");}progressCallback({total:length,loaded:request.responseText.length});}}};request.open("GET",url,true);request.send(null);}else {alert("Don't know how to parse XML!");}}function parse(text,callBack,url){COLLADA=new DOMParser().parseFromString(text,'text/xml');callBack=callBack||readyCallbackFunc;if(url!==undefined){var parts=url.split('/');parts.pop();baseUrl=(parts.length<1?'.':parts.join('/'))+'/';}parseAsset();setUpConversion();images=parseLib("library_images image",_Image,"image");materials=parseLib("library_materials material",Material,"material");effects=parseLib("library_effects effect",Effect,"effect");geometries=parseLib("library_geometries geometry",Geometry,"geometry");cameras=parseLib("library_cameras camera",Camera,"camera");lights=parseLib("library_lights light",Light,"light");controllers=parseLib("library_controllers controller",Controller,"controller");animations=parseLib("library_animations animation",Animation,"animation");visualScenes=parseLib("library_visual_scenes visual_scene",VisualScene,"visual_scene");kinematicsModels=parseLib("library_kinematics_models kinematics_model",KinematicsModel,"kinematics_model");morphs=[];skins=[];visualScene=parseScene();scene=new THREE.Group();for(var i=0;i<visualScene.nodes.length;i++){scene.add(createSceneGraph(visualScene.nodes[i]));} // unit conversion
-	scene.scale.multiplyScalar(colladaUnit);createAnimations();kinematicsModel=parseKinematicsModel();createKinematics();var result={scene:scene,morphs:morphs,skins:skins,animations:animData,kinematics:kinematics,dae:{images:images,materials:materials,cameras:cameras,lights:lights,effects:effects,geometries:geometries,controllers:controllers,animations:animations,visualScenes:visualScenes,visualScene:visualScene,scene:visualScene,kinematicsModels:kinematicsModels,kinematicsModel:kinematicsModel}};if(callBack){callBack(result);}return result;}function setPreferredShading(shading){preferredShading=shading;}function parseAsset(){var elements=COLLADA.querySelectorAll('asset');var element=elements[0];if(element&&element.childNodes){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'unit':var meter=child.getAttribute('meter');if(meter){colladaUnit=parseFloat(meter);}break;case 'up_axis':colladaUp=child.textContent.charAt(0);break;}}}}function parseLib(q,classSpec,prefix){var elements=COLLADA.querySelectorAll(q);var lib={};var i=0;var elementsLength=elements.length;for(var j=0;j<elementsLength;j++){var element=elements[j];var daeElement=new classSpec().parse(element);if(!daeElement.id||daeElement.id.length===0)daeElement.id=prefix+i++;lib[daeElement.id]=daeElement;}return lib;}function parseScene(){var sceneElement=COLLADA.querySelectorAll('scene instance_visual_scene')[0];if(sceneElement){var url=sceneElement.getAttribute('url').replace(/^#/,'');return visualScenes[url.length>0?url:'visual_scene0'];}else {return null;}}function parseKinematicsModel(){var kinematicsModelElement=COLLADA.querySelectorAll('instance_kinematics_model')[0];if(kinematicsModelElement){var url=kinematicsModelElement.getAttribute('url').replace(/^#/,'');return kinematicsModels[url.length>0?url:'kinematics_model0'];}else {return null;}}function createAnimations(){animData=[]; // fill in the keys
-	recurseHierarchy(scene);}function recurseHierarchy(node){var n=visualScene.getChildById(node.colladaId,true),newData=null;if(n&&n.keys){newData={fps:60,hierarchy:[{node:n,keys:n.keys,sids:n.sids}],node:node,name:'animation_'+node.name,length:0};animData.push(newData);for(var i=0,il=n.keys.length;i<il;i++){newData.length=Math.max(newData.length,n.keys[i].time);}}else {newData={hierarchy:[{keys:[],sids:[]}]};}for(var i=0,il=node.children.length;i<il;i++){var d=recurseHierarchy(node.children[i]);for(var j=0,jl=d.hierarchy.length;j<jl;j++){newData.hierarchy.push({keys:[],sids:[]});}}return newData;}function calcAnimationBounds(){var start=1000000;var end=-start;var frames=0;var ID;for(var id in animations){var animation=animations[id];ID=ID||animation.id;for(var i=0;i<animation.sampler.length;i++){var sampler=animation.sampler[i];sampler.create();start=Math.min(start,sampler.startTime);end=Math.max(end,sampler.endTime);frames=Math.max(frames,sampler.input.length);}}return {start:start,end:end,frames:frames,ID:ID};}function createMorph(geometry,ctrl){var morphCtrl=ctrl instanceof InstanceController?controllers[ctrl.url]:ctrl;if(!morphCtrl||!morphCtrl.morph){console.log("could not find morph controller!");return;}var morph=morphCtrl.morph;for(var i=0;i<morph.targets.length;i++){var target_id=morph.targets[i];var daeGeometry=geometries[target_id];if(!daeGeometry.mesh||!daeGeometry.mesh.primitives||!daeGeometry.mesh.primitives.length){continue;}var target=daeGeometry.mesh.primitives[0].geometry;if(target.vertices.length===geometry.vertices.length){geometry.morphTargets.push({name:"target_1",vertices:target.vertices});}}geometry.morphTargets.push({name:"target_Z",vertices:geometry.vertices});}function createSkin(geometry,ctrl,applyBindShape){var skinCtrl=controllers[ctrl.url];if(!skinCtrl||!skinCtrl.skin){console.log("could not find skin controller!");return;}if(!ctrl.skeleton||!ctrl.skeleton.length){console.log("could not find the skeleton for the skin!");return;}var skin=skinCtrl.skin;var skeleton=visualScene.getChildById(ctrl.skeleton[0]);var hierarchy=[];applyBindShape=applyBindShape!==undefined?applyBindShape:true;var bones=[];geometry.skinWeights=[];geometry.skinIndices=[]; //createBones( geometry.bones, skin, hierarchy, skeleton, null, -1 );
-	//createWeights( skin, geometry.bones, geometry.skinIndices, geometry.skinWeights );
-	/*
-	            geometry.animation = {
-	            	name: 'take_001',
-	            	fps: 30,
-	            	length: 2,
-	            	JIT: true,
-	            	hierarchy: hierarchy
-	            };
-	            */if(applyBindShape){for(var i=0;i<geometry.vertices.length;i++){geometry.vertices[i].applyMatrix4(skin.bindShapeMatrix);}}}function setupSkeleton(node,bones,frame,parent){node.world=node.world||new THREE.Matrix4();node.localworld=node.localworld||new THREE.Matrix4();node.world.copy(node.matrix);node.localworld.copy(node.matrix);if(node.channels&&node.channels.length){var channel=node.channels[0];var m=channel.sampler.output[frame];if(m instanceof THREE.Matrix4){node.world.copy(m);node.localworld.copy(m);if(frame===0)node.matrix.copy(m);}}if(parent){node.world.multiplyMatrices(parent,node.world);}bones.push(node);for(var i=0;i<node.nodes.length;i++){setupSkeleton(node.nodes[i],bones,frame,node.world);}}function setupSkinningMatrices(bones,skin){ // FIXME: this is dumb...
-	for(var i=0;i<bones.length;i++){var bone=bones[i];var found=-1;if(bone.type!='JOINT')continue;for(var j=0;j<skin.joints.length;j++){if(bone.sid===skin.joints[j]){found=j;break;}}if(found>=0){var inv=skin.invBindMatrices[found];bone.invBindMatrix=inv;bone.skinningMatrix=new THREE.Matrix4();bone.skinningMatrix.multiplyMatrices(bone.world,inv); // (IBMi * JMi)
-	bone.animatrix=new THREE.Matrix4();bone.animatrix.copy(bone.localworld);bone.weights=[];for(var j=0;j<skin.weights.length;j++){for(var k=0;k<skin.weights[j].length;k++){var w=skin.weights[j][k];if(w.joint===found){bone.weights.push(w);}}}}else {console.warn("ColladaLoader: Could not find joint '"+bone.sid+"'.");bone.skinningMatrix=new THREE.Matrix4();bone.weights=[];}}} //Walk the Collada tree and flatten the bones into a list, extract the position, quat and scale from the matrix
-	function flattenSkeleton(skeleton){var list=[];var walk=function walk(parentid,node,list){var bone={};bone.name=node.sid;bone.parent=parentid;bone.matrix=node.matrix;var data=[new THREE.Vector3(),new THREE.Quaternion(),new THREE.Vector3()];bone.matrix.decompose(data[0],data[1],data[2]);bone.pos=[data[0].x,data[0].y,data[0].z];bone.scl=[data[2].x,data[2].y,data[2].z];bone.rotq=[data[1].x,data[1].y,data[1].z,data[1].w];list.push(bone);for(var i in node.nodes){walk(node.sid,node.nodes[i],list);}};walk(-1,skeleton,list);return list;} //Move the vertices into the pose that is proper for the start of the animation
-	function skinToBindPose(geometry,skeleton,skinController){var bones=[];setupSkeleton(skeleton,bones,-1);setupSkinningMatrices(bones,skinController.skin);var v=new THREE.Vector3();var skinned=[];for(var i=0;i<geometry.vertices.length;i++){skinned.push(new THREE.Vector3());}for(i=0;i<bones.length;i++){if(bones[i].type!='JOINT')continue;for(var j=0;j<bones[i].weights.length;j++){var w=bones[i].weights[j];var vidx=w.index;var weight=w.weight;var o=geometry.vertices[vidx];var s=skinned[vidx];v.x=o.x;v.y=o.y;v.z=o.z;v.applyMatrix4(bones[i].skinningMatrix);s.x+=v.x*weight;s.y+=v.y*weight;s.z+=v.z*weight;}}for(var i=0;i<geometry.vertices.length;i++){geometry.vertices[i]=skinned[i];}}function applySkin(geometry,instanceCtrl,frame){var skinController=controllers[instanceCtrl.url];frame=frame!==undefined?frame:40;if(!skinController||!skinController.skin){console.log('ColladaLoader: Could not find skin controller.');return;}if(!instanceCtrl.skeleton||!instanceCtrl.skeleton.length){console.log('ColladaLoader: Could not find the skeleton for the skin. ');return;}var animationBounds=calcAnimationBounds();var skeleton=visualScene.getChildById(instanceCtrl.skeleton[0],true)||visualScene.getChildBySid(instanceCtrl.skeleton[0],true); //flatten the skeleton into a list of bones
-	var bonelist=flattenSkeleton(skeleton);var joints=skinController.skin.joints; //sort that list so that the order reflects the order in the joint list
-	var sortedbones=[];for(var i=0;i<joints.length;i++){for(var j=0;j<bonelist.length;j++){if(bonelist[j].name===joints[i]){sortedbones[i]=bonelist[j];}}} //hook up the parents by index instead of name
-	for(var i=0;i<sortedbones.length;i++){for(var j=0;j<sortedbones.length;j++){if(sortedbones[i].parent===sortedbones[j].name){sortedbones[i].parent=j;}}}var i,j,w,vidx,weight;var v=new THREE.Vector3(),o,s; // move vertices to bind shape
-	for(i=0;i<geometry.vertices.length;i++){geometry.vertices[i].applyMatrix4(skinController.skin.bindShapeMatrix);}var skinIndices=[];var skinWeights=[];var weights=skinController.skin.weights; // hook up the skin weights
-	// TODO - this might be a good place to choose greatest 4 weights
-	for(var i=0;i<weights.length;i++){var indicies=new THREE.Vector4(weights[i][0]?weights[i][0].joint:0,weights[i][1]?weights[i][1].joint:0,weights[i][2]?weights[i][2].joint:0,weights[i][3]?weights[i][3].joint:0);var weight=new THREE.Vector4(weights[i][0]?weights[i][0].weight:0,weights[i][1]?weights[i][1].weight:0,weights[i][2]?weights[i][2].weight:0,weights[i][3]?weights[i][3].weight:0);skinIndices.push(indicies);skinWeights.push(weight);}geometry.skinIndices=skinIndices;geometry.skinWeights=skinWeights;geometry.bones=sortedbones; // process animation, or simply pose the rig if no animation
-	//create an animation for the animated bones
-	//NOTE: this has no effect when using morphtargets
-	var animationdata={"name":animationBounds.ID,"fps":30,"length":animationBounds.frames/30,"hierarchy":[]};for(var j=0;j<sortedbones.length;j++){animationdata.hierarchy.push({parent:sortedbones[j].parent,name:sortedbones[j].name,keys:[]});}console.log('ColladaLoader:',animationBounds.ID+' has '+sortedbones.length+' bones.');skinToBindPose(geometry,skeleton,skinController);for(frame=0;frame<animationBounds.frames;frame++){var bones=[];var skinned=[]; // process the frame and setup the rig with a fresh
-	// transform, possibly from the bone's animation channel(s)
-	setupSkeleton(skeleton,bones,frame);setupSkinningMatrices(bones,skinController.skin);for(var i=0;i<bones.length;i++){for(var j=0;j<animationdata.hierarchy.length;j++){if(animationdata.hierarchy[j].name===bones[i].sid){var key={};key.time=frame/30;key.matrix=bones[i].animatrix;if(frame===0)bones[i].matrix=key.matrix;var data=[new THREE.Vector3(),new THREE.Quaternion(),new THREE.Vector3()];key.matrix.decompose(data[0],data[1],data[2]);key.pos=[data[0].x,data[0].y,data[0].z];key.scl=[data[2].x,data[2].y,data[2].z];key.rot=data[1];animationdata.hierarchy[j].keys.push(key);}}}geometry.animation=animationdata;}}function createKinematics(){if(kinematicsModel&&kinematicsModel.joints.length===0){kinematics=undefined;return;}var jointMap={};var _addToMap=function _addToMap(jointIndex,parentVisualElement){var parentVisualElementId=parentVisualElement.getAttribute('id');var colladaNode=visualScene.getChildById(parentVisualElementId,true);var joint=kinematicsModel.joints[jointIndex];scene.traverse(function(node){if(node.colladaId==parentVisualElementId){jointMap[jointIndex]={node:node,transforms:colladaNode.transforms,joint:joint,position:joint.zeroPosition};}});};kinematics={joints:kinematicsModel&&kinematicsModel.joints,getJointValue:function getJointValue(jointIndex){var jointData=jointMap[jointIndex];if(jointData){return jointData.position;}else {console.log('getJointValue: joint '+jointIndex+' doesn\'t exist');}},setJointValue:function setJointValue(jointIndex,value){var jointData=jointMap[jointIndex];if(jointData){var joint=jointData.joint;if(value>joint.limits.max||value<joint.limits.min){console.log('setJointValue: joint '+jointIndex+' value '+value+' outside of limits (min: '+joint.limits.min+', max: '+joint.limits.max+')');}else if(joint.static){console.log('setJointValue: joint '+jointIndex+' is static');}else {var threejsNode=jointData.node;var axis=joint.axis;var transforms=jointData.transforms;var matrix=new THREE.Matrix4();for(i=0;i<transforms.length;i++){var transform=transforms[i]; // kinda ghetto joint detection
-	if(transform.sid&&transform.sid.indexOf('joint'+jointIndex)!==-1){ // apply actual joint value here
-	switch(joint.type){case 'revolute':matrix.multiply(m1.makeRotationAxis(axis,THREE.Math.degToRad(value)));break;case 'prismatic':matrix.multiply(m1.makeTranslation(axis.x*value,axis.y*value,axis.z*value));break;default:console.warn('setJointValue: unknown joint type: '+joint.type);break;}}else {var m1=new THREE.Matrix4();switch(transform.type){case 'matrix':matrix.multiply(transform.obj);break;case 'translate':matrix.multiply(m1.makeTranslation(transform.obj.x,transform.obj.y,transform.obj.z));break;case 'rotate':matrix.multiply(m1.makeRotationAxis(transform.obj,transform.angle));break;}}} // apply the matrix to the threejs node
-	var elementsFloat32Arr=matrix.elements;var elements=Array.prototype.slice.call(elementsFloat32Arr);var elementsRowMajor=[elements[0],elements[4],elements[8],elements[12],elements[1],elements[5],elements[9],elements[13],elements[2],elements[6],elements[10],elements[14],elements[3],elements[7],elements[11],elements[15]];threejsNode.matrix.set.apply(threejsNode.matrix,elementsRowMajor);threejsNode.matrix.decompose(threejsNode.position,threejsNode.quaternion,threejsNode.scale);}}else {console.log('setJointValue: joint '+jointIndex+' doesn\'t exist');}}};var element=COLLADA.querySelector('scene instance_kinematics_scene');if(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'bind_joint_axis':var visualTarget=child.getAttribute('target').split('/').pop();var axis=child.querySelector('axis param').textContent;var jointIndex=parseInt(axis.split('joint').pop().split('.')[0]);var visualTargetElement=COLLADA.querySelector('[sid="'+visualTarget+'"]');if(visualTargetElement){var parentVisualElement=visualTargetElement.parentElement;_addToMap(jointIndex,parentVisualElement);}break;default:break;}}}}function createSceneGraph(node,parent){var obj=new THREE.Object3D();var skinned=false;var skinController;var morphController;var i,j; // FIXME: controllers
-	for(i=0;i<node.controllers.length;i++){var controller=controllers[node.controllers[i].url];switch(controller.type){case 'skin':if(geometries[controller.skin.source]){var inst_geom=new InstanceGeometry();inst_geom.url=controller.skin.source;inst_geom.instance_material=node.controllers[i].instance_material;node.geometries.push(inst_geom);skinned=true;skinController=node.controllers[i];}else if(controllers[controller.skin.source]){ // urgh: controller can be chained
-	// handle the most basic case...
-	var second=controllers[controller.skin.source];morphController=second; //	skinController = node.controllers[i];
-	if(second.morph&&geometries[second.morph.source]){var inst_geom=new InstanceGeometry();inst_geom.url=second.morph.source;inst_geom.instance_material=node.controllers[i].instance_material;node.geometries.push(inst_geom);}}break;case 'morph':if(geometries[controller.morph.source]){var inst_geom=new InstanceGeometry();inst_geom.url=controller.morph.source;inst_geom.instance_material=node.controllers[i].instance_material;node.geometries.push(inst_geom);morphController=node.controllers[i];}console.log('ColladaLoader: Morph-controller partially supported.');default:break;}} // geometries
-	var double_sided_materials={};for(i=0;i<node.geometries.length;i++){var instance_geometry=node.geometries[i];var instance_materials=instance_geometry.instance_material;var geometry=geometries[instance_geometry.url];var used_materials={};var used_materials_array=[];var num_materials=0;var first_material;if(geometry){if(!geometry.mesh||!geometry.mesh.primitives)continue;if(obj.name.length===0){obj.name=geometry.id;} // collect used fx for this geometry-instance
-	if(instance_materials){for(j=0;j<instance_materials.length;j++){var instance_material=instance_materials[j];var mat=materials[instance_material.target];var effect_id=mat.instance_effect.url;var shader=effects[effect_id].shader;var material3js=shader.material;if(geometry.doubleSided){if(!(instance_material.symbol in double_sided_materials)){var _copied_material=material3js.clone();_copied_material.side=THREE.DoubleSide;double_sided_materials[instance_material.symbol]=_copied_material;}material3js=double_sided_materials[instance_material.symbol];}material3js.opacity=!material3js.opacity?1:material3js.opacity;used_materials[instance_material.symbol]=num_materials;used_materials_array.push(material3js);first_material=material3js;first_material.name=mat.name===null||mat.name===''?mat.id:mat.name;num_materials++;}}var mesh;var material=first_material||new THREE.MeshLambertMaterial({color:0xdddddd,side:geometry.doubleSided?THREE.DoubleSide:THREE.FrontSide});var geom=geometry.mesh.geometry3js;if(num_materials>1){material=new THREE.MultiMaterial(used_materials_array);for(j=0;j<geom.faces.length;j++){var face=geom.faces[j];face.materialIndex=used_materials[face.daeMaterial];}}if(skinController!==undefined){applySkin(geom,skinController);if(geom.morphTargets.length>0){material.morphTargets=true;material.skinning=false;}else {material.morphTargets=false;material.skinning=true;}mesh=new THREE.SkinnedMesh(geom,material,false); //mesh.skeleton = skinController.skeleton;
-	//mesh.skinController = controllers[ skinController.url ];
-	//mesh.skinInstanceController = skinController;
-	mesh.name='skin_'+skins.length; //mesh.animationHandle.setKey(0);
-	skins.push(mesh);}else if(morphController!==undefined){createMorph(geom,morphController);material.morphTargets=true;mesh=new THREE.Mesh(geom,material);mesh.name='morph_'+morphs.length;morphs.push(mesh);}else {if(geom.isLineStrip===true){mesh=new THREE.Line(geom);}else {mesh=new THREE.Mesh(geom,material);}}obj.add(mesh);}}for(i=0;i<node.cameras.length;i++){var instance_camera=node.cameras[i];var cparams=cameras[instance_camera.url];var cam=new THREE.PerspectiveCamera(cparams.yfov,parseFloat(cparams.aspect_ratio),parseFloat(cparams.znear),parseFloat(cparams.zfar));obj.add(cam);}for(i=0;i<node.lights.length;i++){var light=null;var instance_light=node.lights[i];var lparams=lights[instance_light.url];if(lparams&&lparams.technique){var color=lparams.color.getHex();var intensity=lparams.intensity;var distance=lparams.distance;var angle=lparams.falloff_angle;switch(lparams.technique){case 'directional':light=new THREE.DirectionalLight(color,intensity,distance);light.position.set(0,0,1);break;case 'point':light=new THREE.PointLight(color,intensity,distance);break;case 'spot':light=new THREE.SpotLight(color,intensity,distance,angle);light.position.set(0,0,1);break;case 'ambient':light=new THREE.AmbientLight(color);break;}}if(light){obj.add(light);}}obj.name=node.name||node.id||"";obj.colladaId=node.id||"";obj.layer=node.layer||"";obj.matrix=node.matrix;obj.matrix.decompose(obj.position,obj.quaternion,obj.scale);if(options.centerGeometry&&obj.geometry){var delta=obj.geometry.center();delta.multiply(obj.scale);delta.applyQuaternion(obj.quaternion);obj.position.sub(delta);}for(i=0;i<node.nodes.length;i++){obj.add(createSceneGraph(node.nodes[i],node));}return obj;}function getJointId(skin,id){for(var i=0;i<skin.joints.length;i++){if(skin.joints[i]===id){return i;}}}function getLibraryNode(id){var nodes=COLLADA.querySelectorAll('library_nodes node');for(var i=0;i<nodes.length;i++){var attObj=nodes[i].attributes.getNamedItem('id');if(attObj&&attObj.value===id){return nodes[i];}}return undefined;}function getChannelsForNode(node){var channels=[];var startTime=1000000;var endTime=-1000000;for(var id in animations){var animation=animations[id];for(var i=0;i<animation.channel.length;i++){var channel=animation.channel[i];var sampler=animation.sampler[i];var id=channel.target.split('/')[0];if(id==node.id){sampler.create();channel.sampler=sampler;startTime=Math.min(startTime,sampler.startTime);endTime=Math.max(endTime,sampler.endTime);channels.push(channel);}}}if(channels.length){node.startTime=startTime;node.endTime=endTime;}return channels;}function calcFrameDuration(node){var minT=10000000;for(var i=0;i<node.channels.length;i++){var sampler=node.channels[i].sampler;for(var j=0;j<sampler.input.length-1;j++){var t0=sampler.input[j];var t1=sampler.input[j+1];minT=Math.min(minT,t1-t0);}}return minT;}function calcMatrixAt(node,t){var animated={};var i,j;for(i=0;i<node.channels.length;i++){var channel=node.channels[i];animated[channel.sid]=channel;}var matrix=new THREE.Matrix4();for(i=0;i<node.transforms.length;i++){var transform=node.transforms[i];var channel=animated[transform.sid];if(channel!==undefined){var sampler=channel.sampler;var value;for(j=0;j<sampler.input.length-1;j++){if(sampler.input[j+1]>t){value=sampler.output[j]; //console.log(value.flatten)
-	break;}}if(value!==undefined){if(value instanceof THREE.Matrix4){matrix.multiplyMatrices(matrix,value);}else { // FIXME: handle other types
-	matrix.multiplyMatrices(matrix,transform.matrix);}}else {matrix.multiplyMatrices(matrix,transform.matrix);}}else {matrix.multiplyMatrices(matrix,transform.matrix);}}return matrix;}function bakeAnimations(node){if(node.channels&&node.channels.length){var keys=[],sids=[];for(var i=0,il=node.channels.length;i<il;i++){var channel=node.channels[i],fullSid=channel.fullSid,sampler=channel.sampler,input=sampler.input,transform=node.getTransformBySid(channel.sid),member;if(channel.arrIndices){member=[];for(var j=0,jl=channel.arrIndices.length;j<jl;j++){member[j]=getConvertedIndex(channel.arrIndices[j]);}}else {member=getConvertedMember(channel.member);}if(transform){if(sids.indexOf(fullSid)===-1){sids.push(fullSid);}for(var j=0,jl=input.length;j<jl;j++){var time=input[j],data=sampler.getData(transform.type,j,member),key=findKey(keys,time);if(!key){key=new Key(time);var timeNdx=findTimeNdx(keys,time);keys.splice(timeNdx===-1?keys.length:timeNdx,0,key);}key.addTarget(fullSid,transform,member,data);}}else {console.log('Could not find transform "'+channel.sid+'" in node '+node.id);}} // post process
-	for(var i=0;i<sids.length;i++){var sid=sids[i];for(var j=0;j<keys.length;j++){var key=keys[j];if(!key.hasTarget(sid)){interpolateKeys(keys,key,j,sid);}}}node.keys=keys;node.sids=sids;}}function findKey(keys,time){var retVal=null;for(var i=0,il=keys.length;i<il&&retVal===null;i++){var key=keys[i];if(key.time===time){retVal=key;}else if(key.time>time){break;}}return retVal;}function findTimeNdx(keys,time){var ndx=-1;for(var i=0,il=keys.length;i<il&&ndx===-1;i++){var key=keys[i];if(key.time>=time){ndx=i;}}return ndx;}function interpolateKeys(keys,key,ndx,fullSid){var prevKey=getPrevKeyWith(keys,fullSid,ndx?ndx-1:0),nextKey=getNextKeyWith(keys,fullSid,ndx+1);if(prevKey&&nextKey){var scale=(key.time-prevKey.time)/(nextKey.time-prevKey.time),prevTarget=prevKey.getTarget(fullSid),nextData=nextKey.getTarget(fullSid).data,prevData=prevTarget.data,data;if(prevTarget.type==='matrix'){data=prevData;}else if(prevData.length){data=[];for(var i=0;i<prevData.length;++i){data[i]=prevData[i]+(nextData[i]-prevData[i])*scale;}}else {data=prevData+(nextData-prevData)*scale;}key.addTarget(fullSid,prevTarget.transform,prevTarget.member,data);}} // Get next key with given sid
-	function getNextKeyWith(keys,fullSid,ndx){for(;ndx<keys.length;ndx++){var key=keys[ndx];if(key.hasTarget(fullSid)){return key;}}return null;} // Get previous key with given sid
-	function getPrevKeyWith(keys,fullSid,ndx){ndx=ndx>=0?ndx:ndx+keys.length;for(;ndx>=0;ndx--){var key=keys[ndx];if(key.hasTarget(fullSid)){return key;}}return null;}function _Image(){this.id="";this.init_from="";}_Image.prototype.parse=function(element){this.id=element.getAttribute('id');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeName==='init_from'){this.init_from=child.textContent;}}return this;};function Controller(){this.id="";this.name="";this.type="";this.skin=null;this.morph=null;}Controller.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.type="none";for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'skin':this.skin=new Skin().parse(child);this.type=child.nodeName;break;case 'morph':this.morph=new Morph().parse(child);this.type=child.nodeName;break;default:break;}}return this;};function Morph(){this.method=null;this.source=null;this.targets=null;this.weights=null;}Morph.prototype.parse=function(element){var sources={};var inputs=[];var i;this.method=element.getAttribute('method');this.source=element.getAttribute('source').replace(/^#/,'');for(i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'source':var source=new Source().parse(child);sources[source.id]=source;break;case 'targets':inputs=this.parseInputs(child);break;default:console.log(child.nodeName);break;}}for(i=0;i<inputs.length;i++){var input=inputs[i];var source=sources[input.source];switch(input.semantic){case 'MORPH_TARGET':this.targets=source.read();break;case 'MORPH_WEIGHT':this.weights=source.read();break;default:break;}}return this;};Morph.prototype.parseInputs=function(element){var inputs=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':inputs.push(new Input().parse(child));break;default:break;}}return inputs;};function Skin(){this.source="";this.bindShapeMatrix=null;this.invBindMatrices=[];this.joints=[];this.weights=[];}Skin.prototype.parse=function(element){var sources={};var joints,weights;this.source=element.getAttribute('source').replace(/^#/,'');this.invBindMatrices=[];this.joints=[];this.weights=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'bind_shape_matrix':var f=_floats(child.textContent);this.bindShapeMatrix=getConvertedMat4(f);break;case 'source':var src=new Source().parse(child);sources[src.id]=src;break;case 'joints':joints=child;break;case 'vertex_weights':weights=child;break;default:console.log(child.nodeName);break;}}this.parseJoints(joints,sources);this.parseWeights(weights,sources);return this;};Skin.prototype.parseJoints=function(element,sources){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':var input=new Input().parse(child);var source=sources[input.source];if(input.semantic==='JOINT'){this.joints=source.read();}else if(input.semantic==='INV_BIND_MATRIX'){this.invBindMatrices=source.read();}break;default:break;}}};Skin.prototype.parseWeights=function(element,sources){var v,vcount,inputs=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':inputs.push(new Input().parse(child));break;case 'v':v=_ints(child.textContent);break;case 'vcount':vcount=_ints(child.textContent);break;default:break;}}var index=0;for(var i=0;i<vcount.length;i++){var numBones=vcount[i];var vertex_weights=[];for(var j=0;j<numBones;j++){var influence={};for(var k=0;k<inputs.length;k++){var input=inputs[k];var value=v[index+input.offset];switch(input.semantic){case 'JOINT':influence.joint=value; //this.joints[value];
-	break;case 'WEIGHT':influence.weight=sources[input.source].data[value];break;default:break;}}vertex_weights.push(influence);index+=inputs.length;}for(var j=0;j<vertex_weights.length;j++){vertex_weights[j].index=i;}this.weights.push(vertex_weights);}};function VisualScene(){this.id="";this.name="";this.nodes=[];this.scene=new THREE.Group();}VisualScene.prototype.getChildById=function(id,recursive){for(var i=0;i<this.nodes.length;i++){var node=this.nodes[i].getChildById(id,recursive);if(node){return node;}}return null;};VisualScene.prototype.getChildBySid=function(sid,recursive){for(var i=0;i<this.nodes.length;i++){var node=this.nodes[i].getChildBySid(sid,recursive);if(node){return node;}}return null;};VisualScene.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.nodes=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'node':this.nodes.push(new Node().parse(child));break;default:break;}}return this;};function Node(){this.id="";this.name="";this.sid="";this.nodes=[];this.controllers=[];this.transforms=[];this.geometries=[];this.channels=[];this.matrix=new THREE.Matrix4();}Node.prototype.getChannelForTransform=function(transformSid){for(var i=0;i<this.channels.length;i++){var channel=this.channels[i];var parts=channel.target.split('/');var id=parts.shift();var sid=parts.shift();var dotSyntax=sid.indexOf(".")>=0;var arrSyntax=sid.indexOf("(")>=0;var arrIndices;var member;if(dotSyntax){parts=sid.split(".");sid=parts.shift();member=parts.shift();}else if(arrSyntax){arrIndices=sid.split("(");sid=arrIndices.shift();for(var j=0;j<arrIndices.length;j++){arrIndices[j]=parseInt(arrIndices[j].replace(/\)/,''));}}if(sid===transformSid){channel.info={sid:sid,dotSyntax:dotSyntax,arrSyntax:arrSyntax,arrIndices:arrIndices};return channel;}}return null;};Node.prototype.getChildById=function(id,recursive){if(this.id===id){return this;}if(recursive){for(var i=0;i<this.nodes.length;i++){var n=this.nodes[i].getChildById(id,recursive);if(n){return n;}}}return null;};Node.prototype.getChildBySid=function(sid,recursive){if(this.sid===sid){return this;}if(recursive){for(var i=0;i<this.nodes.length;i++){var n=this.nodes[i].getChildBySid(sid,recursive);if(n){return n;}}}return null;};Node.prototype.getTransformBySid=function(sid){for(var i=0;i<this.transforms.length;i++){if(this.transforms[i].sid===sid)return this.transforms[i];}return null;};Node.prototype.parse=function(element){var url;this.id=element.getAttribute('id');this.sid=element.getAttribute('sid');this.name=element.getAttribute('name');this.type=element.getAttribute('type');this.layer=element.getAttribute('layer');this.type=this.type==='JOINT'?this.type:'NODE';this.nodes=[];this.transforms=[];this.geometries=[];this.cameras=[];this.lights=[];this.controllers=[];this.matrix=new THREE.Matrix4();for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'node':this.nodes.push(new Node().parse(child));break;case 'instance_camera':this.cameras.push(new InstanceCamera().parse(child));break;case 'instance_controller':this.controllers.push(new InstanceController().parse(child));break;case 'instance_geometry':this.geometries.push(new InstanceGeometry().parse(child));break;case 'instance_light':this.lights.push(new InstanceLight().parse(child));break;case 'instance_node':url=child.getAttribute('url').replace(/^#/,'');var iNode=getLibraryNode(url);if(iNode){this.nodes.push(new Node().parse(iNode));}break;case 'rotate':case 'translate':case 'scale':case 'matrix':case 'lookat':case 'skew':this.transforms.push(new Transform().parse(child));break;case 'extra':break;default:console.log(child.nodeName);break;}}this.channels=getChannelsForNode(this);bakeAnimations(this);this.updateMatrix();return this;};Node.prototype.updateMatrix=function(){this.matrix.identity();for(var i=0;i<this.transforms.length;i++){this.transforms[i].apply(this.matrix);}};function Transform(){this.sid="";this.type="";this.data=[];this.obj=null;}Transform.prototype.parse=function(element){this.sid=element.getAttribute('sid');this.type=element.nodeName;this.data=_floats(element.textContent);this.convert();return this;};Transform.prototype.convert=function(){switch(this.type){case 'matrix':this.obj=getConvertedMat4(this.data);break;case 'rotate':this.angle=THREE.Math.degToRad(this.data[3]);case 'translate':fixCoords(this.data,-1);this.obj=new THREE.Vector3(this.data[0],this.data[1],this.data[2]);break;case 'scale':fixCoords(this.data,1);this.obj=new THREE.Vector3(this.data[0],this.data[1],this.data[2]);break;default:console.log('Can not convert Transform of type '+this.type);break;}};Transform.prototype.apply=function(){var m1=new THREE.Matrix4();return function(matrix){switch(this.type){case 'matrix':matrix.multiply(this.obj);break;case 'translate':matrix.multiply(m1.makeTranslation(this.obj.x,this.obj.y,this.obj.z));break;case 'rotate':matrix.multiply(m1.makeRotationAxis(this.obj,this.angle));break;case 'scale':matrix.scale(this.obj);break;}};}();Transform.prototype.update=function(data,member){var members=['X','Y','Z','ANGLE'];switch(this.type){case 'matrix':if(!member){this.obj.copy(data);}else if(member.length===1){switch(member[0]){case 0:this.obj.n11=data[0];this.obj.n21=data[1];this.obj.n31=data[2];this.obj.n41=data[3];break;case 1:this.obj.n12=data[0];this.obj.n22=data[1];this.obj.n32=data[2];this.obj.n42=data[3];break;case 2:this.obj.n13=data[0];this.obj.n23=data[1];this.obj.n33=data[2];this.obj.n43=data[3];break;case 3:this.obj.n14=data[0];this.obj.n24=data[1];this.obj.n34=data[2];this.obj.n44=data[3];break;}}else if(member.length===2){var propName='n'+(member[0]+1)+(member[1]+1);this.obj[propName]=data;}else {console.log('Incorrect addressing of matrix in transform.');}break;case 'translate':case 'scale':if(Object.prototype.toString.call(member)==='[object Array]'){member=members[member[0]];}switch(member){case 'X':this.obj.x=data;break;case 'Y':this.obj.y=data;break;case 'Z':this.obj.z=data;break;default:this.obj.x=data[0];this.obj.y=data[1];this.obj.z=data[2];break;}break;case 'rotate':if(Object.prototype.toString.call(member)==='[object Array]'){member=members[member[0]];}switch(member){case 'X':this.obj.x=data;break;case 'Y':this.obj.y=data;break;case 'Z':this.obj.z=data;break;case 'ANGLE':this.angle=THREE.Math.degToRad(data);break;default:this.obj.x=data[0];this.obj.y=data[1];this.obj.z=data[2];this.angle=THREE.Math.degToRad(data[3]);break;}break;}};function InstanceController(){this.url="";this.skeleton=[];this.instance_material=[];}InstanceController.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');this.skeleton=[];this.instance_material=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!==1)continue;switch(child.nodeName){case 'skeleton':this.skeleton.push(child.textContent.replace(/^#/,''));break;case 'bind_material':var instances=child.querySelectorAll('instance_material');for(var j=0;j<instances.length;j++){var instance=instances[j];this.instance_material.push(new InstanceMaterial().parse(instance));}break;case 'extra':break;default:break;}}return this;};function InstanceMaterial(){this.symbol="";this.target="";}InstanceMaterial.prototype.parse=function(element){this.symbol=element.getAttribute('symbol');this.target=element.getAttribute('target').replace(/^#/,'');return this;};function InstanceGeometry(){this.url="";this.instance_material=[];}InstanceGeometry.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');this.instance_material=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;if(child.nodeName==='bind_material'){var instances=child.querySelectorAll('instance_material');for(var j=0;j<instances.length;j++){var instance=instances[j];this.instance_material.push(new InstanceMaterial().parse(instance));}break;}}return this;};function Geometry(){this.id="";this.mesh=null;}Geometry.prototype.parse=function(element){this.id=element.getAttribute('id');extractDoubleSided(this,element);for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'mesh':this.mesh=new Mesh(this).parse(child);break;case 'extra': // console.log( child );
-	break;default:break;}}return this;};function Mesh(geometry){this.geometry=geometry.id;this.primitives=[];this.vertices=null;this.geometry3js=null;}Mesh.prototype.parse=function(element){this.primitives=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'source':_source(child);break;case 'vertices':this.vertices=new Vertices().parse(child);break;case 'linestrips':this.primitives.push(new LineStrips().parse(child));break;case 'triangles':this.primitives.push(new Triangles().parse(child));break;case 'polygons':this.primitives.push(new Polygons().parse(child));break;case 'polylist':this.primitives.push(new Polylist().parse(child));break;default:break;}}this.geometry3js=new THREE.Geometry();if(this.vertices===null){ // TODO (mrdoob): Study case when this is null (carrier.dae)
-	return this;}var vertexData=sources[this.vertices.input['POSITION'].source].data;for(var i=0;i<vertexData.length;i+=3){this.geometry3js.vertices.push(getConvertedVec3(vertexData,i).clone());}for(var i=0;i<this.primitives.length;i++){var primitive=this.primitives[i];primitive.setVertices(this.vertices);this.handlePrimitive(primitive,this.geometry3js);}if(this.geometry3js.calcNormals){this.geometry3js.computeVertexNormals();delete this.geometry3js.calcNormals;}return this;};Mesh.prototype.handlePrimitive=function(primitive,geom){if(primitive instanceof LineStrips){ // TODO: Handle indices. Maybe easier with BufferGeometry?
-	geom.isLineStrip=true;return;}var j,k,pList=primitive.p,inputs=primitive.inputs;var input,index,idx32;var source,numParams;var vcIndex=0,vcount=3,maxOffset=0;var texture_sets=[];for(j=0;j<inputs.length;j++){input=inputs[j];var offset=input.offset+1;maxOffset=maxOffset<offset?offset:maxOffset;switch(input.semantic){case 'TEXCOORD':texture_sets.push(input.set);break;}}for(var pCount=0;pCount<pList.length;++pCount){var p=pList[pCount],i=0;while(i<p.length){var vs=[];var ns=[];var ts=null;var cs=[];if(primitive.vcount){vcount=primitive.vcount.length?primitive.vcount[vcIndex++]:primitive.vcount;}else {vcount=p.length/maxOffset;}for(j=0;j<vcount;j++){for(k=0;k<inputs.length;k++){input=inputs[k];source=sources[input.source];index=p[i+j*maxOffset+input.offset];numParams=source.accessor.params.length;idx32=index*numParams;switch(input.semantic){case 'VERTEX':vs.push(index);break;case 'NORMAL':ns.push(getConvertedVec3(source.data,idx32));break;case 'TEXCOORD':ts=ts||{};if(ts[input.set]===undefined)ts[input.set]=[]; // invert the V
-	ts[input.set].push(new THREE.Vector2(source.data[idx32],source.data[idx32+1]));break;case 'COLOR':cs.push(new THREE.Color().setRGB(source.data[idx32],source.data[idx32+1],source.data[idx32+2]));break;default:break;}}}if(ns.length===0){ // check the vertices inputs
-	input=this.vertices.input.NORMAL;if(input){source=sources[input.source];numParams=source.accessor.params.length;for(var ndx=0,len=vs.length;ndx<len;ndx++){ns.push(getConvertedVec3(source.data,vs[ndx]*numParams));}}else {geom.calcNormals=true;}}if(!ts){ts={}; // check the vertices inputs
-	input=this.vertices.input.TEXCOORD;if(input){texture_sets.push(input.set);source=sources[input.source];numParams=source.accessor.params.length;for(var ndx=0,len=vs.length;ndx<len;ndx++){idx32=vs[ndx]*numParams;if(ts[input.set]===undefined)ts[input.set]=[]; // invert the V
-	ts[input.set].push(new THREE.Vector2(source.data[idx32],1.0-source.data[idx32+1]));}}}if(cs.length===0){ // check the vertices inputs
-	input=this.vertices.input.COLOR;if(input){source=sources[input.source];numParams=source.accessor.params.length;for(var ndx=0,len=vs.length;ndx<len;ndx++){idx32=vs[ndx]*numParams;cs.push(new THREE.Color().setRGB(source.data[idx32],source.data[idx32+1],source.data[idx32+2]));}}}var face=null,faces=[],uv,uvArr;if(vcount===3){faces.push(new THREE.Face3(vs[0],vs[1],vs[2],ns,cs.length?cs:new THREE.Color()));}else if(vcount===4){faces.push(new THREE.Face3(vs[0],vs[1],vs[3],ns.length?[ns[0].clone(),ns[1].clone(),ns[3].clone()]:[],cs.length?[cs[0],cs[1],cs[3]]:new THREE.Color()));faces.push(new THREE.Face3(vs[1],vs[2],vs[3],ns.length?[ns[1].clone(),ns[2].clone(),ns[3].clone()]:[],cs.length?[cs[1],cs[2],cs[3]]:new THREE.Color()));}else if(vcount>4&&options.subdivideFaces){var clr=cs.length?cs:new THREE.Color(),vec1,vec2,vec3,v1,v2,norm; // subdivide into multiple Face3s
-	for(k=1;k<vcount-1;){faces.push(new THREE.Face3(vs[0],vs[k],vs[k+1],ns.length?[ns[0].clone(),ns[k++].clone(),ns[k].clone()]:[],clr));}}if(faces.length){for(var ndx=0,len=faces.length;ndx<len;ndx++){face=faces[ndx];face.daeMaterial=primitive.material;geom.faces.push(face);for(k=0;k<texture_sets.length;k++){uv=ts[texture_sets[k]];if(vcount>4){ // Grab the right UVs for the vertices in this face
-	uvArr=[uv[0],uv[ndx+1],uv[ndx+2]];}else if(vcount===4){if(ndx===0){uvArr=[uv[0],uv[1],uv[3]];}else {uvArr=[uv[1].clone(),uv[2],uv[3].clone()];}}else {uvArr=[uv[0],uv[1],uv[2]];}if(geom.faceVertexUvs[k]===undefined){geom.faceVertexUvs[k]=[];}geom.faceVertexUvs[k].push(uvArr);}}}else {console.log('dropped face with vcount '+vcount+' for geometry with id: '+geom.id);}i+=maxOffset*vcount;}}};function Polygons(){this.material="";this.count=0;this.inputs=[];this.vcount=null;this.p=[];this.geometry=new THREE.Geometry();}Polygons.prototype.setVertices=function(vertices){for(var i=0;i<this.inputs.length;i++){if(this.inputs[i].source===vertices.id){this.inputs[i].source=vertices.input['POSITION'].source;}}};Polygons.prototype.parse=function(element){this.material=element.getAttribute('material');this.count=_attr_as_int(element,'count',0);for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'input':this.inputs.push(new Input().parse(element.childNodes[i]));break;case 'vcount':this.vcount=_ints(child.textContent);break;case 'p':this.p.push(_ints(child.textContent));break;case 'ph':console.warn('polygon holes not yet supported!');break;default:break;}}return this;};function Polylist(){Polygons.call(this);this.vcount=[];}Polylist.prototype=Object.create(Polygons.prototype);Polylist.prototype.constructor=Polylist;function LineStrips(){Polygons.call(this);this.vcount=1;}LineStrips.prototype=Object.create(Polygons.prototype);LineStrips.prototype.constructor=LineStrips;function Triangles(){Polygons.call(this);this.vcount=3;}Triangles.prototype=Object.create(Polygons.prototype);Triangles.prototype.constructor=Triangles;function Accessor(){this.source="";this.count=0;this.stride=0;this.params=[];}Accessor.prototype.parse=function(element){this.params=[];this.source=element.getAttribute('source');this.count=_attr_as_int(element,'count',0);this.stride=_attr_as_int(element,'stride',0);for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeName==='param'){var param={};param['name']=child.getAttribute('name');param['type']=child.getAttribute('type');this.params.push(param);}}return this;};function Vertices(){this.input={};}Vertices.prototype.parse=function(element){this.id=element.getAttribute('id');for(var i=0;i<element.childNodes.length;i++){if(element.childNodes[i].nodeName==='input'){var input=new Input().parse(element.childNodes[i]);this.input[input.semantic]=input;}}return this;};function Input(){this.semantic="";this.offset=0;this.source="";this.set=0;}Input.prototype.parse=function(element){this.semantic=element.getAttribute('semantic');this.source=element.getAttribute('source').replace(/^#/,'');this.set=_attr_as_int(element,'set',-1);this.offset=_attr_as_int(element,'offset',0);if(this.semantic==='TEXCOORD'&&this.set<0){this.set=0;}return this;};function Source(id){this.id=id;this.type=null;}Source.prototype.parse=function(element){this.id=element.getAttribute('id');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'bool_array':this.data=_bools(child.textContent);this.type=child.nodeName;break;case 'float_array':this.data=_floats(child.textContent);this.type=child.nodeName;break;case 'int_array':this.data=_ints(child.textContent);this.type=child.nodeName;break;case 'IDREF_array':case 'Name_array':this.data=_strings(child.textContent);this.type=child.nodeName;break;case 'technique_common':for(var j=0;j<child.childNodes.length;j++){if(child.childNodes[j].nodeName==='accessor'){this.accessor=new Accessor().parse(child.childNodes[j]);break;}}break;default: // console.log(child.nodeName);
-	break;}}return this;};Source.prototype.read=function(){var result=[]; //for (var i = 0; i < this.accessor.params.length; i++) {
-	var param=this.accessor.params[0]; //console.log(param.name + " " + param.type);
-	switch(param.type){case 'IDREF':case 'Name':case 'name':case 'float':return this.data;case 'float4x4':for(var j=0;j<this.data.length;j+=16){var s=this.data.slice(j,j+16);var m=getConvertedMat4(s);result.push(m);}break;default:console.log('ColladaLoader: Source: Read dont know how to read '+param.type+'.');break;} //}
-	return result;};function Material(){this.id="";this.name="";this.instance_effect=null;}Material.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');for(var i=0;i<element.childNodes.length;i++){if(element.childNodes[i].nodeName==='instance_effect'){this.instance_effect=new InstanceEffect().parse(element.childNodes[i]);break;}}return this;};function ColorOrTexture(){this.color=new THREE.Color();this.color.setRGB(Math.random(),Math.random(),Math.random());this.color.a=1.0;this.texture=null;this.texcoord=null;this.texOpts=null;}ColorOrTexture.prototype.isColor=function(){return this.texture===null;};ColorOrTexture.prototype.isTexture=function(){return this.texture!=null;};ColorOrTexture.prototype.parse=function(element){if(element.nodeName==='transparent'){this.opaque=element.getAttribute('opaque');}for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'color':var rgba=_floats(child.textContent);this.color=new THREE.Color();this.color.setRGB(rgba[0],rgba[1],rgba[2]);this.color.a=rgba[3];break;case 'texture':this.texture=child.getAttribute('texture');this.texcoord=child.getAttribute('texcoord'); // Defaults from:
-	// https://collada.org/mediawiki/index.php/Maya_texture_placement_MAYA_extension
-	this.texOpts={offsetU:0,offsetV:0,repeatU:1,repeatV:1,wrapU:1,wrapV:1};this.parseTexture(child);break;default:break;}}return this;};ColorOrTexture.prototype.parseTexture=function(element){if(!element.childNodes)return this; // This should be supported by Maya, 3dsMax, and MotionBuilder
-	if(element.childNodes[1]&&element.childNodes[1].nodeName==='extra'){element=element.childNodes[1];if(element.childNodes[1]&&element.childNodes[1].nodeName==='technique'){element=element.childNodes[1];}}for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'offsetU':case 'offsetV':case 'repeatU':case 'repeatV':this.texOpts[child.nodeName]=parseFloat(child.textContent);break;case 'wrapU':case 'wrapV': // some dae have a value of true which becomes NaN via parseInt
-	if(child.textContent.toUpperCase()==='TRUE'){this.texOpts[child.nodeName]=1;}else {this.texOpts[child.nodeName]=parseInt(child.textContent);}break;default:this.texOpts[child.nodeName]=child.textContent;break;}}return this;};function Shader(type,effect){this.type=type;this.effect=effect;this.material=null;}Shader.prototype.parse=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'emission':case 'diffuse':case 'specular':case 'transparent':this[child.nodeName]=new ColorOrTexture().parse(child);break;case 'bump': // If 'bumptype' is 'heightfield', create a 'bump' property
-	// Else if 'bumptype' is 'normalmap', create a 'normal' property
-	// (Default to 'bump')
-	var bumpType=child.getAttribute('bumptype');if(bumpType){if(bumpType.toLowerCase()==="heightfield"){this['bump']=new ColorOrTexture().parse(child);}else if(bumpType.toLowerCase()==="normalmap"){this['normal']=new ColorOrTexture().parse(child);}else {console.error("Shader.prototype.parse: Invalid value for attribute 'bumptype' ("+bumpType+") - valid bumptypes are 'HEIGHTFIELD' and 'NORMALMAP' - defaulting to 'HEIGHTFIELD'");this['bump']=new ColorOrTexture().parse(child);}}else {console.warn("Shader.prototype.parse: Attribute 'bumptype' missing from bump node - defaulting to 'HEIGHTFIELD'");this['bump']=new ColorOrTexture().parse(child);}break;case 'shininess':case 'reflectivity':case 'index_of_refraction':case 'transparency':var f=child.querySelectorAll('float');if(f.length>0)this[child.nodeName]=parseFloat(f[0].textContent);break;default:break;}}this.create();return this;};Shader.prototype.create=function(){var props={};var transparent=false;if(this['transparency']!==undefined&&this['transparent']!==undefined){ // convert transparent color RBG to average value
-	var transparentColor=this['transparent'];var transparencyLevel=(this.transparent.color.r+this.transparent.color.g+this.transparent.color.b)/3*this.transparency;if(transparencyLevel>0){transparent=true;props['transparent']=true;props['opacity']=1-transparencyLevel;}}var keys={'diffuse':'map','ambient':'lightMap','specular':'specularMap','emission':'emissionMap','bump':'bumpMap','normal':'normalMap'};for(var prop in this){switch(prop){case 'ambient':case 'emission':case 'diffuse':case 'specular':case 'bump':case 'normal':var cot=this[prop];if(cot instanceof ColorOrTexture){if(cot.isTexture()){var samplerId=cot.texture;var surfaceId=this.effect.sampler[samplerId];if(surfaceId!==undefined&&surfaceId.source!==undefined){var surface=this.effect.surface[surfaceId.source];if(surface!==undefined){var image=images[surface.init_from];if(image){var url=baseUrl+image.init_from;var texture;var loader=THREE.Loader.Handlers.get(url);if(loader!==null){texture=loader.load(url);}else {texture=new THREE.Texture();loadTextureImage(texture,url);}texture.wrapS=cot.texOpts.wrapU?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping;texture.wrapT=cot.texOpts.wrapV?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping;texture.offset.x=cot.texOpts.offsetU;texture.offset.y=cot.texOpts.offsetV;texture.repeat.x=cot.texOpts.repeatU;texture.repeat.y=cot.texOpts.repeatV;props[keys[prop]]=texture; // Texture with baked lighting?
-	if(prop==='emission')props['emissive']=0xffffff;}}}}else if(prop==='diffuse'||!transparent){if(prop==='emission'){props['emissive']=cot.color.getHex();}else {props[prop]=cot.color.getHex();}}}break;case 'shininess':props[prop]=this[prop];break;case 'reflectivity':props[prop]=this[prop];if(props[prop]>0.0)props['envMap']=options.defaultEnvMap;props['combine']=THREE.MixOperation; //mix regular shading with reflective component
-	break;case 'index_of_refraction':props['refractionRatio']=this[prop]; //TODO: "index_of_refraction" becomes "refractionRatio" in shader, but I'm not sure if the two are actually comparable
-	if(this[prop]!==1.0)props['envMap']=options.defaultEnvMap;break;case 'transparency': // gets figured out up top
-	break;default:break;}}props['shading']=preferredShading;props['side']=this.effect.doubleSided?THREE.DoubleSide:THREE.FrontSide;if(props.diffuse!==undefined){props.color=props.diffuse;delete props.diffuse;}switch(this.type){case 'constant':if(props.emissive!=undefined)props.color=props.emissive;this.material=new THREE.MeshBasicMaterial(props);break;case 'phong':case 'blinn':this.material=new THREE.MeshPhongMaterial(props);break;case 'lambert':default:this.material=new THREE.MeshLambertMaterial(props);break;}return this.material;};function Surface(effect){this.effect=effect;this.init_from=null;this.format=null;}Surface.prototype.parse=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'init_from':this.init_from=child.textContent;break;case 'format':this.format=child.textContent;break;default:console.log("unhandled Surface prop: "+child.nodeName);break;}}return this;};function Sampler2D(effect){this.effect=effect;this.source=null;this.wrap_s=null;this.wrap_t=null;this.minfilter=null;this.magfilter=null;this.mipfilter=null;}Sampler2D.prototype.parse=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'source':this.source=child.textContent;break;case 'minfilter':this.minfilter=child.textContent;break;case 'magfilter':this.magfilter=child.textContent;break;case 'mipfilter':this.mipfilter=child.textContent;break;case 'wrap_s':this.wrap_s=child.textContent;break;case 'wrap_t':this.wrap_t=child.textContent;break;default:console.log("unhandled Sampler2D prop: "+child.nodeName);break;}}return this;};function Effect(){this.id="";this.name="";this.shader=null;this.surface={};this.sampler={};}Effect.prototype.create=function(){if(this.shader===null){return null;}};Effect.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');extractDoubleSided(this,element);this.shader=null;for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'profile_COMMON':this.parseTechnique(this.parseProfileCOMMON(child));break;default:break;}}return this;};Effect.prototype.parseNewparam=function(element){var sid=element.getAttribute('sid');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'surface':this.surface[sid]=new Surface(this).parse(child);break;case 'sampler2D':this.sampler[sid]=new Sampler2D(this).parse(child);break;case 'extra':break;default:console.log(child.nodeName);break;}}};Effect.prototype.parseProfileCOMMON=function(element){var technique;for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'profile_COMMON':this.parseProfileCOMMON(child);break;case 'technique':technique=child;break;case 'newparam':this.parseNewparam(child);break;case 'image':var _image=new _Image().parse(child);images[_image.id]=_image;break;case 'extra':break;default:console.log(child.nodeName);break;}}return technique;};Effect.prototype.parseTechnique=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'constant':case 'lambert':case 'blinn':case 'phong':this.shader=new Shader(child.nodeName,this).parse(child);break;case 'extra':this.parseExtra(child);break;default:break;}}};Effect.prototype.parseExtra=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'technique':this.parseExtraTechnique(child);break;default:break;}}};Effect.prototype.parseExtraTechnique=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'bump':this.shader.parse(element);break;default:break;}}};function InstanceEffect(){this.url="";}InstanceEffect.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');return this;};function Animation(){this.id="";this.name="";this.source={};this.sampler=[];this.channel=[];}Animation.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.source={};for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'animation':var anim=new Animation().parse(child);for(var src in anim.source){this.source[src]=anim.source[src];}for(var j=0;j<anim.channel.length;j++){this.channel.push(anim.channel[j]);this.sampler.push(anim.sampler[j]);}break;case 'source':var src=new Source().parse(child);this.source[src.id]=src;break;case 'sampler':this.sampler.push(new Sampler(this).parse(child));break;case 'channel':this.channel.push(new Channel(this).parse(child));break;default:break;}}return this;};function Channel(animation){this.animation=animation;this.source="";this.target="";this.fullSid=null;this.sid=null;this.dotSyntax=null;this.arrSyntax=null;this.arrIndices=null;this.member=null;}Channel.prototype.parse=function(element){this.source=element.getAttribute('source').replace(/^#/,'');this.target=element.getAttribute('target');var parts=this.target.split('/');var id=parts.shift();var sid=parts.shift();var dotSyntax=sid.indexOf(".")>=0;var arrSyntax=sid.indexOf("(")>=0;if(dotSyntax){parts=sid.split(".");this.sid=parts.shift();this.member=parts.shift();}else if(arrSyntax){var arrIndices=sid.split("(");this.sid=arrIndices.shift();for(var j=0;j<arrIndices.length;j++){arrIndices[j]=parseInt(arrIndices[j].replace(/\)/,''));}this.arrIndices=arrIndices;}else {this.sid=sid;}this.fullSid=sid;this.dotSyntax=dotSyntax;this.arrSyntax=arrSyntax;return this;};function Sampler(animation){this.id="";this.animation=animation;this.inputs=[];this.input=null;this.output=null;this.strideOut=null;this.interpolation=null;this.startTime=null;this.endTime=null;this.duration=0;}Sampler.prototype.parse=function(element){this.id=element.getAttribute('id');this.inputs=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':this.inputs.push(new Input().parse(child));break;default:break;}}return this;};Sampler.prototype.create=function(){for(var i=0;i<this.inputs.length;i++){var input=this.inputs[i];var source=this.animation.source[input.source];switch(input.semantic){case 'INPUT':this.input=source.read();break;case 'OUTPUT':this.output=source.read();this.strideOut=source.accessor.stride;break;case 'INTERPOLATION':this.interpolation=source.read();break;case 'IN_TANGENT':break;case 'OUT_TANGENT':break;default:console.log(input.semantic);break;}}this.startTime=0;this.endTime=0;this.duration=0;if(this.input.length){this.startTime=100000000;this.endTime=-100000000;for(var i=0;i<this.input.length;i++){this.startTime=Math.min(this.startTime,this.input[i]);this.endTime=Math.max(this.endTime,this.input[i]);}this.duration=this.endTime-this.startTime;}};Sampler.prototype.getData=function(type,ndx,member){var data;if(type==='matrix'&&this.strideOut===16){data=this.output[ndx];}else if(this.strideOut>1){data=[];ndx*=this.strideOut;for(var i=0;i<this.strideOut;++i){data[i]=this.output[ndx+i];}if(this.strideOut===3){switch(type){case 'rotate':case 'translate':fixCoords(data,-1);break;case 'scale':fixCoords(data,1);break;}}else if(this.strideOut===4&&type==='matrix'){fixCoords(data,-1);}}else {data=this.output[ndx];if(member&&type==='translate'){data=getConvertedTranslation(member,data);}}return data;};function Key(time){this.targets=[];this.time=time;}Key.prototype.addTarget=function(fullSid,transform,member,data){this.targets.push({sid:fullSid,member:member,transform:transform,data:data});};Key.prototype.apply=function(opt_sid){for(var i=0;i<this.targets.length;++i){var target=this.targets[i];if(!opt_sid||target.sid===opt_sid){target.transform.update(target.data,target.member);}}};Key.prototype.getTarget=function(fullSid){for(var i=0;i<this.targets.length;++i){if(this.targets[i].sid===fullSid){return this.targets[i];}}return null;};Key.prototype.hasTarget=function(fullSid){for(var i=0;i<this.targets.length;++i){if(this.targets[i].sid===fullSid){return true;}}return false;}; // TODO: Currently only doing linear interpolation. Should support full COLLADA spec.
-	Key.prototype.interpolate=function(nextKey,time){for(var i=0,l=this.targets.length;i<l;i++){var target=this.targets[i],nextTarget=nextKey.getTarget(target.sid),data;if(target.transform.type!=='matrix'&&nextTarget){var scale=(time-this.time)/(nextKey.time-this.time),nextData=nextTarget.data,prevData=target.data;if(scale<0)scale=0;if(scale>1)scale=1;if(prevData.length){data=[];for(var j=0;j<prevData.length;++j){data[j]=prevData[j]+(nextData[j]-prevData[j])*scale;}}else {data=prevData+(nextData-prevData)*scale;}}else {data=target.data;}target.transform.update(data,target.member);}}; // Camera
-	function Camera(){this.id="";this.name="";this.technique="";}Camera.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'optics':this.parseOptics(child);break;default:break;}}return this;};Camera.prototype.parseOptics=function(element){for(var i=0;i<element.childNodes.length;i++){if(element.childNodes[i].nodeName==='technique_common'){var technique=element.childNodes[i];for(var j=0;j<technique.childNodes.length;j++){this.technique=technique.childNodes[j].nodeName;if(this.technique==='perspective'){var perspective=technique.childNodes[j];for(var k=0;k<perspective.childNodes.length;k++){var param=perspective.childNodes[k];switch(param.nodeName){case 'yfov':this.yfov=param.textContent;break;case 'xfov':this.xfov=param.textContent;break;case 'znear':this.znear=param.textContent;break;case 'zfar':this.zfar=param.textContent;break;case 'aspect_ratio':this.aspect_ratio=param.textContent;break;}}}else if(this.technique==='orthographic'){var orthographic=technique.childNodes[j];for(var k=0;k<orthographic.childNodes.length;k++){var param=orthographic.childNodes[k];switch(param.nodeName){case 'xmag':this.xmag=param.textContent;break;case 'ymag':this.ymag=param.textContent;break;case 'znear':this.znear=param.textContent;break;case 'zfar':this.zfar=param.textContent;break;case 'aspect_ratio':this.aspect_ratio=param.textContent;break;}}}}}}return this;};function InstanceCamera(){this.url="";}InstanceCamera.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');return this;}; // Light
-	function Light(){this.id="";this.name="";this.technique="";}Light.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'technique_common':this.parseCommon(child);break;case 'technique':this.parseTechnique(child);break;default:break;}}return this;};Light.prototype.parseCommon=function(element){for(var i=0;i<element.childNodes.length;i++){switch(element.childNodes[i].nodeName){case 'directional':case 'point':case 'spot':case 'ambient':this.technique=element.childNodes[i].nodeName;var light=element.childNodes[i];for(var j=0;j<light.childNodes.length;j++){var child=light.childNodes[j];switch(child.nodeName){case 'color':var rgba=_floats(child.textContent);this.color=new THREE.Color(0);this.color.setRGB(rgba[0],rgba[1],rgba[2]);this.color.a=rgba[3];break;case 'falloff_angle':this.falloff_angle=parseFloat(child.textContent);break;case 'quadratic_attenuation':var f=parseFloat(child.textContent);this.distance=f?Math.sqrt(1/f):0;}}}}return this;};Light.prototype.parseTechnique=function(element){this.profile=element.getAttribute('profile');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'intensity':this.intensity=parseFloat(child.textContent);break;}}return this;};function InstanceLight(){this.url="";}InstanceLight.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');return this;};function KinematicsModel(){this.id='';this.name='';this.joints=[];this.links=[];}KinematicsModel.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.joints=[];this.links=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'technique_common':this.parseCommon(child);break;default:break;}}return this;};KinematicsModel.prototype.parseCommon=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(element.childNodes[i].nodeName){case 'joint':this.joints.push(new Joint().parse(child));break;case 'link':this.links.push(new Link().parse(child));break;default:break;}}return this;};function Joint(){this.sid='';this.name='';this.axis=new THREE.Vector3();this.limits={min:0,max:0};this.type='';this.static=false;this.zeroPosition=0.0;this.middlePosition=0.0;}Joint.prototype.parse=function(element){this.sid=element.getAttribute('sid');this.name=element.getAttribute('name');this.axis=new THREE.Vector3();this.limits={min:0,max:0};this.type='';this.static=false;this.zeroPosition=0.0;this.middlePosition=0.0;var axisElement=element.querySelector('axis');var _axis=_floats(axisElement.textContent);this.axis=getConvertedVec3(_axis,0);var min=element.querySelector('limits min')?parseFloat(element.querySelector('limits min').textContent):-360;var max=element.querySelector('limits max')?parseFloat(element.querySelector('limits max').textContent):360;this.limits={min:min,max:max};var jointTypes=['prismatic','revolute'];for(var i=0;i<jointTypes.length;i++){var type=jointTypes[i];var jointElement=element.querySelector(type);if(jointElement){this.type=type;}} // if the min is equal to or somehow greater than the max, consider the joint static
-	if(this.limits.min>=this.limits.max){this.static=true;}this.middlePosition=(this.limits.min+this.limits.max)/2.0;return this;};function Link(){this.sid='';this.name='';this.transforms=[];this.attachments=[];}Link.prototype.parse=function(element){this.sid=element.getAttribute('sid');this.name=element.getAttribute('name');this.transforms=[];this.attachments=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'attachment_full':this.attachments.push(new Attachment().parse(child));break;case 'rotate':case 'translate':case 'matrix':this.transforms.push(new Transform().parse(child));break;default:break;}}return this;};function Attachment(){this.joint='';this.transforms=[];this.links=[];}Attachment.prototype.parse=function(element){this.joint=element.getAttribute('joint').split('/').pop();this.links=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'link':this.links.push(new Link().parse(child));break;case 'rotate':case 'translate':case 'matrix':this.transforms.push(new Transform().parse(child));break;default:break;}}return this;};function _source(element){var id=element.getAttribute('id');if(sources[id]!=undefined){return sources[id];}sources[id]=new Source(id).parse(element);return sources[id];}function _nsResolver(nsPrefix){if(nsPrefix==="dae"){return "http://www.collada.org/2005/11/COLLADASchema";}return null;}function _bools(str){var raw=_strings(str);var data=[];for(var i=0,l=raw.length;i<l;i++){data.push(raw[i]==='true'||raw[i]==='1'?true:false);}return data;}function _floats(str){var raw=_strings(str);var data=[];for(var i=0,l=raw.length;i<l;i++){data.push(parseFloat(raw[i]));}return data;}function _ints(str){var raw=_strings(str);var data=[];for(var i=0,l=raw.length;i<l;i++){data.push(parseInt(raw[i],10));}return data;}function _strings(str){return str.length>0?_trimString(str).split(/\s+/):[];}function _trimString(str){return str.replace(/^\s+/,"").replace(/\s+$/,"");}function _attr_as_float(element,name,defaultValue){if(element.hasAttribute(name)){return parseFloat(element.getAttribute(name));}else {return defaultValue;}}function _attr_as_int(element,name,defaultValue){if(element.hasAttribute(name)){return parseInt(element.getAttribute(name),10);}else {return defaultValue;}}function _attr_as_string(element,name,defaultValue){if(element.hasAttribute(name)){return element.getAttribute(name);}else {return defaultValue;}}function _format_float(f,num){if(f===undefined){var s='0.';while(s.length<num+2){s+='0';}return s;}num=num||2;var parts=f.toString().split('.');parts[1]=parts.length>1?parts[1].substr(0,num):"0";while(parts[1].length<num){parts[1]+='0';}return parts.join('.');}function loadTextureImage(texture,url){var loader=new THREE.ImageLoader();loader.load(url,function(image){texture.image=image;texture.needsUpdate=true;});}function extractDoubleSided(obj,element){obj.doubleSided=false;var node=element.querySelectorAll('extra double_sided')[0];if(node){if(node&&parseInt(node.textContent,10)===1){obj.doubleSided=true;}}} // Up axis conversion
-	function setUpConversion(){if(options.convertUpAxis!==true||colladaUp===options.upAxis){upConversion=null;}else {switch(colladaUp){case 'X':upConversion=options.upAxis==='Y'?'XtoY':'XtoZ';break;case 'Y':upConversion=options.upAxis==='X'?'YtoX':'YtoZ';break;case 'Z':upConversion=options.upAxis==='X'?'ZtoX':'ZtoY';break;}}}function fixCoords(data,sign){if(options.convertUpAxis!==true||colladaUp===options.upAxis){return;}switch(upConversion){case 'XtoY':var tmp=data[0];data[0]=sign*data[1];data[1]=tmp;break;case 'XtoZ':var tmp=data[2];data[2]=data[1];data[1]=data[0];data[0]=tmp;break;case 'YtoX':var tmp=data[0];data[0]=data[1];data[1]=sign*tmp;break;case 'YtoZ':var tmp=data[1];data[1]=sign*data[2];data[2]=tmp;break;case 'ZtoX':var tmp=data[0];data[0]=data[1];data[1]=data[2];data[2]=tmp;break;case 'ZtoY':var tmp=data[1];data[1]=data[2];data[2]=sign*tmp;break;}}function getConvertedTranslation(axis,data){if(options.convertUpAxis!==true||colladaUp===options.upAxis){return data;}switch(axis){case 'X':data=upConversion==='XtoY'?data*-1:data;break;case 'Y':data=upConversion==='YtoZ'||upConversion==='YtoX'?data*-1:data;break;case 'Z':data=upConversion==='ZtoY'?data*-1:data;break;default:break;}return data;}function getConvertedVec3(data,offset){var arr=[data[offset],data[offset+1],data[offset+2]];fixCoords(arr,-1);return new THREE.Vector3(arr[0],arr[1],arr[2]);}function getConvertedMat4(data){if(options.convertUpAxis){ // First fix rotation and scale
-	// Columns first
-	var arr=[data[0],data[4],data[8]];fixCoords(arr,-1);data[0]=arr[0];data[4]=arr[1];data[8]=arr[2];arr=[data[1],data[5],data[9]];fixCoords(arr,-1);data[1]=arr[0];data[5]=arr[1];data[9]=arr[2];arr=[data[2],data[6],data[10]];fixCoords(arr,-1);data[2]=arr[0];data[6]=arr[1];data[10]=arr[2]; // Rows second
-	arr=[data[0],data[1],data[2]];fixCoords(arr,-1);data[0]=arr[0];data[1]=arr[1];data[2]=arr[2];arr=[data[4],data[5],data[6]];fixCoords(arr,-1);data[4]=arr[0];data[5]=arr[1];data[6]=arr[2];arr=[data[8],data[9],data[10]];fixCoords(arr,-1);data[8]=arr[0];data[9]=arr[1];data[10]=arr[2]; // Now fix translation
-	arr=[data[3],data[7],data[11]];fixCoords(arr,-1);data[3]=arr[0];data[7]=arr[1];data[11]=arr[2];}return new THREE.Matrix4().set(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],data[10],data[11],data[12],data[13],data[14],data[15]);}function getConvertedIndex(index){if(index>-1&&index<3){var members=['X','Y','Z'],indices={X:0,Y:1,Z:2};index=getConvertedMember(members[index]);index=indices[index];}return index;}function getConvertedMember(member){if(options.convertUpAxis){switch(member){case 'X':switch(upConversion){case 'XtoY':case 'XtoZ':case 'YtoX':member='Y';break;case 'ZtoX':member='Z';break;}break;case 'Y':switch(upConversion){case 'XtoY':case 'YtoX':case 'ZtoX':member='X';break;case 'XtoZ':case 'YtoZ':case 'ZtoY':member='Z';break;}break;case 'Z':switch(upConversion){case 'XtoZ':member='X';break;case 'YtoZ':case 'ZtoX':case 'ZtoY':member='Y';break;}break;}}return member;}return {load:load,parse:parse,setPreferredShading:setPreferredShading,applySkin:applySkin,geometries:geometries,options:options};};};
-
-/***/ },
-/* 15 */
-/***/ function(module, exports) {
-
-	/**
 	 * @author mikael emtinger / http://gomo.se/
 	 */
 	'use strict';
@@ -5783,6 +5695,102 @@
 	};
 
 /***/ },
+/* 15 */
+/***/ function(module, exports) {
+
+	/**
+	 * @author Tim Knip / http://www.floorplanner.com/ / tim at floorplanner.com
+	 * @author Tony Parisi / http://www.tonyparisi.com/
+	 */'use strict';module.exports=function(THREE){THREE.ColladaLoader=function(){var COLLADA=null;var scene=null;var visualScene;var kinematicsModel;var readyCallbackFunc=null;var sources={};var images={};var animations={};var controllers={};var geometries={};var materials={};var effects={};var cameras={};var lights={};var animData;var kinematics;var visualScenes;var kinematicsModels;var baseUrl;var morphs;var skins;var flip_uv=true;var preferredShading=THREE.SmoothShading;var options={ // Force Geometry to always be centered at the local origin of the
+	// containing Mesh.
+	centerGeometry:false, // Axis conversion is done for geometries, animations, and controllers.
+	// If we ever pull cameras or lights out of the COLLADA file, they'll
+	// need extra work.
+	convertUpAxis:false,subdivideFaces:true,upAxis:'Y', // For reflective or refractive materials we'll use this cubemap
+	defaultEnvMap:null};var colladaUnit=1.0;var colladaUp='Y';var upConversion=null;function load(url,readyCallback,progressCallback,failCallback){var length=0;if(document.implementation&&document.implementation.createDocument){var request=new XMLHttpRequest();request.onreadystatechange=function(){if(request.readyState===4){if(request.status===0||request.status===200){if(request.response){readyCallbackFunc=readyCallback;parse(request.response,undefined,url);}else {if(failCallback){failCallback({type:'error',url:url});}else {console.error("ColladaLoader: Empty or non-existing file ("+url+")");}}}else {if(failCallback){failCallback({type:'error',url:url});}else {console.error('ColladaLoader: Couldn\'t load "'+url+'" ('+request.status+')');}}}else if(request.readyState===3){if(progressCallback){if(length===0){length=request.getResponseHeader("Content-Length");}progressCallback({total:length,loaded:request.responseText.length});}}};request.open("GET",url,true);request.send(null);}else {alert("Don't know how to parse XML!");}}function parse(text,callBack,url){COLLADA=new DOMParser().parseFromString(text,'text/xml');callBack=callBack||readyCallbackFunc;if(url!==undefined){var parts=url.split('/');parts.pop();baseUrl=(parts.length<1?'.':parts.join('/'))+'/';}parseAsset();setUpConversion();images=parseLib("library_images image",_Image,"image");materials=parseLib("library_materials material",Material,"material");effects=parseLib("library_effects effect",Effect,"effect");geometries=parseLib("library_geometries geometry",Geometry,"geometry");cameras=parseLib("library_cameras camera",Camera,"camera");lights=parseLib("library_lights light",Light,"light");controllers=parseLib("library_controllers controller",Controller,"controller");animations=parseLib("library_animations animation",Animation,"animation");visualScenes=parseLib("library_visual_scenes visual_scene",VisualScene,"visual_scene");kinematicsModels=parseLib("library_kinematics_models kinematics_model",KinematicsModel,"kinematics_model");morphs=[];skins=[];visualScene=parseScene();scene=new THREE.Group();for(var i=0;i<visualScene.nodes.length;i++){scene.add(createSceneGraph(visualScene.nodes[i]));} // unit conversion
+	scene.scale.multiplyScalar(colladaUnit);createAnimations();kinematicsModel=parseKinematicsModel();createKinematics();var result={scene:scene,morphs:morphs,skins:skins,animations:animData,kinematics:kinematics,dae:{images:images,materials:materials,cameras:cameras,lights:lights,effects:effects,geometries:geometries,controllers:controllers,animations:animations,visualScenes:visualScenes,visualScene:visualScene,scene:visualScene,kinematicsModels:kinematicsModels,kinematicsModel:kinematicsModel}};if(callBack){callBack(result);}return result;}function setPreferredShading(shading){preferredShading=shading;}function parseAsset(){var elements=COLLADA.querySelectorAll('asset');var element=elements[0];if(element&&element.childNodes){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'unit':var meter=child.getAttribute('meter');if(meter){colladaUnit=parseFloat(meter);}break;case 'up_axis':colladaUp=child.textContent.charAt(0);break;}}}}function parseLib(q,classSpec,prefix){var elements=COLLADA.querySelectorAll(q);var lib={};var i=0;var elementsLength=elements.length;for(var j=0;j<elementsLength;j++){var element=elements[j];var daeElement=new classSpec().parse(element);if(!daeElement.id||daeElement.id.length===0)daeElement.id=prefix+i++;lib[daeElement.id]=daeElement;}return lib;}function parseScene(){var sceneElement=COLLADA.querySelectorAll('scene instance_visual_scene')[0];if(sceneElement){var url=sceneElement.getAttribute('url').replace(/^#/,'');return visualScenes[url.length>0?url:'visual_scene0'];}else {return null;}}function parseKinematicsModel(){var kinematicsModelElement=COLLADA.querySelectorAll('instance_kinematics_model')[0];if(kinematicsModelElement){var url=kinematicsModelElement.getAttribute('url').replace(/^#/,'');return kinematicsModels[url.length>0?url:'kinematics_model0'];}else {return null;}}function createAnimations(){animData=[]; // fill in the keys
+	recurseHierarchy(scene);}function recurseHierarchy(node){var n=visualScene.getChildById(node.colladaId,true),newData=null;if(n&&n.keys){newData={fps:60,hierarchy:[{node:n,keys:n.keys,sids:n.sids}],node:node,name:'animation_'+node.name,length:0};animData.push(newData);for(var i=0,il=n.keys.length;i<il;i++){newData.length=Math.max(newData.length,n.keys[i].time);}}else {newData={hierarchy:[{keys:[],sids:[]}]};}for(var i=0,il=node.children.length;i<il;i++){var d=recurseHierarchy(node.children[i]);for(var j=0,jl=d.hierarchy.length;j<jl;j++){newData.hierarchy.push({keys:[],sids:[]});}}return newData;}function calcAnimationBounds(){var start=1000000;var end=-start;var frames=0;var ID;for(var id in animations){var animation=animations[id];ID=ID||animation.id;for(var i=0;i<animation.sampler.length;i++){var sampler=animation.sampler[i];sampler.create();start=Math.min(start,sampler.startTime);end=Math.max(end,sampler.endTime);frames=Math.max(frames,sampler.input.length);}}return {start:start,end:end,frames:frames,ID:ID};}function createMorph(geometry,ctrl){var morphCtrl=ctrl instanceof InstanceController?controllers[ctrl.url]:ctrl;if(!morphCtrl||!morphCtrl.morph){console.log("could not find morph controller!");return;}var morph=morphCtrl.morph;for(var i=0;i<morph.targets.length;i++){var target_id=morph.targets[i];var daeGeometry=geometries[target_id];if(!daeGeometry.mesh||!daeGeometry.mesh.primitives||!daeGeometry.mesh.primitives.length){continue;}var target=daeGeometry.mesh.primitives[0].geometry;if(target.vertices.length===geometry.vertices.length){geometry.morphTargets.push({name:"target_1",vertices:target.vertices});}}geometry.morphTargets.push({name:"target_Z",vertices:geometry.vertices});}function createSkin(geometry,ctrl,applyBindShape){var skinCtrl=controllers[ctrl.url];if(!skinCtrl||!skinCtrl.skin){console.log("could not find skin controller!");return;}if(!ctrl.skeleton||!ctrl.skeleton.length){console.log("could not find the skeleton for the skin!");return;}var skin=skinCtrl.skin;var skeleton=visualScene.getChildById(ctrl.skeleton[0]);var hierarchy=[];applyBindShape=applyBindShape!==undefined?applyBindShape:true;var bones=[];geometry.skinWeights=[];geometry.skinIndices=[]; //createBones( geometry.bones, skin, hierarchy, skeleton, null, -1 );
+	//createWeights( skin, geometry.bones, geometry.skinIndices, geometry.skinWeights );
+	/*
+	            geometry.animation = {
+	            	name: 'take_001',
+	            	fps: 30,
+	            	length: 2,
+	            	JIT: true,
+	            	hierarchy: hierarchy
+	            };
+	            */if(applyBindShape){for(var i=0;i<geometry.vertices.length;i++){geometry.vertices[i].applyMatrix4(skin.bindShapeMatrix);}}}function setupSkeleton(node,bones,frame,parent){node.world=node.world||new THREE.Matrix4();node.localworld=node.localworld||new THREE.Matrix4();node.world.copy(node.matrix);node.localworld.copy(node.matrix);if(node.channels&&node.channels.length){var channel=node.channels[0];var m=channel.sampler.output[frame];if(m instanceof THREE.Matrix4){node.world.copy(m);node.localworld.copy(m);if(frame===0)node.matrix.copy(m);}}if(parent){node.world.multiplyMatrices(parent,node.world);}bones.push(node);for(var i=0;i<node.nodes.length;i++){setupSkeleton(node.nodes[i],bones,frame,node.world);}}function setupSkinningMatrices(bones,skin){ // FIXME: this is dumb...
+	for(var i=0;i<bones.length;i++){var bone=bones[i];var found=-1;if(bone.type!='JOINT')continue;for(var j=0;j<skin.joints.length;j++){if(bone.sid===skin.joints[j]){found=j;break;}}if(found>=0){var inv=skin.invBindMatrices[found];bone.invBindMatrix=inv;bone.skinningMatrix=new THREE.Matrix4();bone.skinningMatrix.multiplyMatrices(bone.world,inv); // (IBMi * JMi)
+	bone.animatrix=new THREE.Matrix4();bone.animatrix.copy(bone.localworld);bone.weights=[];for(var j=0;j<skin.weights.length;j++){for(var k=0;k<skin.weights[j].length;k++){var w=skin.weights[j][k];if(w.joint===found){bone.weights.push(w);}}}}else {console.warn("ColladaLoader: Could not find joint '"+bone.sid+"'.");bone.skinningMatrix=new THREE.Matrix4();bone.weights=[];}}} //Walk the Collada tree and flatten the bones into a list, extract the position, quat and scale from the matrix
+	function flattenSkeleton(skeleton){var list=[];var walk=function walk(parentid,node,list){var bone={};bone.name=node.sid;bone.parent=parentid;bone.matrix=node.matrix;var data=[new THREE.Vector3(),new THREE.Quaternion(),new THREE.Vector3()];bone.matrix.decompose(data[0],data[1],data[2]);bone.pos=[data[0].x,data[0].y,data[0].z];bone.scl=[data[2].x,data[2].y,data[2].z];bone.rotq=[data[1].x,data[1].y,data[1].z,data[1].w];list.push(bone);for(var i in node.nodes){walk(node.sid,node.nodes[i],list);}};walk(-1,skeleton,list);return list;} //Move the vertices into the pose that is proper for the start of the animation
+	function skinToBindPose(geometry,skeleton,skinController){var bones=[];setupSkeleton(skeleton,bones,-1);setupSkinningMatrices(bones,skinController.skin);var v=new THREE.Vector3();var skinned=[];for(var i=0;i<geometry.vertices.length;i++){skinned.push(new THREE.Vector3());}for(i=0;i<bones.length;i++){if(bones[i].type!='JOINT')continue;for(var j=0;j<bones[i].weights.length;j++){var w=bones[i].weights[j];var vidx=w.index;var weight=w.weight;var o=geometry.vertices[vidx];var s=skinned[vidx];v.x=o.x;v.y=o.y;v.z=o.z;v.applyMatrix4(bones[i].skinningMatrix);s.x+=v.x*weight;s.y+=v.y*weight;s.z+=v.z*weight;}}for(var i=0;i<geometry.vertices.length;i++){geometry.vertices[i]=skinned[i];}}function applySkin(geometry,instanceCtrl,frame){var skinController=controllers[instanceCtrl.url];frame=frame!==undefined?frame:40;if(!skinController||!skinController.skin){console.log('ColladaLoader: Could not find skin controller.');return;}if(!instanceCtrl.skeleton||!instanceCtrl.skeleton.length){console.log('ColladaLoader: Could not find the skeleton for the skin. ');return;}var animationBounds=calcAnimationBounds();var skeleton=visualScene.getChildById(instanceCtrl.skeleton[0],true)||visualScene.getChildBySid(instanceCtrl.skeleton[0],true); //flatten the skeleton into a list of bones
+	var bonelist=flattenSkeleton(skeleton);var joints=skinController.skin.joints; //sort that list so that the order reflects the order in the joint list
+	var sortedbones=[];for(var i=0;i<joints.length;i++){for(var j=0;j<bonelist.length;j++){if(bonelist[j].name===joints[i]){sortedbones[i]=bonelist[j];}}} //hook up the parents by index instead of name
+	for(var i=0;i<sortedbones.length;i++){for(var j=0;j<sortedbones.length;j++){if(sortedbones[i].parent===sortedbones[j].name){sortedbones[i].parent=j;}}}var i,j,w,vidx,weight;var v=new THREE.Vector3(),o,s; // move vertices to bind shape
+	for(i=0;i<geometry.vertices.length;i++){geometry.vertices[i].applyMatrix4(skinController.skin.bindShapeMatrix);}var skinIndices=[];var skinWeights=[];var weights=skinController.skin.weights; // hook up the skin weights
+	// TODO - this might be a good place to choose greatest 4 weights
+	for(var i=0;i<weights.length;i++){var indicies=new THREE.Vector4(weights[i][0]?weights[i][0].joint:0,weights[i][1]?weights[i][1].joint:0,weights[i][2]?weights[i][2].joint:0,weights[i][3]?weights[i][3].joint:0);var weight=new THREE.Vector4(weights[i][0]?weights[i][0].weight:0,weights[i][1]?weights[i][1].weight:0,weights[i][2]?weights[i][2].weight:0,weights[i][3]?weights[i][3].weight:0);skinIndices.push(indicies);skinWeights.push(weight);}geometry.skinIndices=skinIndices;geometry.skinWeights=skinWeights;geometry.bones=sortedbones; // process animation, or simply pose the rig if no animation
+	//create an animation for the animated bones
+	//NOTE: this has no effect when using morphtargets
+	var animationdata={"name":animationBounds.ID,"fps":30,"length":animationBounds.frames/30,"hierarchy":[]};for(var j=0;j<sortedbones.length;j++){animationdata.hierarchy.push({parent:sortedbones[j].parent,name:sortedbones[j].name,keys:[]});}console.log('ColladaLoader:',animationBounds.ID+' has '+sortedbones.length+' bones.');skinToBindPose(geometry,skeleton,skinController);for(frame=0;frame<animationBounds.frames;frame++){var bones=[];var skinned=[]; // process the frame and setup the rig with a fresh
+	// transform, possibly from the bone's animation channel(s)
+	setupSkeleton(skeleton,bones,frame);setupSkinningMatrices(bones,skinController.skin);for(var i=0;i<bones.length;i++){for(var j=0;j<animationdata.hierarchy.length;j++){if(animationdata.hierarchy[j].name===bones[i].sid){var key={};key.time=frame/30;key.matrix=bones[i].animatrix;if(frame===0)bones[i].matrix=key.matrix;var data=[new THREE.Vector3(),new THREE.Quaternion(),new THREE.Vector3()];key.matrix.decompose(data[0],data[1],data[2]);key.pos=[data[0].x,data[0].y,data[0].z];key.scl=[data[2].x,data[2].y,data[2].z];key.rot=data[1];animationdata.hierarchy[j].keys.push(key);}}}geometry.animation=animationdata;}}function createKinematics(){if(kinematicsModel&&kinematicsModel.joints.length===0){kinematics=undefined;return;}var jointMap={};var _addToMap=function _addToMap(jointIndex,parentVisualElement){var parentVisualElementId=parentVisualElement.getAttribute('id');var colladaNode=visualScene.getChildById(parentVisualElementId,true);var joint=kinematicsModel.joints[jointIndex];scene.traverse(function(node){if(node.colladaId==parentVisualElementId){jointMap[jointIndex]={node:node,transforms:colladaNode.transforms,joint:joint,position:joint.zeroPosition};}});};kinematics={joints:kinematicsModel&&kinematicsModel.joints,getJointValue:function getJointValue(jointIndex){var jointData=jointMap[jointIndex];if(jointData){return jointData.position;}else {console.log('getJointValue: joint '+jointIndex+' doesn\'t exist');}},setJointValue:function setJointValue(jointIndex,value){var jointData=jointMap[jointIndex];if(jointData){var joint=jointData.joint;if(value>joint.limits.max||value<joint.limits.min){console.log('setJointValue: joint '+jointIndex+' value '+value+' outside of limits (min: '+joint.limits.min+', max: '+joint.limits.max+')');}else if(joint.static){console.log('setJointValue: joint '+jointIndex+' is static');}else {var threejsNode=jointData.node;var axis=joint.axis;var transforms=jointData.transforms;var matrix=new THREE.Matrix4();for(i=0;i<transforms.length;i++){var transform=transforms[i]; // kinda ghetto joint detection
+	if(transform.sid&&transform.sid.indexOf('joint'+jointIndex)!==-1){ // apply actual joint value here
+	switch(joint.type){case 'revolute':matrix.multiply(m1.makeRotationAxis(axis,THREE.Math.degToRad(value)));break;case 'prismatic':matrix.multiply(m1.makeTranslation(axis.x*value,axis.y*value,axis.z*value));break;default:console.warn('setJointValue: unknown joint type: '+joint.type);break;}}else {var m1=new THREE.Matrix4();switch(transform.type){case 'matrix':matrix.multiply(transform.obj);break;case 'translate':matrix.multiply(m1.makeTranslation(transform.obj.x,transform.obj.y,transform.obj.z));break;case 'rotate':matrix.multiply(m1.makeRotationAxis(transform.obj,transform.angle));break;}}} // apply the matrix to the threejs node
+	var elementsFloat32Arr=matrix.elements;var elements=Array.prototype.slice.call(elementsFloat32Arr);var elementsRowMajor=[elements[0],elements[4],elements[8],elements[12],elements[1],elements[5],elements[9],elements[13],elements[2],elements[6],elements[10],elements[14],elements[3],elements[7],elements[11],elements[15]];threejsNode.matrix.set.apply(threejsNode.matrix,elementsRowMajor);threejsNode.matrix.decompose(threejsNode.position,threejsNode.quaternion,threejsNode.scale);}}else {console.log('setJointValue: joint '+jointIndex+' doesn\'t exist');}}};var element=COLLADA.querySelector('scene instance_kinematics_scene');if(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'bind_joint_axis':var visualTarget=child.getAttribute('target').split('/').pop();var axis=child.querySelector('axis param').textContent;var jointIndex=parseInt(axis.split('joint').pop().split('.')[0]);var visualTargetElement=COLLADA.querySelector('[sid="'+visualTarget+'"]');if(visualTargetElement){var parentVisualElement=visualTargetElement.parentElement;_addToMap(jointIndex,parentVisualElement);}break;default:break;}}}}function createSceneGraph(node,parent){var obj=new THREE.Object3D();var skinned=false;var skinController;var morphController;var i,j; // FIXME: controllers
+	for(i=0;i<node.controllers.length;i++){var controller=controllers[node.controllers[i].url];switch(controller.type){case 'skin':if(geometries[controller.skin.source]){var inst_geom=new InstanceGeometry();inst_geom.url=controller.skin.source;inst_geom.instance_material=node.controllers[i].instance_material;node.geometries.push(inst_geom);skinned=true;skinController=node.controllers[i];}else if(controllers[controller.skin.source]){ // urgh: controller can be chained
+	// handle the most basic case...
+	var second=controllers[controller.skin.source];morphController=second; //	skinController = node.controllers[i];
+	if(second.morph&&geometries[second.morph.source]){var inst_geom=new InstanceGeometry();inst_geom.url=second.morph.source;inst_geom.instance_material=node.controllers[i].instance_material;node.geometries.push(inst_geom);}}break;case 'morph':if(geometries[controller.morph.source]){var inst_geom=new InstanceGeometry();inst_geom.url=controller.morph.source;inst_geom.instance_material=node.controllers[i].instance_material;node.geometries.push(inst_geom);morphController=node.controllers[i];}console.log('ColladaLoader: Morph-controller partially supported.');default:break;}} // geometries
+	var double_sided_materials={};for(i=0;i<node.geometries.length;i++){var instance_geometry=node.geometries[i];var instance_materials=instance_geometry.instance_material;var geometry=geometries[instance_geometry.url];var used_materials={};var used_materials_array=[];var num_materials=0;var first_material;if(geometry){if(!geometry.mesh||!geometry.mesh.primitives)continue;if(obj.name.length===0){obj.name=geometry.id;} // collect used fx for this geometry-instance
+	if(instance_materials){for(j=0;j<instance_materials.length;j++){var instance_material=instance_materials[j];var mat=materials[instance_material.target];var effect_id=mat.instance_effect.url;var shader=effects[effect_id].shader;var material3js=shader.material;if(geometry.doubleSided){if(!(instance_material.symbol in double_sided_materials)){var _copied_material=material3js.clone();_copied_material.side=THREE.DoubleSide;double_sided_materials[instance_material.symbol]=_copied_material;}material3js=double_sided_materials[instance_material.symbol];}material3js.opacity=!material3js.opacity?1:material3js.opacity;used_materials[instance_material.symbol]=num_materials;used_materials_array.push(material3js);first_material=material3js;first_material.name=mat.name===null||mat.name===''?mat.id:mat.name;num_materials++;}}var mesh;var material=first_material||new THREE.MeshLambertMaterial({color:0xdddddd,side:geometry.doubleSided?THREE.DoubleSide:THREE.FrontSide});var geom=geometry.mesh.geometry3js;if(num_materials>1){material=new THREE.MultiMaterial(used_materials_array);for(j=0;j<geom.faces.length;j++){var face=geom.faces[j];face.materialIndex=used_materials[face.daeMaterial];}}if(skinController!==undefined){applySkin(geom,skinController);if(geom.morphTargets.length>0){material.morphTargets=true;material.skinning=false;}else {material.morphTargets=false;material.skinning=true;}mesh=new THREE.SkinnedMesh(geom,material,false); //mesh.skeleton = skinController.skeleton;
+	//mesh.skinController = controllers[ skinController.url ];
+	//mesh.skinInstanceController = skinController;
+	mesh.name='skin_'+skins.length; //mesh.animationHandle.setKey(0);
+	skins.push(mesh);}else if(morphController!==undefined){createMorph(geom,morphController);material.morphTargets=true;mesh=new THREE.Mesh(geom,material);mesh.name='morph_'+morphs.length;morphs.push(mesh);}else {if(geom.isLineStrip===true){mesh=new THREE.Line(geom);}else {mesh=new THREE.Mesh(geom,material);}}obj.add(mesh);}}for(i=0;i<node.cameras.length;i++){var instance_camera=node.cameras[i];var cparams=cameras[instance_camera.url];var cam=new THREE.PerspectiveCamera(cparams.yfov,parseFloat(cparams.aspect_ratio),parseFloat(cparams.znear),parseFloat(cparams.zfar));obj.add(cam);}for(i=0;i<node.lights.length;i++){var light=null;var instance_light=node.lights[i];var lparams=lights[instance_light.url];if(lparams&&lparams.technique){var color=lparams.color.getHex();var intensity=lparams.intensity;var distance=lparams.distance;var angle=lparams.falloff_angle;switch(lparams.technique){case 'directional':light=new THREE.DirectionalLight(color,intensity,distance);light.position.set(0,0,1);break;case 'point':light=new THREE.PointLight(color,intensity,distance);break;case 'spot':light=new THREE.SpotLight(color,intensity,distance,angle);light.position.set(0,0,1);break;case 'ambient':light=new THREE.AmbientLight(color);break;}}if(light){obj.add(light);}}obj.name=node.name||node.id||"";obj.colladaId=node.id||"";obj.layer=node.layer||"";obj.matrix=node.matrix;obj.matrix.decompose(obj.position,obj.quaternion,obj.scale);if(options.centerGeometry&&obj.geometry){var delta=obj.geometry.center();delta.multiply(obj.scale);delta.applyQuaternion(obj.quaternion);obj.position.sub(delta);}for(i=0;i<node.nodes.length;i++){obj.add(createSceneGraph(node.nodes[i],node));}return obj;}function getJointId(skin,id){for(var i=0;i<skin.joints.length;i++){if(skin.joints[i]===id){return i;}}}function getLibraryNode(id){var nodes=COLLADA.querySelectorAll('library_nodes node');for(var i=0;i<nodes.length;i++){var attObj=nodes[i].attributes.getNamedItem('id');if(attObj&&attObj.value===id){return nodes[i];}}return undefined;}function getChannelsForNode(node){var channels=[];var startTime=1000000;var endTime=-1000000;for(var id in animations){var animation=animations[id];for(var i=0;i<animation.channel.length;i++){var channel=animation.channel[i];var sampler=animation.sampler[i];var id=channel.target.split('/')[0];if(id==node.id){sampler.create();channel.sampler=sampler;startTime=Math.min(startTime,sampler.startTime);endTime=Math.max(endTime,sampler.endTime);channels.push(channel);}}}if(channels.length){node.startTime=startTime;node.endTime=endTime;}return channels;}function calcFrameDuration(node){var minT=10000000;for(var i=0;i<node.channels.length;i++){var sampler=node.channels[i].sampler;for(var j=0;j<sampler.input.length-1;j++){var t0=sampler.input[j];var t1=sampler.input[j+1];minT=Math.min(minT,t1-t0);}}return minT;}function calcMatrixAt(node,t){var animated={};var i,j;for(i=0;i<node.channels.length;i++){var channel=node.channels[i];animated[channel.sid]=channel;}var matrix=new THREE.Matrix4();for(i=0;i<node.transforms.length;i++){var transform=node.transforms[i];var channel=animated[transform.sid];if(channel!==undefined){var sampler=channel.sampler;var value;for(j=0;j<sampler.input.length-1;j++){if(sampler.input[j+1]>t){value=sampler.output[j]; //console.log(value.flatten)
+	break;}}if(value!==undefined){if(value instanceof THREE.Matrix4){matrix.multiplyMatrices(matrix,value);}else { // FIXME: handle other types
+	matrix.multiplyMatrices(matrix,transform.matrix);}}else {matrix.multiplyMatrices(matrix,transform.matrix);}}else {matrix.multiplyMatrices(matrix,transform.matrix);}}return matrix;}function bakeAnimations(node){if(node.channels&&node.channels.length){var keys=[],sids=[];for(var i=0,il=node.channels.length;i<il;i++){var channel=node.channels[i],fullSid=channel.fullSid,sampler=channel.sampler,input=sampler.input,transform=node.getTransformBySid(channel.sid),member;if(channel.arrIndices){member=[];for(var j=0,jl=channel.arrIndices.length;j<jl;j++){member[j]=getConvertedIndex(channel.arrIndices[j]);}}else {member=getConvertedMember(channel.member);}if(transform){if(sids.indexOf(fullSid)===-1){sids.push(fullSid);}for(var j=0,jl=input.length;j<jl;j++){var time=input[j],data=sampler.getData(transform.type,j,member),key=findKey(keys,time);if(!key){key=new Key(time);var timeNdx=findTimeNdx(keys,time);keys.splice(timeNdx===-1?keys.length:timeNdx,0,key);}key.addTarget(fullSid,transform,member,data);}}else {console.log('Could not find transform "'+channel.sid+'" in node '+node.id);}} // post process
+	for(var i=0;i<sids.length;i++){var sid=sids[i];for(var j=0;j<keys.length;j++){var key=keys[j];if(!key.hasTarget(sid)){interpolateKeys(keys,key,j,sid);}}}node.keys=keys;node.sids=sids;}}function findKey(keys,time){var retVal=null;for(var i=0,il=keys.length;i<il&&retVal===null;i++){var key=keys[i];if(key.time===time){retVal=key;}else if(key.time>time){break;}}return retVal;}function findTimeNdx(keys,time){var ndx=-1;for(var i=0,il=keys.length;i<il&&ndx===-1;i++){var key=keys[i];if(key.time>=time){ndx=i;}}return ndx;}function interpolateKeys(keys,key,ndx,fullSid){var prevKey=getPrevKeyWith(keys,fullSid,ndx?ndx-1:0),nextKey=getNextKeyWith(keys,fullSid,ndx+1);if(prevKey&&nextKey){var scale=(key.time-prevKey.time)/(nextKey.time-prevKey.time),prevTarget=prevKey.getTarget(fullSid),nextData=nextKey.getTarget(fullSid).data,prevData=prevTarget.data,data;if(prevTarget.type==='matrix'){data=prevData;}else if(prevData.length){data=[];for(var i=0;i<prevData.length;++i){data[i]=prevData[i]+(nextData[i]-prevData[i])*scale;}}else {data=prevData+(nextData-prevData)*scale;}key.addTarget(fullSid,prevTarget.transform,prevTarget.member,data);}} // Get next key with given sid
+	function getNextKeyWith(keys,fullSid,ndx){for(;ndx<keys.length;ndx++){var key=keys[ndx];if(key.hasTarget(fullSid)){return key;}}return null;} // Get previous key with given sid
+	function getPrevKeyWith(keys,fullSid,ndx){ndx=ndx>=0?ndx:ndx+keys.length;for(;ndx>=0;ndx--){var key=keys[ndx];if(key.hasTarget(fullSid)){return key;}}return null;}function _Image(){this.id="";this.init_from="";}_Image.prototype.parse=function(element){this.id=element.getAttribute('id');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeName==='init_from'){this.init_from=child.textContent;}}return this;};function Controller(){this.id="";this.name="";this.type="";this.skin=null;this.morph=null;}Controller.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.type="none";for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'skin':this.skin=new Skin().parse(child);this.type=child.nodeName;break;case 'morph':this.morph=new Morph().parse(child);this.type=child.nodeName;break;default:break;}}return this;};function Morph(){this.method=null;this.source=null;this.targets=null;this.weights=null;}Morph.prototype.parse=function(element){var sources={};var inputs=[];var i;this.method=element.getAttribute('method');this.source=element.getAttribute('source').replace(/^#/,'');for(i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'source':var source=new Source().parse(child);sources[source.id]=source;break;case 'targets':inputs=this.parseInputs(child);break;default:console.log(child.nodeName);break;}}for(i=0;i<inputs.length;i++){var input=inputs[i];var source=sources[input.source];switch(input.semantic){case 'MORPH_TARGET':this.targets=source.read();break;case 'MORPH_WEIGHT':this.weights=source.read();break;default:break;}}return this;};Morph.prototype.parseInputs=function(element){var inputs=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':inputs.push(new Input().parse(child));break;default:break;}}return inputs;};function Skin(){this.source="";this.bindShapeMatrix=null;this.invBindMatrices=[];this.joints=[];this.weights=[];}Skin.prototype.parse=function(element){var sources={};var joints,weights;this.source=element.getAttribute('source').replace(/^#/,'');this.invBindMatrices=[];this.joints=[];this.weights=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'bind_shape_matrix':var f=_floats(child.textContent);this.bindShapeMatrix=getConvertedMat4(f);break;case 'source':var src=new Source().parse(child);sources[src.id]=src;break;case 'joints':joints=child;break;case 'vertex_weights':weights=child;break;default:console.log(child.nodeName);break;}}this.parseJoints(joints,sources);this.parseWeights(weights,sources);return this;};Skin.prototype.parseJoints=function(element,sources){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':var input=new Input().parse(child);var source=sources[input.source];if(input.semantic==='JOINT'){this.joints=source.read();}else if(input.semantic==='INV_BIND_MATRIX'){this.invBindMatrices=source.read();}break;default:break;}}};Skin.prototype.parseWeights=function(element,sources){var v,vcount,inputs=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':inputs.push(new Input().parse(child));break;case 'v':v=_ints(child.textContent);break;case 'vcount':vcount=_ints(child.textContent);break;default:break;}}var index=0;for(var i=0;i<vcount.length;i++){var numBones=vcount[i];var vertex_weights=[];for(var j=0;j<numBones;j++){var influence={};for(var k=0;k<inputs.length;k++){var input=inputs[k];var value=v[index+input.offset];switch(input.semantic){case 'JOINT':influence.joint=value; //this.joints[value];
+	break;case 'WEIGHT':influence.weight=sources[input.source].data[value];break;default:break;}}vertex_weights.push(influence);index+=inputs.length;}for(var j=0;j<vertex_weights.length;j++){vertex_weights[j].index=i;}this.weights.push(vertex_weights);}};function VisualScene(){this.id="";this.name="";this.nodes=[];this.scene=new THREE.Group();}VisualScene.prototype.getChildById=function(id,recursive){for(var i=0;i<this.nodes.length;i++){var node=this.nodes[i].getChildById(id,recursive);if(node){return node;}}return null;};VisualScene.prototype.getChildBySid=function(sid,recursive){for(var i=0;i<this.nodes.length;i++){var node=this.nodes[i].getChildBySid(sid,recursive);if(node){return node;}}return null;};VisualScene.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.nodes=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'node':this.nodes.push(new Node().parse(child));break;default:break;}}return this;};function Node(){this.id="";this.name="";this.sid="";this.nodes=[];this.controllers=[];this.transforms=[];this.geometries=[];this.channels=[];this.matrix=new THREE.Matrix4();}Node.prototype.getChannelForTransform=function(transformSid){for(var i=0;i<this.channels.length;i++){var channel=this.channels[i];var parts=channel.target.split('/');var id=parts.shift();var sid=parts.shift();var dotSyntax=sid.indexOf(".")>=0;var arrSyntax=sid.indexOf("(")>=0;var arrIndices;var member;if(dotSyntax){parts=sid.split(".");sid=parts.shift();member=parts.shift();}else if(arrSyntax){arrIndices=sid.split("(");sid=arrIndices.shift();for(var j=0;j<arrIndices.length;j++){arrIndices[j]=parseInt(arrIndices[j].replace(/\)/,''));}}if(sid===transformSid){channel.info={sid:sid,dotSyntax:dotSyntax,arrSyntax:arrSyntax,arrIndices:arrIndices};return channel;}}return null;};Node.prototype.getChildById=function(id,recursive){if(this.id===id){return this;}if(recursive){for(var i=0;i<this.nodes.length;i++){var n=this.nodes[i].getChildById(id,recursive);if(n){return n;}}}return null;};Node.prototype.getChildBySid=function(sid,recursive){if(this.sid===sid){return this;}if(recursive){for(var i=0;i<this.nodes.length;i++){var n=this.nodes[i].getChildBySid(sid,recursive);if(n){return n;}}}return null;};Node.prototype.getTransformBySid=function(sid){for(var i=0;i<this.transforms.length;i++){if(this.transforms[i].sid===sid)return this.transforms[i];}return null;};Node.prototype.parse=function(element){var url;this.id=element.getAttribute('id');this.sid=element.getAttribute('sid');this.name=element.getAttribute('name');this.type=element.getAttribute('type');this.layer=element.getAttribute('layer');this.type=this.type==='JOINT'?this.type:'NODE';this.nodes=[];this.transforms=[];this.geometries=[];this.cameras=[];this.lights=[];this.controllers=[];this.matrix=new THREE.Matrix4();for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'node':this.nodes.push(new Node().parse(child));break;case 'instance_camera':this.cameras.push(new InstanceCamera().parse(child));break;case 'instance_controller':this.controllers.push(new InstanceController().parse(child));break;case 'instance_geometry':this.geometries.push(new InstanceGeometry().parse(child));break;case 'instance_light':this.lights.push(new InstanceLight().parse(child));break;case 'instance_node':url=child.getAttribute('url').replace(/^#/,'');var iNode=getLibraryNode(url);if(iNode){this.nodes.push(new Node().parse(iNode));}break;case 'rotate':case 'translate':case 'scale':case 'matrix':case 'lookat':case 'skew':this.transforms.push(new Transform().parse(child));break;case 'extra':break;default:console.log(child.nodeName);break;}}this.channels=getChannelsForNode(this);bakeAnimations(this);this.updateMatrix();return this;};Node.prototype.updateMatrix=function(){this.matrix.identity();for(var i=0;i<this.transforms.length;i++){this.transforms[i].apply(this.matrix);}};function Transform(){this.sid="";this.type="";this.data=[];this.obj=null;}Transform.prototype.parse=function(element){this.sid=element.getAttribute('sid');this.type=element.nodeName;this.data=_floats(element.textContent);this.convert();return this;};Transform.prototype.convert=function(){switch(this.type){case 'matrix':this.obj=getConvertedMat4(this.data);break;case 'rotate':this.angle=THREE.Math.degToRad(this.data[3]);case 'translate':fixCoords(this.data,-1);this.obj=new THREE.Vector3(this.data[0],this.data[1],this.data[2]);break;case 'scale':fixCoords(this.data,1);this.obj=new THREE.Vector3(this.data[0],this.data[1],this.data[2]);break;default:console.log('Can not convert Transform of type '+this.type);break;}};Transform.prototype.apply=function(){var m1=new THREE.Matrix4();return function(matrix){switch(this.type){case 'matrix':matrix.multiply(this.obj);break;case 'translate':matrix.multiply(m1.makeTranslation(this.obj.x,this.obj.y,this.obj.z));break;case 'rotate':matrix.multiply(m1.makeRotationAxis(this.obj,this.angle));break;case 'scale':matrix.scale(this.obj);break;}};}();Transform.prototype.update=function(data,member){var members=['X','Y','Z','ANGLE'];switch(this.type){case 'matrix':if(!member){this.obj.copy(data);}else if(member.length===1){switch(member[0]){case 0:this.obj.n11=data[0];this.obj.n21=data[1];this.obj.n31=data[2];this.obj.n41=data[3];break;case 1:this.obj.n12=data[0];this.obj.n22=data[1];this.obj.n32=data[2];this.obj.n42=data[3];break;case 2:this.obj.n13=data[0];this.obj.n23=data[1];this.obj.n33=data[2];this.obj.n43=data[3];break;case 3:this.obj.n14=data[0];this.obj.n24=data[1];this.obj.n34=data[2];this.obj.n44=data[3];break;}}else if(member.length===2){var propName='n'+(member[0]+1)+(member[1]+1);this.obj[propName]=data;}else {console.log('Incorrect addressing of matrix in transform.');}break;case 'translate':case 'scale':if(Object.prototype.toString.call(member)==='[object Array]'){member=members[member[0]];}switch(member){case 'X':this.obj.x=data;break;case 'Y':this.obj.y=data;break;case 'Z':this.obj.z=data;break;default:this.obj.x=data[0];this.obj.y=data[1];this.obj.z=data[2];break;}break;case 'rotate':if(Object.prototype.toString.call(member)==='[object Array]'){member=members[member[0]];}switch(member){case 'X':this.obj.x=data;break;case 'Y':this.obj.y=data;break;case 'Z':this.obj.z=data;break;case 'ANGLE':this.angle=THREE.Math.degToRad(data);break;default:this.obj.x=data[0];this.obj.y=data[1];this.obj.z=data[2];this.angle=THREE.Math.degToRad(data[3]);break;}break;}};function InstanceController(){this.url="";this.skeleton=[];this.instance_material=[];}InstanceController.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');this.skeleton=[];this.instance_material=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!==1)continue;switch(child.nodeName){case 'skeleton':this.skeleton.push(child.textContent.replace(/^#/,''));break;case 'bind_material':var instances=child.querySelectorAll('instance_material');for(var j=0;j<instances.length;j++){var instance=instances[j];this.instance_material.push(new InstanceMaterial().parse(instance));}break;case 'extra':break;default:break;}}return this;};function InstanceMaterial(){this.symbol="";this.target="";}InstanceMaterial.prototype.parse=function(element){this.symbol=element.getAttribute('symbol');this.target=element.getAttribute('target').replace(/^#/,'');return this;};function InstanceGeometry(){this.url="";this.instance_material=[];}InstanceGeometry.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');this.instance_material=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;if(child.nodeName==='bind_material'){var instances=child.querySelectorAll('instance_material');for(var j=0;j<instances.length;j++){var instance=instances[j];this.instance_material.push(new InstanceMaterial().parse(instance));}break;}}return this;};function Geometry(){this.id="";this.mesh=null;}Geometry.prototype.parse=function(element){this.id=element.getAttribute('id');extractDoubleSided(this,element);for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'mesh':this.mesh=new Mesh(this).parse(child);break;case 'extra': // console.log( child );
+	break;default:break;}}return this;};function Mesh(geometry){this.geometry=geometry.id;this.primitives=[];this.vertices=null;this.geometry3js=null;}Mesh.prototype.parse=function(element){this.primitives=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'source':_source(child);break;case 'vertices':this.vertices=new Vertices().parse(child);break;case 'linestrips':this.primitives.push(new LineStrips().parse(child));break;case 'triangles':this.primitives.push(new Triangles().parse(child));break;case 'polygons':this.primitives.push(new Polygons().parse(child));break;case 'polylist':this.primitives.push(new Polylist().parse(child));break;default:break;}}this.geometry3js=new THREE.Geometry();if(this.vertices===null){ // TODO (mrdoob): Study case when this is null (carrier.dae)
+	return this;}var vertexData=sources[this.vertices.input['POSITION'].source].data;for(var i=0;i<vertexData.length;i+=3){this.geometry3js.vertices.push(getConvertedVec3(vertexData,i).clone());}for(var i=0;i<this.primitives.length;i++){var primitive=this.primitives[i];primitive.setVertices(this.vertices);this.handlePrimitive(primitive,this.geometry3js);}if(this.geometry3js.calcNormals){this.geometry3js.computeVertexNormals();delete this.geometry3js.calcNormals;}return this;};Mesh.prototype.handlePrimitive=function(primitive,geom){if(primitive instanceof LineStrips){ // TODO: Handle indices. Maybe easier with BufferGeometry?
+	geom.isLineStrip=true;return;}var j,k,pList=primitive.p,inputs=primitive.inputs;var input,index,idx32;var source,numParams;var vcIndex=0,vcount=3,maxOffset=0;var texture_sets=[];for(j=0;j<inputs.length;j++){input=inputs[j];var offset=input.offset+1;maxOffset=maxOffset<offset?offset:maxOffset;switch(input.semantic){case 'TEXCOORD':texture_sets.push(input.set);break;}}for(var pCount=0;pCount<pList.length;++pCount){var p=pList[pCount],i=0;while(i<p.length){var vs=[];var ns=[];var ts=null;var cs=[];if(primitive.vcount){vcount=primitive.vcount.length?primitive.vcount[vcIndex++]:primitive.vcount;}else {vcount=p.length/maxOffset;}for(j=0;j<vcount;j++){for(k=0;k<inputs.length;k++){input=inputs[k];source=sources[input.source];index=p[i+j*maxOffset+input.offset];numParams=source.accessor.params.length;idx32=index*numParams;switch(input.semantic){case 'VERTEX':vs.push(index);break;case 'NORMAL':ns.push(getConvertedVec3(source.data,idx32));break;case 'TEXCOORD':ts=ts||{};if(ts[input.set]===undefined)ts[input.set]=[]; // invert the V
+	ts[input.set].push(new THREE.Vector2(source.data[idx32],source.data[idx32+1]));break;case 'COLOR':cs.push(new THREE.Color().setRGB(source.data[idx32],source.data[idx32+1],source.data[idx32+2]));break;default:break;}}}if(ns.length===0){ // check the vertices inputs
+	input=this.vertices.input.NORMAL;if(input){source=sources[input.source];numParams=source.accessor.params.length;for(var ndx=0,len=vs.length;ndx<len;ndx++){ns.push(getConvertedVec3(source.data,vs[ndx]*numParams));}}else {geom.calcNormals=true;}}if(!ts){ts={}; // check the vertices inputs
+	input=this.vertices.input.TEXCOORD;if(input){texture_sets.push(input.set);source=sources[input.source];numParams=source.accessor.params.length;for(var ndx=0,len=vs.length;ndx<len;ndx++){idx32=vs[ndx]*numParams;if(ts[input.set]===undefined)ts[input.set]=[]; // invert the V
+	ts[input.set].push(new THREE.Vector2(source.data[idx32],1.0-source.data[idx32+1]));}}}if(cs.length===0){ // check the vertices inputs
+	input=this.vertices.input.COLOR;if(input){source=sources[input.source];numParams=source.accessor.params.length;for(var ndx=0,len=vs.length;ndx<len;ndx++){idx32=vs[ndx]*numParams;cs.push(new THREE.Color().setRGB(source.data[idx32],source.data[idx32+1],source.data[idx32+2]));}}}var face=null,faces=[],uv,uvArr;if(vcount===3){faces.push(new THREE.Face3(vs[0],vs[1],vs[2],ns,cs.length?cs:new THREE.Color()));}else if(vcount===4){faces.push(new THREE.Face3(vs[0],vs[1],vs[3],ns.length?[ns[0].clone(),ns[1].clone(),ns[3].clone()]:[],cs.length?[cs[0],cs[1],cs[3]]:new THREE.Color()));faces.push(new THREE.Face3(vs[1],vs[2],vs[3],ns.length?[ns[1].clone(),ns[2].clone(),ns[3].clone()]:[],cs.length?[cs[1],cs[2],cs[3]]:new THREE.Color()));}else if(vcount>4&&options.subdivideFaces){var clr=cs.length?cs:new THREE.Color(),vec1,vec2,vec3,v1,v2,norm; // subdivide into multiple Face3s
+	for(k=1;k<vcount-1;){faces.push(new THREE.Face3(vs[0],vs[k],vs[k+1],ns.length?[ns[0].clone(),ns[k++].clone(),ns[k].clone()]:[],clr));}}if(faces.length){for(var ndx=0,len=faces.length;ndx<len;ndx++){face=faces[ndx];face.daeMaterial=primitive.material;geom.faces.push(face);for(k=0;k<texture_sets.length;k++){uv=ts[texture_sets[k]];if(vcount>4){ // Grab the right UVs for the vertices in this face
+	uvArr=[uv[0],uv[ndx+1],uv[ndx+2]];}else if(vcount===4){if(ndx===0){uvArr=[uv[0],uv[1],uv[3]];}else {uvArr=[uv[1].clone(),uv[2],uv[3].clone()];}}else {uvArr=[uv[0],uv[1],uv[2]];}if(geom.faceVertexUvs[k]===undefined){geom.faceVertexUvs[k]=[];}geom.faceVertexUvs[k].push(uvArr);}}}else {console.log('dropped face with vcount '+vcount+' for geometry with id: '+geom.id);}i+=maxOffset*vcount;}}};function Polygons(){this.material="";this.count=0;this.inputs=[];this.vcount=null;this.p=[];this.geometry=new THREE.Geometry();}Polygons.prototype.setVertices=function(vertices){for(var i=0;i<this.inputs.length;i++){if(this.inputs[i].source===vertices.id){this.inputs[i].source=vertices.input['POSITION'].source;}}};Polygons.prototype.parse=function(element){this.material=element.getAttribute('material');this.count=_attr_as_int(element,'count',0);for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'input':this.inputs.push(new Input().parse(element.childNodes[i]));break;case 'vcount':this.vcount=_ints(child.textContent);break;case 'p':this.p.push(_ints(child.textContent));break;case 'ph':console.warn('polygon holes not yet supported!');break;default:break;}}return this;};function Polylist(){Polygons.call(this);this.vcount=[];}Polylist.prototype=Object.create(Polygons.prototype);Polylist.prototype.constructor=Polylist;function LineStrips(){Polygons.call(this);this.vcount=1;}LineStrips.prototype=Object.create(Polygons.prototype);LineStrips.prototype.constructor=LineStrips;function Triangles(){Polygons.call(this);this.vcount=3;}Triangles.prototype=Object.create(Polygons.prototype);Triangles.prototype.constructor=Triangles;function Accessor(){this.source="";this.count=0;this.stride=0;this.params=[];}Accessor.prototype.parse=function(element){this.params=[];this.source=element.getAttribute('source');this.count=_attr_as_int(element,'count',0);this.stride=_attr_as_int(element,'stride',0);for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeName==='param'){var param={};param['name']=child.getAttribute('name');param['type']=child.getAttribute('type');this.params.push(param);}}return this;};function Vertices(){this.input={};}Vertices.prototype.parse=function(element){this.id=element.getAttribute('id');for(var i=0;i<element.childNodes.length;i++){if(element.childNodes[i].nodeName==='input'){var input=new Input().parse(element.childNodes[i]);this.input[input.semantic]=input;}}return this;};function Input(){this.semantic="";this.offset=0;this.source="";this.set=0;}Input.prototype.parse=function(element){this.semantic=element.getAttribute('semantic');this.source=element.getAttribute('source').replace(/^#/,'');this.set=_attr_as_int(element,'set',-1);this.offset=_attr_as_int(element,'offset',0);if(this.semantic==='TEXCOORD'&&this.set<0){this.set=0;}return this;};function Source(id){this.id=id;this.type=null;}Source.prototype.parse=function(element){this.id=element.getAttribute('id');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'bool_array':this.data=_bools(child.textContent);this.type=child.nodeName;break;case 'float_array':this.data=_floats(child.textContent);this.type=child.nodeName;break;case 'int_array':this.data=_ints(child.textContent);this.type=child.nodeName;break;case 'IDREF_array':case 'Name_array':this.data=_strings(child.textContent);this.type=child.nodeName;break;case 'technique_common':for(var j=0;j<child.childNodes.length;j++){if(child.childNodes[j].nodeName==='accessor'){this.accessor=new Accessor().parse(child.childNodes[j]);break;}}break;default: // console.log(child.nodeName);
+	break;}}return this;};Source.prototype.read=function(){var result=[]; //for (var i = 0; i < this.accessor.params.length; i++) {
+	var param=this.accessor.params[0]; //console.log(param.name + " " + param.type);
+	switch(param.type){case 'IDREF':case 'Name':case 'name':case 'float':return this.data;case 'float4x4':for(var j=0;j<this.data.length;j+=16){var s=this.data.slice(j,j+16);var m=getConvertedMat4(s);result.push(m);}break;default:console.log('ColladaLoader: Source: Read dont know how to read '+param.type+'.');break;} //}
+	return result;};function Material(){this.id="";this.name="";this.instance_effect=null;}Material.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');for(var i=0;i<element.childNodes.length;i++){if(element.childNodes[i].nodeName==='instance_effect'){this.instance_effect=new InstanceEffect().parse(element.childNodes[i]);break;}}return this;};function ColorOrTexture(){this.color=new THREE.Color();this.color.setRGB(Math.random(),Math.random(),Math.random());this.color.a=1.0;this.texture=null;this.texcoord=null;this.texOpts=null;}ColorOrTexture.prototype.isColor=function(){return this.texture===null;};ColorOrTexture.prototype.isTexture=function(){return this.texture!=null;};ColorOrTexture.prototype.parse=function(element){if(element.nodeName==='transparent'){this.opaque=element.getAttribute('opaque');}for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'color':var rgba=_floats(child.textContent);this.color=new THREE.Color();this.color.setRGB(rgba[0],rgba[1],rgba[2]);this.color.a=rgba[3];break;case 'texture':this.texture=child.getAttribute('texture');this.texcoord=child.getAttribute('texcoord'); // Defaults from:
+	// https://collada.org/mediawiki/index.php/Maya_texture_placement_MAYA_extension
+	this.texOpts={offsetU:0,offsetV:0,repeatU:1,repeatV:1,wrapU:1,wrapV:1};this.parseTexture(child);break;default:break;}}return this;};ColorOrTexture.prototype.parseTexture=function(element){if(!element.childNodes)return this; // This should be supported by Maya, 3dsMax, and MotionBuilder
+	if(element.childNodes[1]&&element.childNodes[1].nodeName==='extra'){element=element.childNodes[1];if(element.childNodes[1]&&element.childNodes[1].nodeName==='technique'){element=element.childNodes[1];}}for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'offsetU':case 'offsetV':case 'repeatU':case 'repeatV':this.texOpts[child.nodeName]=parseFloat(child.textContent);break;case 'wrapU':case 'wrapV': // some dae have a value of true which becomes NaN via parseInt
+	if(child.textContent.toUpperCase()==='TRUE'){this.texOpts[child.nodeName]=1;}else {this.texOpts[child.nodeName]=parseInt(child.textContent);}break;default:this.texOpts[child.nodeName]=child.textContent;break;}}return this;};function Shader(type,effect){this.type=type;this.effect=effect;this.material=null;}Shader.prototype.parse=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'emission':case 'diffuse':case 'specular':case 'transparent':this[child.nodeName]=new ColorOrTexture().parse(child);break;case 'bump': // If 'bumptype' is 'heightfield', create a 'bump' property
+	// Else if 'bumptype' is 'normalmap', create a 'normal' property
+	// (Default to 'bump')
+	var bumpType=child.getAttribute('bumptype');if(bumpType){if(bumpType.toLowerCase()==="heightfield"){this['bump']=new ColorOrTexture().parse(child);}else if(bumpType.toLowerCase()==="normalmap"){this['normal']=new ColorOrTexture().parse(child);}else {console.error("Shader.prototype.parse: Invalid value for attribute 'bumptype' ("+bumpType+") - valid bumptypes are 'HEIGHTFIELD' and 'NORMALMAP' - defaulting to 'HEIGHTFIELD'");this['bump']=new ColorOrTexture().parse(child);}}else {console.warn("Shader.prototype.parse: Attribute 'bumptype' missing from bump node - defaulting to 'HEIGHTFIELD'");this['bump']=new ColorOrTexture().parse(child);}break;case 'shininess':case 'reflectivity':case 'index_of_refraction':case 'transparency':var f=child.querySelectorAll('float');if(f.length>0)this[child.nodeName]=parseFloat(f[0].textContent);break;default:break;}}this.create();return this;};Shader.prototype.create=function(){var props={};var transparent=false;if(this['transparency']!==undefined&&this['transparent']!==undefined){ // convert transparent color RBG to average value
+	var transparentColor=this['transparent'];var transparencyLevel=(this.transparent.color.r+this.transparent.color.g+this.transparent.color.b)/3*this.transparency;if(transparencyLevel>0){transparent=true;props['transparent']=true;props['opacity']=1-transparencyLevel;}}var keys={'diffuse':'map','ambient':'lightMap','specular':'specularMap','emission':'emissionMap','bump':'bumpMap','normal':'normalMap'};for(var prop in this){switch(prop){case 'ambient':case 'emission':case 'diffuse':case 'specular':case 'bump':case 'normal':var cot=this[prop];if(cot instanceof ColorOrTexture){if(cot.isTexture()){var samplerId=cot.texture;var surfaceId=this.effect.sampler[samplerId];if(surfaceId!==undefined&&surfaceId.source!==undefined){var surface=this.effect.surface[surfaceId.source];if(surface!==undefined){var image=images[surface.init_from];if(image){var url=baseUrl+image.init_from;var texture;var loader=THREE.Loader.Handlers.get(url);if(loader!==null){texture=loader.load(url);}else {texture=new THREE.Texture();loadTextureImage(texture,url);}texture.wrapS=cot.texOpts.wrapU?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping;texture.wrapT=cot.texOpts.wrapV?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping;texture.offset.x=cot.texOpts.offsetU;texture.offset.y=cot.texOpts.offsetV;texture.repeat.x=cot.texOpts.repeatU;texture.repeat.y=cot.texOpts.repeatV;props[keys[prop]]=texture; // Texture with baked lighting?
+	if(prop==='emission')props['emissive']=0xffffff;}}}}else if(prop==='diffuse'||!transparent){if(prop==='emission'){props['emissive']=cot.color.getHex();}else {props[prop]=cot.color.getHex();}}}break;case 'shininess':props[prop]=this[prop];break;case 'reflectivity':props[prop]=this[prop];if(props[prop]>0.0)props['envMap']=options.defaultEnvMap;props['combine']=THREE.MixOperation; //mix regular shading with reflective component
+	break;case 'index_of_refraction':props['refractionRatio']=this[prop]; //TODO: "index_of_refraction" becomes "refractionRatio" in shader, but I'm not sure if the two are actually comparable
+	if(this[prop]!==1.0)props['envMap']=options.defaultEnvMap;break;case 'transparency': // gets figured out up top
+	break;default:break;}}props['shading']=preferredShading;props['side']=this.effect.doubleSided?THREE.DoubleSide:THREE.FrontSide;if(props.diffuse!==undefined){props.color=props.diffuse;delete props.diffuse;}switch(this.type){case 'constant':if(props.emissive!=undefined)props.color=props.emissive;this.material=new THREE.MeshBasicMaterial(props);break;case 'phong':case 'blinn':this.material=new THREE.MeshPhongMaterial(props);break;case 'lambert':default:this.material=new THREE.MeshLambertMaterial(props);break;}return this.material;};function Surface(effect){this.effect=effect;this.init_from=null;this.format=null;}Surface.prototype.parse=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'init_from':this.init_from=child.textContent;break;case 'format':this.format=child.textContent;break;default:console.log("unhandled Surface prop: "+child.nodeName);break;}}return this;};function Sampler2D(effect){this.effect=effect;this.source=null;this.wrap_s=null;this.wrap_t=null;this.minfilter=null;this.magfilter=null;this.mipfilter=null;}Sampler2D.prototype.parse=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'source':this.source=child.textContent;break;case 'minfilter':this.minfilter=child.textContent;break;case 'magfilter':this.magfilter=child.textContent;break;case 'mipfilter':this.mipfilter=child.textContent;break;case 'wrap_s':this.wrap_s=child.textContent;break;case 'wrap_t':this.wrap_t=child.textContent;break;default:console.log("unhandled Sampler2D prop: "+child.nodeName);break;}}return this;};function Effect(){this.id="";this.name="";this.shader=null;this.surface={};this.sampler={};}Effect.prototype.create=function(){if(this.shader===null){return null;}};Effect.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');extractDoubleSided(this,element);this.shader=null;for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'profile_COMMON':this.parseTechnique(this.parseProfileCOMMON(child));break;default:break;}}return this;};Effect.prototype.parseNewparam=function(element){var sid=element.getAttribute('sid');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'surface':this.surface[sid]=new Surface(this).parse(child);break;case 'sampler2D':this.sampler[sid]=new Sampler2D(this).parse(child);break;case 'extra':break;default:console.log(child.nodeName);break;}}};Effect.prototype.parseProfileCOMMON=function(element){var technique;for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'profile_COMMON':this.parseProfileCOMMON(child);break;case 'technique':technique=child;break;case 'newparam':this.parseNewparam(child);break;case 'image':var _image=new _Image().parse(child);images[_image.id]=_image;break;case 'extra':break;default:console.log(child.nodeName);break;}}return technique;};Effect.prototype.parseTechnique=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'constant':case 'lambert':case 'blinn':case 'phong':this.shader=new Shader(child.nodeName,this).parse(child);break;case 'extra':this.parseExtra(child);break;default:break;}}};Effect.prototype.parseExtra=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'technique':this.parseExtraTechnique(child);break;default:break;}}};Effect.prototype.parseExtraTechnique=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'bump':this.shader.parse(element);break;default:break;}}};function InstanceEffect(){this.url="";}InstanceEffect.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');return this;};function Animation(){this.id="";this.name="";this.source={};this.sampler=[];this.channel=[];}Animation.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.source={};for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'animation':var anim=new Animation().parse(child);for(var src in anim.source){this.source[src]=anim.source[src];}for(var j=0;j<anim.channel.length;j++){this.channel.push(anim.channel[j]);this.sampler.push(anim.sampler[j]);}break;case 'source':var src=new Source().parse(child);this.source[src.id]=src;break;case 'sampler':this.sampler.push(new Sampler(this).parse(child));break;case 'channel':this.channel.push(new Channel(this).parse(child));break;default:break;}}return this;};function Channel(animation){this.animation=animation;this.source="";this.target="";this.fullSid=null;this.sid=null;this.dotSyntax=null;this.arrSyntax=null;this.arrIndices=null;this.member=null;}Channel.prototype.parse=function(element){this.source=element.getAttribute('source').replace(/^#/,'');this.target=element.getAttribute('target');var parts=this.target.split('/');var id=parts.shift();var sid=parts.shift();var dotSyntax=sid.indexOf(".")>=0;var arrSyntax=sid.indexOf("(")>=0;if(dotSyntax){parts=sid.split(".");this.sid=parts.shift();this.member=parts.shift();}else if(arrSyntax){var arrIndices=sid.split("(");this.sid=arrIndices.shift();for(var j=0;j<arrIndices.length;j++){arrIndices[j]=parseInt(arrIndices[j].replace(/\)/,''));}this.arrIndices=arrIndices;}else {this.sid=sid;}this.fullSid=sid;this.dotSyntax=dotSyntax;this.arrSyntax=arrSyntax;return this;};function Sampler(animation){this.id="";this.animation=animation;this.inputs=[];this.input=null;this.output=null;this.strideOut=null;this.interpolation=null;this.startTime=null;this.endTime=null;this.duration=0;}Sampler.prototype.parse=function(element){this.id=element.getAttribute('id');this.inputs=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'input':this.inputs.push(new Input().parse(child));break;default:break;}}return this;};Sampler.prototype.create=function(){for(var i=0;i<this.inputs.length;i++){var input=this.inputs[i];var source=this.animation.source[input.source];switch(input.semantic){case 'INPUT':this.input=source.read();break;case 'OUTPUT':this.output=source.read();this.strideOut=source.accessor.stride;break;case 'INTERPOLATION':this.interpolation=source.read();break;case 'IN_TANGENT':break;case 'OUT_TANGENT':break;default:console.log(input.semantic);break;}}this.startTime=0;this.endTime=0;this.duration=0;if(this.input.length){this.startTime=100000000;this.endTime=-100000000;for(var i=0;i<this.input.length;i++){this.startTime=Math.min(this.startTime,this.input[i]);this.endTime=Math.max(this.endTime,this.input[i]);}this.duration=this.endTime-this.startTime;}};Sampler.prototype.getData=function(type,ndx,member){var data;if(type==='matrix'&&this.strideOut===16){data=this.output[ndx];}else if(this.strideOut>1){data=[];ndx*=this.strideOut;for(var i=0;i<this.strideOut;++i){data[i]=this.output[ndx+i];}if(this.strideOut===3){switch(type){case 'rotate':case 'translate':fixCoords(data,-1);break;case 'scale':fixCoords(data,1);break;}}else if(this.strideOut===4&&type==='matrix'){fixCoords(data,-1);}}else {data=this.output[ndx];if(member&&type==='translate'){data=getConvertedTranslation(member,data);}}return data;};function Key(time){this.targets=[];this.time=time;}Key.prototype.addTarget=function(fullSid,transform,member,data){this.targets.push({sid:fullSid,member:member,transform:transform,data:data});};Key.prototype.apply=function(opt_sid){for(var i=0;i<this.targets.length;++i){var target=this.targets[i];if(!opt_sid||target.sid===opt_sid){target.transform.update(target.data,target.member);}}};Key.prototype.getTarget=function(fullSid){for(var i=0;i<this.targets.length;++i){if(this.targets[i].sid===fullSid){return this.targets[i];}}return null;};Key.prototype.hasTarget=function(fullSid){for(var i=0;i<this.targets.length;++i){if(this.targets[i].sid===fullSid){return true;}}return false;}; // TODO: Currently only doing linear interpolation. Should support full COLLADA spec.
+	Key.prototype.interpolate=function(nextKey,time){for(var i=0,l=this.targets.length;i<l;i++){var target=this.targets[i],nextTarget=nextKey.getTarget(target.sid),data;if(target.transform.type!=='matrix'&&nextTarget){var scale=(time-this.time)/(nextKey.time-this.time),nextData=nextTarget.data,prevData=target.data;if(scale<0)scale=0;if(scale>1)scale=1;if(prevData.length){data=[];for(var j=0;j<prevData.length;++j){data[j]=prevData[j]+(nextData[j]-prevData[j])*scale;}}else {data=prevData+(nextData-prevData)*scale;}}else {data=target.data;}target.transform.update(data,target.member);}}; // Camera
+	function Camera(){this.id="";this.name="";this.technique="";}Camera.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'optics':this.parseOptics(child);break;default:break;}}return this;};Camera.prototype.parseOptics=function(element){for(var i=0;i<element.childNodes.length;i++){if(element.childNodes[i].nodeName==='technique_common'){var technique=element.childNodes[i];for(var j=0;j<technique.childNodes.length;j++){this.technique=technique.childNodes[j].nodeName;if(this.technique==='perspective'){var perspective=technique.childNodes[j];for(var k=0;k<perspective.childNodes.length;k++){var param=perspective.childNodes[k];switch(param.nodeName){case 'yfov':this.yfov=param.textContent;break;case 'xfov':this.xfov=param.textContent;break;case 'znear':this.znear=param.textContent;break;case 'zfar':this.zfar=param.textContent;break;case 'aspect_ratio':this.aspect_ratio=param.textContent;break;}}}else if(this.technique==='orthographic'){var orthographic=technique.childNodes[j];for(var k=0;k<orthographic.childNodes.length;k++){var param=orthographic.childNodes[k];switch(param.nodeName){case 'xmag':this.xmag=param.textContent;break;case 'ymag':this.ymag=param.textContent;break;case 'znear':this.znear=param.textContent;break;case 'zfar':this.zfar=param.textContent;break;case 'aspect_ratio':this.aspect_ratio=param.textContent;break;}}}}}}return this;};function InstanceCamera(){this.url="";}InstanceCamera.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');return this;}; // Light
+	function Light(){this.id="";this.name="";this.technique="";}Light.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'technique_common':this.parseCommon(child);break;case 'technique':this.parseTechnique(child);break;default:break;}}return this;};Light.prototype.parseCommon=function(element){for(var i=0;i<element.childNodes.length;i++){switch(element.childNodes[i].nodeName){case 'directional':case 'point':case 'spot':case 'ambient':this.technique=element.childNodes[i].nodeName;var light=element.childNodes[i];for(var j=0;j<light.childNodes.length;j++){var child=light.childNodes[j];switch(child.nodeName){case 'color':var rgba=_floats(child.textContent);this.color=new THREE.Color(0);this.color.setRGB(rgba[0],rgba[1],rgba[2]);this.color.a=rgba[3];break;case 'falloff_angle':this.falloff_angle=parseFloat(child.textContent);break;case 'quadratic_attenuation':var f=parseFloat(child.textContent);this.distance=f?Math.sqrt(1/f):0;}}}}return this;};Light.prototype.parseTechnique=function(element){this.profile=element.getAttribute('profile');for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];switch(child.nodeName){case 'intensity':this.intensity=parseFloat(child.textContent);break;}}return this;};function InstanceLight(){this.url="";}InstanceLight.prototype.parse=function(element){this.url=element.getAttribute('url').replace(/^#/,'');return this;};function KinematicsModel(){this.id='';this.name='';this.joints=[];this.links=[];}KinematicsModel.prototype.parse=function(element){this.id=element.getAttribute('id');this.name=element.getAttribute('name');this.joints=[];this.links=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'technique_common':this.parseCommon(child);break;default:break;}}return this;};KinematicsModel.prototype.parseCommon=function(element){for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(element.childNodes[i].nodeName){case 'joint':this.joints.push(new Joint().parse(child));break;case 'link':this.links.push(new Link().parse(child));break;default:break;}}return this;};function Joint(){this.sid='';this.name='';this.axis=new THREE.Vector3();this.limits={min:0,max:0};this.type='';this.static=false;this.zeroPosition=0.0;this.middlePosition=0.0;}Joint.prototype.parse=function(element){this.sid=element.getAttribute('sid');this.name=element.getAttribute('name');this.axis=new THREE.Vector3();this.limits={min:0,max:0};this.type='';this.static=false;this.zeroPosition=0.0;this.middlePosition=0.0;var axisElement=element.querySelector('axis');var _axis=_floats(axisElement.textContent);this.axis=getConvertedVec3(_axis,0);var min=element.querySelector('limits min')?parseFloat(element.querySelector('limits min').textContent):-360;var max=element.querySelector('limits max')?parseFloat(element.querySelector('limits max').textContent):360;this.limits={min:min,max:max};var jointTypes=['prismatic','revolute'];for(var i=0;i<jointTypes.length;i++){var type=jointTypes[i];var jointElement=element.querySelector(type);if(jointElement){this.type=type;}} // if the min is equal to or somehow greater than the max, consider the joint static
+	if(this.limits.min>=this.limits.max){this.static=true;}this.middlePosition=(this.limits.min+this.limits.max)/2.0;return this;};function Link(){this.sid='';this.name='';this.transforms=[];this.attachments=[];}Link.prototype.parse=function(element){this.sid=element.getAttribute('sid');this.name=element.getAttribute('name');this.transforms=[];this.attachments=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'attachment_full':this.attachments.push(new Attachment().parse(child));break;case 'rotate':case 'translate':case 'matrix':this.transforms.push(new Transform().parse(child));break;default:break;}}return this;};function Attachment(){this.joint='';this.transforms=[];this.links=[];}Attachment.prototype.parse=function(element){this.joint=element.getAttribute('joint').split('/').pop();this.links=[];for(var i=0;i<element.childNodes.length;i++){var child=element.childNodes[i];if(child.nodeType!=1)continue;switch(child.nodeName){case 'link':this.links.push(new Link().parse(child));break;case 'rotate':case 'translate':case 'matrix':this.transforms.push(new Transform().parse(child));break;default:break;}}return this;};function _source(element){var id=element.getAttribute('id');if(sources[id]!=undefined){return sources[id];}sources[id]=new Source(id).parse(element);return sources[id];}function _nsResolver(nsPrefix){if(nsPrefix==="dae"){return "http://www.collada.org/2005/11/COLLADASchema";}return null;}function _bools(str){var raw=_strings(str);var data=[];for(var i=0,l=raw.length;i<l;i++){data.push(raw[i]==='true'||raw[i]==='1'?true:false);}return data;}function _floats(str){var raw=_strings(str);var data=[];for(var i=0,l=raw.length;i<l;i++){data.push(parseFloat(raw[i]));}return data;}function _ints(str){var raw=_strings(str);var data=[];for(var i=0,l=raw.length;i<l;i++){data.push(parseInt(raw[i],10));}return data;}function _strings(str){return str.length>0?_trimString(str).split(/\s+/):[];}function _trimString(str){return str.replace(/^\s+/,"").replace(/\s+$/,"");}function _attr_as_float(element,name,defaultValue){if(element.hasAttribute(name)){return parseFloat(element.getAttribute(name));}else {return defaultValue;}}function _attr_as_int(element,name,defaultValue){if(element.hasAttribute(name)){return parseInt(element.getAttribute(name),10);}else {return defaultValue;}}function _attr_as_string(element,name,defaultValue){if(element.hasAttribute(name)){return element.getAttribute(name);}else {return defaultValue;}}function _format_float(f,num){if(f===undefined){var s='0.';while(s.length<num+2){s+='0';}return s;}num=num||2;var parts=f.toString().split('.');parts[1]=parts.length>1?parts[1].substr(0,num):"0";while(parts[1].length<num){parts[1]+='0';}return parts.join('.');}function loadTextureImage(texture,url){var loader=new THREE.ImageLoader();loader.load(url,function(image){texture.image=image;texture.needsUpdate=true;});}function extractDoubleSided(obj,element){obj.doubleSided=false;var node=element.querySelectorAll('extra double_sided')[0];if(node){if(node&&parseInt(node.textContent,10)===1){obj.doubleSided=true;}}} // Up axis conversion
+	function setUpConversion(){if(options.convertUpAxis!==true||colladaUp===options.upAxis){upConversion=null;}else {switch(colladaUp){case 'X':upConversion=options.upAxis==='Y'?'XtoY':'XtoZ';break;case 'Y':upConversion=options.upAxis==='X'?'YtoX':'YtoZ';break;case 'Z':upConversion=options.upAxis==='X'?'ZtoX':'ZtoY';break;}}}function fixCoords(data,sign){if(options.convertUpAxis!==true||colladaUp===options.upAxis){return;}switch(upConversion){case 'XtoY':var tmp=data[0];data[0]=sign*data[1];data[1]=tmp;break;case 'XtoZ':var tmp=data[2];data[2]=data[1];data[1]=data[0];data[0]=tmp;break;case 'YtoX':var tmp=data[0];data[0]=data[1];data[1]=sign*tmp;break;case 'YtoZ':var tmp=data[1];data[1]=sign*data[2];data[2]=tmp;break;case 'ZtoX':var tmp=data[0];data[0]=data[1];data[1]=data[2];data[2]=tmp;break;case 'ZtoY':var tmp=data[1];data[1]=data[2];data[2]=sign*tmp;break;}}function getConvertedTranslation(axis,data){if(options.convertUpAxis!==true||colladaUp===options.upAxis){return data;}switch(axis){case 'X':data=upConversion==='XtoY'?data*-1:data;break;case 'Y':data=upConversion==='YtoZ'||upConversion==='YtoX'?data*-1:data;break;case 'Z':data=upConversion==='ZtoY'?data*-1:data;break;default:break;}return data;}function getConvertedVec3(data,offset){var arr=[data[offset],data[offset+1],data[offset+2]];fixCoords(arr,-1);return new THREE.Vector3(arr[0],arr[1],arr[2]);}function getConvertedMat4(data){if(options.convertUpAxis){ // First fix rotation and scale
+	// Columns first
+	var arr=[data[0],data[4],data[8]];fixCoords(arr,-1);data[0]=arr[0];data[4]=arr[1];data[8]=arr[2];arr=[data[1],data[5],data[9]];fixCoords(arr,-1);data[1]=arr[0];data[5]=arr[1];data[9]=arr[2];arr=[data[2],data[6],data[10]];fixCoords(arr,-1);data[2]=arr[0];data[6]=arr[1];data[10]=arr[2]; // Rows second
+	arr=[data[0],data[1],data[2]];fixCoords(arr,-1);data[0]=arr[0];data[1]=arr[1];data[2]=arr[2];arr=[data[4],data[5],data[6]];fixCoords(arr,-1);data[4]=arr[0];data[5]=arr[1];data[6]=arr[2];arr=[data[8],data[9],data[10]];fixCoords(arr,-1);data[8]=arr[0];data[9]=arr[1];data[10]=arr[2]; // Now fix translation
+	arr=[data[3],data[7],data[11]];fixCoords(arr,-1);data[3]=arr[0];data[7]=arr[1];data[11]=arr[2];}return new THREE.Matrix4().set(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7],data[8],data[9],data[10],data[11],data[12],data[13],data[14],data[15]);}function getConvertedIndex(index){if(index>-1&&index<3){var members=['X','Y','Z'],indices={X:0,Y:1,Z:2};index=getConvertedMember(members[index]);index=indices[index];}return index;}function getConvertedMember(member){if(options.convertUpAxis){switch(member){case 'X':switch(upConversion){case 'XtoY':case 'XtoZ':case 'YtoX':member='Y';break;case 'ZtoX':member='Z';break;}break;case 'Y':switch(upConversion){case 'XtoY':case 'YtoX':case 'ZtoX':member='X';break;case 'XtoZ':case 'YtoZ':case 'ZtoY':member='Z';break;}break;case 'Z':switch(upConversion){case 'XtoZ':member='X';break;case 'YtoZ':case 'ZtoX':case 'ZtoY':member='Y';break;}break;}}return member;}return {load:load,parse:parse,setPreferredShading:setPreferredShading,applySkin:applySkin,geometries:geometries,options:options};};};
+
+/***/ },
 /* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -5792,21 +5800,25 @@
 	    value: true
 	});
 
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /* global THREE */
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _ImageBasedLightGenerator = __webpack_require__(17);
 
-	var _PhysicallyBased = __webpack_require__(25);
+	var _PhysicallyBased = __webpack_require__(27);
 
 	var _PhysicallyBased2 = _interopRequireDefault(_PhysicallyBased);
 
-	var _StandardRawTBN = __webpack_require__(26);
+	var _StandardRawTBN = __webpack_require__(28);
 
 	var _StandardRawTBN2 = _interopRequireDefault(_StandardRawTBN);
 
-	var _Newport_Loft_Ref = __webpack_require__(27);
+	var _Newport_Loft_Ref = __webpack_require__(29);
 
 	var _Newport_Loft_Ref2 = _interopRequireDefault(_Newport_Loft_Ref);
+
+	var _three = __webpack_require__(4);
+
+	var _three2 = _interopRequireDefault(_three);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5816,12 +5828,12 @@
 	    function PBRMaterial() {
 	        _classCallCheck(this, PBRMaterial);
 
-	        this.material = null;
+	        this.fMaterial = null;
 	        this.context = null;
 	        this.uniforms = {
 	            base_color_constant: {
 	                type: 'c',
-	                value: new THREE.Color(0x006AA4)
+	                value: new _three2.default.Color(0x006AA4)
 	            },
 	            roughness_constant: {
 	                type: 'f',
@@ -5839,11 +5851,11 @@
 	            },
 	            light_color: {
 	                type: 'c',
-	                value: new THREE.Color(0xFFFFFF)
+	                value: new _three2.default.Color(0xFFFFFF)
 	            },
 	            light_direction: {
 	                type: 'c',
-	                value: new THREE.Color(0xCCCCCC)
+	                value: new _three2.default.Color(0xCCCCCC)
 	            },
 	            light_intensity: {
 	                type: 'f',
@@ -5875,12 +5887,12 @@
 	    }
 
 	    _createClass(PBRMaterial, [{
-	        key: 'setup',
-	        value: function setup(context) {
+	        key: 'generateMaterial',
+	        value: function generateMaterial(renderSystem) {
 	            var _this = this;
 
-	            this.context = context;
-	            var makeIBLPromise = (0, _ImageBasedLightGenerator.generateImageBasedLight)(context, _Newport_Loft_Ref2.default);
+	            this.context = renderSystem;
+	            var makeIBLPromise = (0, _ImageBasedLightGenerator.generateImageBasedLight)(renderSystem, _Newport_Loft_Ref2.default);
 
 	            makeIBLPromise.then(function (_ref) {
 	                var ibl = _ref.ibl;
@@ -5893,7 +5905,7 @@
 	                _this.uniforms.brdf_map.needsUpdate = true;
 	            });
 
-	            this.material = new THREE.RawShaderMaterial({
+	            this.fMaterial = new _three2.default.RawShaderMaterial({
 	                vertexShader: _StandardRawTBN2.default,
 	                fragmentShader: _PhysicallyBased2.default,
 	                uniforms: this.uniforms
@@ -5919,7 +5931,7 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _vdc = __webpack_require__(28);
+	var _vdc = __webpack_require__(18);
 
 	var _vdc2 = _interopRequireDefault(_vdc);
 
@@ -5927,27 +5939,27 @@
 
 	var _three2 = _interopRequireDefault(_three);
 
-	var _Compute = __webpack_require__(18);
+	var _Compute = __webpack_require__(19);
 
 	var _Compute2 = _interopRequireDefault(_Compute);
 
-	var _RenderUtil = __webpack_require__(19);
+	var _RenderUtil = __webpack_require__(20);
 
 	var _RenderUtil2 = _interopRequireDefault(_RenderUtil);
 
-	var _StandardRaw = __webpack_require__(20);
+	var _StandardRaw = __webpack_require__(21);
 
 	var _StandardRaw2 = _interopRequireDefault(_StandardRaw);
 
-	var _EnvironmentBlur = __webpack_require__(21);
+	var _EnvironmentBlur = __webpack_require__(22);
 
 	var _EnvironmentBlur2 = _interopRequireDefault(_EnvironmentBlur);
 
-	var _BRDFIntegrator = __webpack_require__(22);
+	var _BRDFIntegrator = __webpack_require__(23);
 
 	var _BRDFIntegrator2 = _interopRequireDefault(_BRDFIntegrator);
 
-	var _loadHdrTexture = __webpack_require__(23);
+	var _loadHdrTexture = __webpack_require__(24);
 
 	var _loadHdrTexture2 = _interopRequireDefault(_loadHdrTexture);
 
@@ -6094,6 +6106,44 @@
 
 	'use strict';
 
+	/* vdc.js (C) 2013-present SheetJS -- http://sheetjs.com */
+	/* vim: set ts=2: */
+	function VDC(opts) {
+		if (!(this instanceof VDC)) return new VDC(opts);
+		var o = opts || { b: 2, n: 0 };
+		this._b = o.b || 2;
+		this._n = 0;
+		this.last = 0;
+		this.reset(o);
+	}
+
+	VDC.prototype.reset = function (opts) {
+		this._n = (opts || { n: 0 }).n || 0;
+	};
+
+	VDC.prototype.next = function () {
+		var n = this._n++;
+		var p = 0,
+		    q = 1;
+		while (n >= 1) {
+			p = p * this._b + n % this._b;
+			q *= this._b;
+			n = n / this._b >>> 0;
+		}
+		this.last = p / q;
+		return this.last;
+	};
+
+	if (true) {
+		module.exports = VDC;
+	}
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
@@ -6104,7 +6154,7 @@
 
 	var _three2 = _interopRequireDefault(_three);
 
-	var _RenderUtil = __webpack_require__(19);
+	var _RenderUtil = __webpack_require__(20);
 
 	var _RenderUtil2 = _interopRequireDefault(_RenderUtil);
 
@@ -6192,7 +6242,7 @@
 	exports.default = Compute;
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6276,25 +6326,25 @@
 	exports.default = RenderUtil;
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports) {
 
 	module.exports = "precision highp float;\nprecision highp int;\n#define GLSLIFY 1\n\nattribute vec4 tangent;\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform mat3 normalMatrix;\n\nattribute vec2 uv;\nattribute vec3 normal;\nattribute vec3 position;\n\nvarying vec3 vN;\nvarying vec2 vUV;\nvarying vec3 vP;\n\nvoid main() {\n    vUV = uv;\n    vN = normalMatrix * normal;\n\n    vec4 P4 = modelViewMatrix * vec4(position, 1.0);\n    vP = P4.xyz;\n    gl_Position = projectionMatrix * P4;\n}\n"
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports) {
 
 	module.exports = "precision highp float;\nprecision highp int;\n#define GLSLIFY 1\n\nuniform float roughness_constant;\n\nuniform sampler2D reflection_map;\nuniform sampler2D vdc_map;\n\nvarying vec3 vN;\nvarying vec2 vUV;\nvarying vec3 vP;\n\n#ifndef PI\n#define PI 3.14159\n#endif\n\n#ifndef PI\n#define PI 3.1415926\n#endif\n\nvec3 envMapEquirectInverse_1_0(vec2 uv) {\n  vec3 N;\n\n  vec2 uvRange = uv;\n\n  float theta = uvRange.x*2.0*PI - PI;\n  N.x = -sin(theta);\n  N.z = cos(theta);\n\n  float phi = uvRange.y * PI;\n  N.y = -cos(phi)*0.59;\n  return N;\n}\n\n\n\n#ifndef PI\n#define PI 3.1415926\n#endif\n\nvec2 envMapEquirect_2_1(vec3 R) {\n  float theta = atan(-R.x, R.z) + PI;\n  theta /= 2.0 * PI;\n\n  float phi = acos(-R.y);\n  phi /= PI;\n  return vec2(theta, phi);\n}\n\n\n\nvec3 gamma_3_2(vec3 color) {\n  return pow(color, vec3(0.4545, 0.4545, 0.4545));\n}\n\n\n\nvec3 degamma_4_3(vec3 color) {\n  return pow(color, vec3(2.2, 2.2, 2.2));\n}\n\n\n\n#ifndef MAX_RGBD_RANGE\n#define MAX_RGBD_RANGE 255.0\n#endif\n\nvec4 rgbToRgbd_5_4(vec3 rgb)\n{\n    float maxRGB = max(rgb.r,max(rgb.g,rgb.b));\n    float D      = max(MAX_RGBD_RANGE / maxRGB, 1.0);\n    D            = clamp(floor(D) / 255.0, 0.0, 1.0);\n    return vec4(rgb.rgb * (D * (255.0 / MAX_RGBD_RANGE)), D);\n}\n\n\n\n\n/*vec3 uvToNormal(vec2 uv) {\n  // create hemisphere from uv's, to use for ray testing\n  vec3 N;\n\n  vec2 uv2 = 2.0 * uv - vec2(1.0);\n\n  N.x = sin(uv2.x*PI); //uv2.x;\n  N.y = uv2.y * 0.59; // sin(uv2.y*PI); //1.0; // sin(uv.x*PI);\n  N.z = cos(uv2.x*PI); //2.0 * uv.y - 1.0;\n  return N;\n}*/\n\nvec3 ImportanceSampleGGX( vec2 Xi, float Roughness, vec3 N ) {\n  float a = Roughness * Roughness;\n  float Phi = 2.0 * PI * Xi.x;\n  float CosTheta = sqrt( (1.0 - Xi.y) / ( 1.0 + (a*a - 1.0) * Xi.y ) );\n  float SinTheta = sqrt( 1.0 - CosTheta * CosTheta );\n  vec3 H;\n  H.x = SinTheta * cos( Phi );\n  H.y = SinTheta * sin( Phi );\n  H.z = CosTheta;\n  vec3 UpVector = abs(N.z) < 0.999 ? vec3(0.0,0.0,1.0) : vec3(1.0,0.0,0.0);\n  vec3 TangentX = normalize( cross( UpVector, N ) );\n  vec3 TangentY = cross( N, TangentX );\n  // Tangent to world space\n  return TangentX * H.x + TangentY * H.y + N * H.z;\n}\n\n// Van der Corput pseudo-random sequence - http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html\nfloat randomNumber(int i, int numSamples) {\n  vec2 uv = vec2((float(i)+0.5) / float(numSamples), 0.5); // First row pixel\n  return texture2D(vdc_map, uv).r;\n}\n\nvec3 getSample(vec3 N) {\n  return texture2D(reflection_map, envMapEquirect_2_1(N)).rgb;\n}\n\n// Unreal SIGGRAPH 2013\nvec2 Hammersley(int i, int numSamples) {\n  return vec2(float(i)/float(numSamples), randomNumber(i, numSamples));\n}\n\nvec3 PrefilterEnvMap( float Roughness, vec3 R ) {\n  vec3 N = R;\n  vec3 V = R;\n  vec3 PrefilteredColor = vec3(0.0);\n  float TotalWeight = 0.0;\n  const int NumSamples = 1024; // must be hard-coded for for-loop\n  for( int i = 0; i < NumSamples; i++ )\n  {\n    vec2 Xi = Hammersley( i, NumSamples );\n    vec3 H = ImportanceSampleGGX( Xi, Roughness, N );\n    vec3 L = 2.0 * dot( V, H ) * H - V;\n    float NoL = clamp(0.0, 1.0, dot( N, L ) );\n    if( NoL > 0.0 ) {\n      PrefilteredColor += getSample(L) * NoL;\n      TotalWeight += NoL;\n    }\n  }\n  return PrefilteredColor / TotalWeight;\n}\n\nvoid main() {\n  vec3 N = envMapEquirectInverse_1_0(vUV);\n  //vec2 debugColor = Hammersley((int)(P.x*1024.0), 1024);\n  //vec3 color = texture2D(vdc_map, vec2(vUV.x, 0.5)).rgb;\n  //vec3 color = vec3(Hammersley(int((N.x*0.5+0.5)*1024.0), 1024).rg, 0.0, 0.0);\n  gl_FragColor = rgbToRgbd_5_4((PrefilterEnvMap(roughness_constant, N)));\n}\n"
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports) {
 
 	module.exports = "precision highp float;\nprecision highp int;\n#define GLSLIFY 1\n\n#define PI 3.14159\n\nuniform sampler2D vdc_map;\n\nvarying vec2 vUV;\n\n// Van der Corput pseudo-random sequence - http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html\nfloat randomNumber(int i, int numSamples) {\n  vec2 uv = vec2((float(i)+0.5) / float(numSamples), 0.5); // First row pixel\n  return texture2D(vdc_map, uv).r;\n}\n\nvec2 Hammersley(int i, int numSamples) {\n  return vec2(float(i)/float(numSamples), randomNumber(i, numSamples));\n}\n\n// Unreal SIGGRAPH 2013\nvec3 ImportanceSampleGGX( vec2 Xi, float Roughness, vec3 N ) {\n  float a = Roughness * Roughness;\n  float Phi = 2.0 * PI * Xi.x;\n  float CosTheta = sqrt( (1.0 - Xi.y) / ( 1.0 + (a*a - 1.0) * Xi.y + 0.00001) );\n  float SinTheta = sqrt( 1.0 - CosTheta * CosTheta );\n  vec3 H;\n  H.x = SinTheta * cos( Phi );\n  H.y = SinTheta * sin( Phi );\n  H.z = CosTheta;\n  vec3 UpVector = N.z < 0.999 ? vec3(0.0,0.0,1.0) : vec3(1.0,0.0,0.0);\n  vec3 TangentX = normalize( cross( UpVector, N ) );\n  vec3 TangentY = cross( N, TangentX );\n  // Tangent to world space\n  return TangentX * H.x + TangentY * H.y + N * H.z;\n}\n\nfloat G_1(float k, float NdV) {\n  return NdV/((NdV)*(1.0-k)+k+0.00001);\n}\n\nfloat G_Smith(float roughness, float NdV, float NdL) {\n  // remapped roughness, to be used for the geometry term calculations,\n  // per Disney [16], Unreal [3]. N.B. don't do this in IBL\n  //float roughness_remapped = 0.5 + roughness/2.0;\n  float k = roughness * roughness; //pow(roughness + 1.0, 2.0)/8.0;\n  return G_1(k, NdV) * G_1(k, NdL);\n}\n\n// Unreal SIGGRAPH 2013\nvec2 IntegrateBRDF( float Roughness, float NoV )\n{\n  vec3 N = vec3(0.0,0.0,1.0);\n  vec3 V;\n  V.x = sqrt( 1.0 - NoV * NoV ); // sin\n  V.y = 0.0;\n  V.z = NoV; // cos\n  float A = 0.0;\n  float B = 0.0;\n\n  const int NumSamples = 1024;\n  for( int i = 0; i < NumSamples; i++ )\n  {\n    vec2 Xi = Hammersley( i, NumSamples );\n    vec3 H = ImportanceSampleGGX( Xi, Roughness, N );\n    vec3 L = 2.0 * dot( V, H ) * H - V;\n\n    float NoL = clamp( L.z, 0.0, 1.0);\n    float NoH = clamp( H.z, 0.0, 1.0);\n    float VoH = clamp( dot( V, H ), 0.0, 1.0);\n\n    if( NoL > 0.0 )\n    {\n      float G = G_Smith( Roughness, NoV, NoL );\n      float G_Vis = G * VoH / (NoH * NoV + 0.0001);\n      float Fc = pow( 1.0 - VoH, 5.0 );\n      A += (1.0 - Fc) * G_Vis;\n      B += Fc * G_Vis;\n    }\n  }\n  return vec2( A, B ) / float(NumSamples);\n}\n\nvoid main() {\n  gl_FragColor = vec4(IntegrateBRDF(vUV.x, vUV.y), 0.0, 1.0);\n}\n"
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -6304,11 +6354,11 @@
 	});
 	exports.default = loadHdrTexture;
 
-	var _superagent = __webpack_require__(29);
+	var _superagent = __webpack_require__(25);
 
 	var _superagent2 = _interopRequireDefault(_superagent);
 
-	var _parseHdr = __webpack_require__(24);
+	var _parseHdr = __webpack_require__(26);
 
 	var _parseHdr2 = _interopRequireDefault(_parseHdr);
 
@@ -6341,7 +6391,1604 @@
 	};
 
 /***/ },
-/* 24 */
+/* 25 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var require;var require;"use strict";
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	(function (f) {
+	  if (( false ? "undefined" : _typeof(exports)) === "object" && typeof module !== "undefined") {
+	    module.exports = f();
+	  } else if (true) {
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_FACTORY__ = (f), __WEBPACK_AMD_DEFINE_RESULT__ = (typeof __WEBPACK_AMD_DEFINE_FACTORY__ === 'function' ? (__WEBPACK_AMD_DEFINE_FACTORY__.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__)) : __WEBPACK_AMD_DEFINE_FACTORY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	  } else {
+	    var g;if (typeof window !== "undefined") {
+	      g = window;
+	    } else if (typeof global !== "undefined") {
+	      g = global;
+	    } else if (typeof self !== "undefined") {
+	      g = self;
+	    } else {
+	      g = this;
+	    }g.superagent = f();
+	  }
+	})(function () {
+	  var define, module, exports;return function e(t, n, r) {
+	    function s(o, u) {
+	      if (!n[o]) {
+	        if (!t[o]) {
+	          var a = typeof require == "function" && require;if (!u && a) return require(o, !0);if (i) return i(o, !0);var f = new Error("Cannot find module '" + o + "'");throw f.code = "MODULE_NOT_FOUND", f;
+	        }var l = n[o] = { exports: {} };t[o][0].call(l.exports, function (e) {
+	          var n = t[o][1][e];return s(n ? n : e);
+	        }, l, l.exports, e, t, n, r);
+	      }return n[o].exports;
+	    }var i = typeof require == "function" && require;for (var o = 0; o < r.length; o++) {
+	      s(r[o]);
+	    }return s;
+	  }({ 1: [function (require, module, exports) {
+	      /**
+	       * Check if `obj` is an object.
+	       *
+	       * @param {Object} obj
+	       * @return {Boolean}
+	       * @api private
+	       */
+
+	      function isObject(obj) {
+	        return null !== obj && 'object' === (typeof obj === "undefined" ? "undefined" : _typeof(obj));
+	      }
+
+	      module.exports = isObject;
+	    }, {}], 2: [function (require, module, exports) {
+	      /**
+	       * Module of mixed-in functions shared between node and client code
+	       */
+	      var isObject = require('./is-object');
+
+	      /**
+	       * Clear previous timeout.
+	       *
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      exports.clearTimeout = function _clearTimeout() {
+	        this._timeout = 0;
+	        clearTimeout(this._timer);
+	        return this;
+	      };
+
+	      /**
+	       * Override default response body parser
+	       *
+	       * This function will be called to convert incoming data into request.body
+	       *
+	       * @param {Function}
+	       * @api public
+	       */
+
+	      exports.parse = function parse(fn) {
+	        this._parser = fn;
+	        return this;
+	      };
+
+	      /**
+	       * Override default request body serializer
+	       *
+	       * This function will be called to convert data set via .send or .attach into payload to send
+	       *
+	       * @param {Function}
+	       * @api public
+	       */
+
+	      exports.serialize = function serialize(fn) {
+	        this._serializer = fn;
+	        return this;
+	      };
+
+	      /**
+	       * Set timeout to `ms`.
+	       *
+	       * @param {Number} ms
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      exports.timeout = function timeout(ms) {
+	        this._timeout = ms;
+	        return this;
+	      };
+
+	      /**
+	       * Promise support
+	       *
+	       * @param {Function} resolve
+	       * @param {Function} reject
+	       * @return {Request}
+	       */
+
+	      exports.then = function then(resolve, reject) {
+	        if (!this._fullfilledPromise) {
+	          var self = this;
+	          this._fullfilledPromise = new Promise(function (innerResolve, innerReject) {
+	            self.end(function (err, res) {
+	              if (err) innerReject(err);else innerResolve(res);
+	            });
+	          });
+	        }
+	        return this._fullfilledPromise.then(resolve, reject);
+	      };
+
+	      /**
+	       * Allow for extension
+	       */
+
+	      exports.use = function use(fn) {
+	        fn(this);
+	        return this;
+	      };
+
+	      /**
+	       * Get request header `field`.
+	       * Case-insensitive.
+	       *
+	       * @param {String} field
+	       * @return {String}
+	       * @api public
+	       */
+
+	      exports.get = function (field) {
+	        return this._header[field.toLowerCase()];
+	      };
+
+	      /**
+	       * Get case-insensitive header `field` value.
+	       * This is a deprecated internal API. Use `.get(field)` instead.
+	       *
+	       * (getHeader is no longer used internally by the superagent code base)
+	       *
+	       * @param {String} field
+	       * @return {String}
+	       * @api private
+	       * @deprecated
+	       */
+
+	      exports.getHeader = exports.get;
+
+	      /**
+	       * Set header `field` to `val`, or multiple fields with one object.
+	       * Case-insensitive.
+	       *
+	       * Examples:
+	       *
+	       *      req.get('/')
+	       *        .set('Accept', 'application/json')
+	       *        .set('X-API-Key', 'foobar')
+	       *        .end(callback);
+	       *
+	       *      req.get('/')
+	       *        .set({ Accept: 'application/json', 'X-API-Key': 'foobar' })
+	       *        .end(callback);
+	       *
+	       * @param {String|Object} field
+	       * @param {String} val
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      exports.set = function (field, val) {
+	        if (isObject(field)) {
+	          for (var key in field) {
+	            this.set(key, field[key]);
+	          }
+	          return this;
+	        }
+	        this._header[field.toLowerCase()] = val;
+	        this.header[field] = val;
+	        return this;
+	      };
+
+	      /**
+	       * Remove header `field`.
+	       * Case-insensitive.
+	       *
+	       * Example:
+	       *
+	       *      req.get('/')
+	       *        .unset('User-Agent')
+	       *        .end(callback);
+	       *
+	       * @param {String} field
+	       */
+	      exports.unset = function (field) {
+	        delete this._header[field.toLowerCase()];
+	        delete this.header[field];
+	        return this;
+	      };
+
+	      /**
+	       * Write the field `name` and `val` for "multipart/form-data"
+	       * request bodies.
+	       *
+	       * ``` js
+	       * request.post('/upload')
+	       *   .field('foo', 'bar')
+	       *   .end(callback);
+	       * ```
+	       *
+	       * @param {String} name
+	       * @param {String|Blob|File|Buffer|fs.ReadStream} val
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+	      exports.field = function (name, val) {
+	        this._getFormData().append(name, val);
+	        return this;
+	      };
+
+	      /**
+	       * Abort the request, and clear potential timeout.
+	       *
+	       * @return {Request}
+	       * @api public
+	       */
+	      exports.abort = function () {
+	        if (this._aborted) {
+	          return this;
+	        }
+	        this._aborted = true;
+	        this.xhr && this.xhr.abort(); // browser
+	        this.req && this.req.abort(); // node
+	        this.clearTimeout();
+	        this.emit('abort');
+	        return this;
+	      };
+
+	      /**
+	       * Enable transmission of cookies with x-domain requests.
+	       *
+	       * Note that for this to work the origin must not be
+	       * using "Access-Control-Allow-Origin" with a wildcard,
+	       * and also must set "Access-Control-Allow-Credentials"
+	       * to "true".
+	       *
+	       * @api public
+	       */
+
+	      exports.withCredentials = function () {
+	        // This is browser-only functionality. Node side is no-op.
+	        this._withCredentials = true;
+	        return this;
+	      };
+
+	      /**
+	       * Set the max redirects to `n`. Does noting in browser XHR implementation.
+	       *
+	       * @param {Number} n
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      exports.redirects = function (n) {
+	        this._maxRedirects = n;
+	        return this;
+	      };
+
+	      /**
+	       * Convert to a plain javascript object (not JSON string) of scalar properties.
+	       * Note as this method is designed to return a useful non-this value,
+	       * it cannot be chained.
+	       *
+	       * @return {Object} describing method, url, and data of this request
+	       * @api public
+	       */
+
+	      exports.toJSON = function () {
+	        return {
+	          method: this.method,
+	          url: this.url,
+	          data: this._data
+	        };
+	      };
+
+	      /**
+	       * Check if `obj` is a host object,
+	       * we don't want to serialize these :)
+	       *
+	       * TODO: future proof, move to compoent land
+	       *
+	       * @param {Object} obj
+	       * @return {Boolean}
+	       * @api private
+	       */
+
+	      exports._isHost = function _isHost(obj) {
+	        var str = {}.toString.call(obj);
+
+	        switch (str) {
+	          case '[object File]':
+	          case '[object Blob]':
+	          case '[object FormData]':
+	            return true;
+	          default:
+	            return false;
+	        }
+	      };
+
+	      /**
+	       * Send `data` as the request body, defaulting the `.type()` to "json" when
+	       * an object is given.
+	       *
+	       * Examples:
+	       *
+	       *       // manual json
+	       *       request.post('/user')
+	       *         .type('json')
+	       *         .send('{"name":"tj"}')
+	       *         .end(callback)
+	       *
+	       *       // auto json
+	       *       request.post('/user')
+	       *         .send({ name: 'tj' })
+	       *         .end(callback)
+	       *
+	       *       // manual x-www-form-urlencoded
+	       *       request.post('/user')
+	       *         .type('form')
+	       *         .send('name=tj')
+	       *         .end(callback)
+	       *
+	       *       // auto x-www-form-urlencoded
+	       *       request.post('/user')
+	       *         .type('form')
+	       *         .send({ name: 'tj' })
+	       *         .end(callback)
+	       *
+	       *       // defaults to x-www-form-urlencoded
+	       *      request.post('/user')
+	       *        .send('name=tobi')
+	       *        .send('species=ferret')
+	       *        .end(callback)
+	       *
+	       * @param {String|Object} data
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      exports.send = function (data) {
+	        var obj = isObject(data);
+	        var type = this._header['content-type'];
+
+	        // merge
+	        if (obj && isObject(this._data)) {
+	          for (var key in data) {
+	            this._data[key] = data[key];
+	          }
+	        } else if ('string' == typeof data) {
+	          // default to x-www-form-urlencoded
+	          if (!type) this.type('form');
+	          type = this._header['content-type'];
+	          if ('application/x-www-form-urlencoded' == type) {
+	            this._data = this._data ? this._data + '&' + data : data;
+	          } else {
+	            this._data = (this._data || '') + data;
+	          }
+	        } else {
+	          this._data = data;
+	        }
+
+	        if (!obj || this._isHost(data)) return this;
+
+	        // default to json
+	        if (!type) this.type('json');
+	        return this;
+	      };
+	    }, { "./is-object": 1 }], 3: [function (require, module, exports) {
+	      // The node and browser modules expose versions of this with the
+	      // appropriate constructor function bound as first argument
+	      /**
+	       * Issue a request:
+	       *
+	       * Examples:
+	       *
+	       *    request('GET', '/users').end(callback)
+	       *    request('/users').end(callback)
+	       *    request('/users', callback)
+	       *
+	       * @param {String} method
+	       * @param {String|Function} url or callback
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      function request(RequestConstructor, method, url) {
+	        // callback
+	        if ('function' == typeof url) {
+	          return new RequestConstructor('GET', method).end(url);
+	        }
+
+	        // url first
+	        if (2 == arguments.length) {
+	          return new RequestConstructor('GET', method);
+	        }
+
+	        return new RequestConstructor(method, url);
+	      }
+
+	      module.exports = request;
+	    }, {}], 4: [function (require, module, exports) {
+
+	      /**
+	       * Expose `Emitter`.
+	       */
+
+	      if (typeof module !== 'undefined') {
+	        module.exports = Emitter;
+	      }
+
+	      /**
+	       * Initialize a new `Emitter`.
+	       *
+	       * @api public
+	       */
+
+	      function Emitter(obj) {
+	        if (obj) return mixin(obj);
+	      };
+
+	      /**
+	       * Mixin the emitter properties.
+	       *
+	       * @param {Object} obj
+	       * @return {Object}
+	       * @api private
+	       */
+
+	      function mixin(obj) {
+	        for (var key in Emitter.prototype) {
+	          obj[key] = Emitter.prototype[key];
+	        }
+	        return obj;
+	      }
+
+	      /**
+	       * Listen on the given `event` with `fn`.
+	       *
+	       * @param {String} event
+	       * @param {Function} fn
+	       * @return {Emitter}
+	       * @api public
+	       */
+
+	      Emitter.prototype.on = Emitter.prototype.addEventListener = function (event, fn) {
+	        this._callbacks = this._callbacks || {};
+	        (this._callbacks['$' + event] = this._callbacks['$' + event] || []).push(fn);
+	        return this;
+	      };
+
+	      /**
+	       * Adds an `event` listener that will be invoked a single
+	       * time then automatically removed.
+	       *
+	       * @param {String} event
+	       * @param {Function} fn
+	       * @return {Emitter}
+	       * @api public
+	       */
+
+	      Emitter.prototype.once = function (event, fn) {
+	        function on() {
+	          this.off(event, on);
+	          fn.apply(this, arguments);
+	        }
+
+	        on.fn = fn;
+	        this.on(event, on);
+	        return this;
+	      };
+
+	      /**
+	       * Remove the given callback for `event` or all
+	       * registered callbacks.
+	       *
+	       * @param {String} event
+	       * @param {Function} fn
+	       * @return {Emitter}
+	       * @api public
+	       */
+
+	      Emitter.prototype.off = Emitter.prototype.removeListener = Emitter.prototype.removeAllListeners = Emitter.prototype.removeEventListener = function (event, fn) {
+	        this._callbacks = this._callbacks || {};
+
+	        // all
+	        if (0 == arguments.length) {
+	          this._callbacks = {};
+	          return this;
+	        }
+
+	        // specific event
+	        var callbacks = this._callbacks['$' + event];
+	        if (!callbacks) return this;
+
+	        // remove all handlers
+	        if (1 == arguments.length) {
+	          delete this._callbacks['$' + event];
+	          return this;
+	        }
+
+	        // remove specific handler
+	        var cb;
+	        for (var i = 0; i < callbacks.length; i++) {
+	          cb = callbacks[i];
+	          if (cb === fn || cb.fn === fn) {
+	            callbacks.splice(i, 1);
+	            break;
+	          }
+	        }
+	        return this;
+	      };
+
+	      /**
+	       * Emit `event` with the given args.
+	       *
+	       * @param {String} event
+	       * @param {Mixed} ...
+	       * @return {Emitter}
+	       */
+
+	      Emitter.prototype.emit = function (event) {
+	        this._callbacks = this._callbacks || {};
+	        var args = [].slice.call(arguments, 1),
+	            callbacks = this._callbacks['$' + event];
+
+	        if (callbacks) {
+	          callbacks = callbacks.slice(0);
+	          for (var i = 0, len = callbacks.length; i < len; ++i) {
+	            callbacks[i].apply(this, args);
+	          }
+	        }
+
+	        return this;
+	      };
+
+	      /**
+	       * Return array of callbacks for `event`.
+	       *
+	       * @param {String} event
+	       * @return {Array}
+	       * @api public
+	       */
+
+	      Emitter.prototype.listeners = function (event) {
+	        this._callbacks = this._callbacks || {};
+	        return this._callbacks['$' + event] || [];
+	      };
+
+	      /**
+	       * Check if this emitter has `event` handlers.
+	       *
+	       * @param {String} event
+	       * @return {Boolean}
+	       * @api public
+	       */
+
+	      Emitter.prototype.hasListeners = function (event) {
+	        return !!this.listeners(event).length;
+	      };
+	    }, {}], 5: [function (require, module, exports) {
+
+	      /**
+	       * Reduce `arr` with `fn`.
+	       *
+	       * @param {Array} arr
+	       * @param {Function} fn
+	       * @param {Mixed} initial
+	       *
+	       * TODO: combatible error handling?
+	       */
+
+	      module.exports = function (arr, fn, initial) {
+	        var idx = 0;
+	        var len = arr.length;
+	        var curr = arguments.length == 3 ? initial : arr[idx++];
+
+	        while (idx < len) {
+	          curr = fn.call(null, curr, arr[idx], ++idx, arr);
+	        }
+
+	        return curr;
+	      };
+	    }, {}], 6: [function (require, module, exports) {
+	      /**
+	       * Module dependencies.
+	       */
+
+	      var Emitter = require('emitter');
+	      var reduce = require('reduce');
+	      var requestBase = require('./request-base');
+	      var isObject = require('./is-object');
+
+	      /**
+	       * Root reference for iframes.
+	       */
+
+	      var root;
+	      if (typeof window !== 'undefined') {
+	        // Browser window
+	        root = window;
+	      } else if (typeof self !== 'undefined') {
+	        // Web Worker
+	        root = self;
+	      } else {
+	        // Other environments
+	        root = this;
+	      }
+
+	      /**
+	       * Noop.
+	       */
+
+	      function noop() {};
+
+	      /**
+	       * Expose `request`.
+	       */
+
+	      var request = module.exports = require('./request').bind(null, Request);
+
+	      /**
+	       * Determine XHR.
+	       */
+
+	      request.getXHR = function () {
+	        if (root.XMLHttpRequest && (!root.location || 'file:' != root.location.protocol || !root.ActiveXObject)) {
+	          return new XMLHttpRequest();
+	        } else {
+	          try {
+	            return new ActiveXObject('Microsoft.XMLHTTP');
+	          } catch (e) {}
+	          try {
+	            return new ActiveXObject('Msxml2.XMLHTTP.6.0');
+	          } catch (e) {}
+	          try {
+	            return new ActiveXObject('Msxml2.XMLHTTP.3.0');
+	          } catch (e) {}
+	          try {
+	            return new ActiveXObject('Msxml2.XMLHTTP');
+	          } catch (e) {}
+	        }
+	        return false;
+	      };
+
+	      /**
+	       * Removes leading and trailing whitespace, added to support IE.
+	       *
+	       * @param {String} s
+	       * @return {String}
+	       * @api private
+	       */
+
+	      var trim = ''.trim ? function (s) {
+	        return s.trim();
+	      } : function (s) {
+	        return s.replace(/(^\s*|\s*$)/g, '');
+	      };
+
+	      /**
+	       * Serialize the given `obj`.
+	       *
+	       * @param {Object} obj
+	       * @return {String}
+	       * @api private
+	       */
+
+	      function serialize(obj) {
+	        if (!isObject(obj)) return obj;
+	        var pairs = [];
+	        for (var key in obj) {
+	          if (null != obj[key]) {
+	            pushEncodedKeyValuePair(pairs, key, obj[key]);
+	          }
+	        }
+	        return pairs.join('&');
+	      }
+
+	      /**
+	       * Helps 'serialize' with serializing arrays.
+	       * Mutates the pairs array.
+	       *
+	       * @param {Array} pairs
+	       * @param {String} key
+	       * @param {Mixed} val
+	       */
+
+	      function pushEncodedKeyValuePair(pairs, key, val) {
+	        if (Array.isArray(val)) {
+	          return val.forEach(function (v) {
+	            pushEncodedKeyValuePair(pairs, key, v);
+	          });
+	        } else if (isObject(val)) {
+	          for (var subkey in val) {
+	            pushEncodedKeyValuePair(pairs, key + '[' + subkey + ']', val[subkey]);
+	          }
+	          return;
+	        }
+	        pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(val));
+	      }
+
+	      /**
+	       * Expose serialization method.
+	       */
+
+	      request.serializeObject = serialize;
+
+	      /**
+	       * Parse the given x-www-form-urlencoded `str`.
+	       *
+	       * @param {String} str
+	       * @return {Object}
+	       * @api private
+	       */
+
+	      function parseString(str) {
+	        var obj = {};
+	        var pairs = str.split('&');
+	        var pair;
+	        var pos;
+
+	        for (var i = 0, len = pairs.length; i < len; ++i) {
+	          pair = pairs[i];
+	          pos = pair.indexOf('=');
+	          if (pos == -1) {
+	            obj[decodeURIComponent(pair)] = '';
+	          } else {
+	            obj[decodeURIComponent(pair.slice(0, pos))] = decodeURIComponent(pair.slice(pos + 1));
+	          }
+	        }
+
+	        return obj;
+	      }
+
+	      /**
+	       * Expose parser.
+	       */
+
+	      request.parseString = parseString;
+
+	      /**
+	       * Default MIME type map.
+	       *
+	       *     superagent.types.xml = 'application/xml';
+	       *
+	       */
+
+	      request.types = {
+	        html: 'text/html',
+	        json: 'application/json',
+	        xml: 'application/xml',
+	        urlencoded: 'application/x-www-form-urlencoded',
+	        'form': 'application/x-www-form-urlencoded',
+	        'form-data': 'application/x-www-form-urlencoded'
+	      };
+
+	      /**
+	       * Default serialization map.
+	       *
+	       *     superagent.serialize['application/xml'] = function(obj){
+	       *       return 'generated xml here';
+	       *     };
+	       *
+	       */
+
+	      request.serialize = {
+	        'application/x-www-form-urlencoded': serialize,
+	        'application/json': JSON.stringify
+	      };
+
+	      /**
+	       * Default parsers.
+	       *
+	       *     superagent.parse['application/xml'] = function(str){
+	       *       return { object parsed from str };
+	       *     };
+	       *
+	       */
+
+	      request.parse = {
+	        'application/x-www-form-urlencoded': parseString,
+	        'application/json': JSON.parse
+	      };
+
+	      /**
+	       * Parse the given header `str` into
+	       * an object containing the mapped fields.
+	       *
+	       * @param {String} str
+	       * @return {Object}
+	       * @api private
+	       */
+
+	      function parseHeader(str) {
+	        var lines = str.split(/\r?\n/);
+	        var fields = {};
+	        var index;
+	        var line;
+	        var field;
+	        var val;
+
+	        lines.pop(); // trailing CRLF
+
+	        for (var i = 0, len = lines.length; i < len; ++i) {
+	          line = lines[i];
+	          index = line.indexOf(':');
+	          field = line.slice(0, index).toLowerCase();
+	          val = trim(line.slice(index + 1));
+	          fields[field] = val;
+	        }
+
+	        return fields;
+	      }
+
+	      /**
+	       * Check if `mime` is json or has +json structured syntax suffix.
+	       *
+	       * @param {String} mime
+	       * @return {Boolean}
+	       * @api private
+	       */
+
+	      function isJSON(mime) {
+	        return (/[\/+]json\b/.test(mime)
+	        );
+	      }
+
+	      /**
+	       * Return the mime type for the given `str`.
+	       *
+	       * @param {String} str
+	       * @return {String}
+	       * @api private
+	       */
+
+	      function type(str) {
+	        return str.split(/ *; */).shift();
+	      };
+
+	      /**
+	       * Return header field parameters.
+	       *
+	       * @param {String} str
+	       * @return {Object}
+	       * @api private
+	       */
+
+	      function params(str) {
+	        return reduce(str.split(/ *; */), function (obj, str) {
+	          var parts = str.split(/ *= */),
+	              key = parts.shift(),
+	              val = parts.shift();
+
+	          if (key && val) obj[key] = val;
+	          return obj;
+	        }, {});
+	      };
+
+	      /**
+	       * Initialize a new `Response` with the given `xhr`.
+	       *
+	       *  - set flags (.ok, .error, etc)
+	       *  - parse header
+	       *
+	       * Examples:
+	       *
+	       *  Aliasing `superagent` as `request` is nice:
+	       *
+	       *      request = superagent;
+	       *
+	       *  We can use the promise-like API, or pass callbacks:
+	       *
+	       *      request.get('/').end(function(res){});
+	       *      request.get('/', function(res){});
+	       *
+	       *  Sending data can be chained:
+	       *
+	       *      request
+	       *        .post('/user')
+	       *        .send({ name: 'tj' })
+	       *        .end(function(res){});
+	       *
+	       *  Or passed to `.send()`:
+	       *
+	       *      request
+	       *        .post('/user')
+	       *        .send({ name: 'tj' }, function(res){});
+	       *
+	       *  Or passed to `.post()`:
+	       *
+	       *      request
+	       *        .post('/user', { name: 'tj' })
+	       *        .end(function(res){});
+	       *
+	       * Or further reduced to a single call for simple cases:
+	       *
+	       *      request
+	       *        .post('/user', { name: 'tj' }, function(res){});
+	       *
+	       * @param {XMLHTTPRequest} xhr
+	       * @param {Object} options
+	       * @api private
+	       */
+
+	      function Response(req, options) {
+	        options = options || {};
+	        this.req = req;
+	        this.xhr = this.req.xhr;
+	        // responseText is accessible only if responseType is '' or 'text' and on older browsers
+	        this.text = this.req.method != 'HEAD' && (this.xhr.responseType === '' || this.xhr.responseType === 'text') || typeof this.xhr.responseType === 'undefined' ? this.xhr.responseText : null;
+	        this.statusText = this.req.xhr.statusText;
+	        this._setStatusProperties(this.xhr.status);
+	        this.header = this.headers = parseHeader(this.xhr.getAllResponseHeaders());
+	        // getAllResponseHeaders sometimes falsely returns "" for CORS requests, but
+	        // getResponseHeader still works. so we get content-type even if getting
+	        // other headers fails.
+	        this.header['content-type'] = this.xhr.getResponseHeader('content-type');
+	        this._setHeaderProperties(this.header);
+	        this.body = this.req.method != 'HEAD' ? this._parseBody(this.text ? this.text : this.xhr.response) : null;
+	      }
+
+	      /**
+	       * Get case-insensitive `field` value.
+	       *
+	       * @param {String} field
+	       * @return {String}
+	       * @api public
+	       */
+
+	      Response.prototype.get = function (field) {
+	        return this.header[field.toLowerCase()];
+	      };
+
+	      /**
+	       * Set header related properties:
+	       *
+	       *   - `.type` the content type without params
+	       *
+	       * A response of "Content-Type: text/plain; charset=utf-8"
+	       * will provide you with a `.type` of "text/plain".
+	       *
+	       * @param {Object} header
+	       * @api private
+	       */
+
+	      Response.prototype._setHeaderProperties = function (header) {
+	        // content-type
+	        var ct = this.header['content-type'] || '';
+	        this.type = type(ct);
+
+	        // params
+	        var obj = params(ct);
+	        for (var key in obj) {
+	          this[key] = obj[key];
+	        }
+	      };
+
+	      /**
+	       * Parse the given body `str`.
+	       *
+	       * Used for auto-parsing of bodies. Parsers
+	       * are defined on the `superagent.parse` object.
+	       *
+	       * @param {String} str
+	       * @return {Mixed}
+	       * @api private
+	       */
+
+	      Response.prototype._parseBody = function (str) {
+	        var parse = request.parse[this.type];
+	        if (!parse && isJSON(this.type)) {
+	          parse = request.parse['application/json'];
+	        }
+	        return parse && str && (str.length || str instanceof Object) ? parse(str) : null;
+	      };
+
+	      /**
+	       * Set flags such as `.ok` based on `status`.
+	       *
+	       * For example a 2xx response will give you a `.ok` of __true__
+	       * whereas 5xx will be __false__ and `.error` will be __true__. The
+	       * `.clientError` and `.serverError` are also available to be more
+	       * specific, and `.statusType` is the class of error ranging from 1..5
+	       * sometimes useful for mapping respond colors etc.
+	       *
+	       * "sugar" properties are also defined for common cases. Currently providing:
+	       *
+	       *   - .noContent
+	       *   - .badRequest
+	       *   - .unauthorized
+	       *   - .notAcceptable
+	       *   - .notFound
+	       *
+	       * @param {Number} status
+	       * @api private
+	       */
+
+	      Response.prototype._setStatusProperties = function (status) {
+	        // handle IE9 bug: http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
+	        if (status === 1223) {
+	          status = 204;
+	        }
+
+	        var type = status / 100 | 0;
+
+	        // status / class
+	        this.status = this.statusCode = status;
+	        this.statusType = type;
+
+	        // basics
+	        this.info = 1 == type;
+	        this.ok = 2 == type;
+	        this.clientError = 4 == type;
+	        this.serverError = 5 == type;
+	        this.error = 4 == type || 5 == type ? this.toError() : false;
+
+	        // sugar
+	        this.accepted = 202 == status;
+	        this.noContent = 204 == status;
+	        this.badRequest = 400 == status;
+	        this.unauthorized = 401 == status;
+	        this.notAcceptable = 406 == status;
+	        this.notFound = 404 == status;
+	        this.forbidden = 403 == status;
+	      };
+
+	      /**
+	       * Return an `Error` representative of this response.
+	       *
+	       * @return {Error}
+	       * @api public
+	       */
+
+	      Response.prototype.toError = function () {
+	        var req = this.req;
+	        var method = req.method;
+	        var url = req.url;
+
+	        var msg = 'cannot ' + method + ' ' + url + ' (' + this.status + ')';
+	        var err = new Error(msg);
+	        err.status = this.status;
+	        err.method = method;
+	        err.url = url;
+
+	        return err;
+	      };
+
+	      /**
+	       * Expose `Response`.
+	       */
+
+	      request.Response = Response;
+
+	      /**
+	       * Initialize a new `Request` with the given `method` and `url`.
+	       *
+	       * @param {String} method
+	       * @param {String} url
+	       * @api public
+	       */
+
+	      function Request(method, url) {
+	        var self = this;
+	        this._query = this._query || [];
+	        this.method = method;
+	        this.url = url;
+	        this.header = {}; // preserves header name case
+	        this._header = {}; // coerces header names to lowercase
+	        this.on('end', function () {
+	          var err = null;
+	          var res = null;
+
+	          try {
+	            res = new Response(self);
+	          } catch (e) {
+	            err = new Error('Parser is unable to parse the response');
+	            err.parse = true;
+	            err.original = e;
+	            // issue #675: return the raw response if the response parsing fails
+	            err.rawResponse = self.xhr && self.xhr.responseText ? self.xhr.responseText : null;
+	            // issue #876: return the http status code if the response parsing fails
+	            err.statusCode = self.xhr && self.xhr.status ? self.xhr.status : null;
+	            return self.callback(err);
+	          }
+
+	          self.emit('response', res);
+
+	          if (err) {
+	            return self.callback(err, res);
+	          }
+
+	          try {
+	            if (res.status >= 200 && res.status < 300) {
+	              return self.callback(err, res);
+	            }
+
+	            var new_err = new Error(res.statusText || 'Unsuccessful HTTP response');
+	            new_err.original = err;
+	            new_err.response = res;
+	            new_err.status = res.status;
+
+	            self.callback(new_err, res);
+	          } catch (e) {
+	            self.callback(e); // #985 touching res may cause INVALID_STATE_ERR on old Android
+	          }
+	        });
+	      }
+
+	      /**
+	       * Mixin `Emitter` and `requestBase`.
+	       */
+
+	      Emitter(Request.prototype);
+	      for (var key in requestBase) {
+	        Request.prototype[key] = requestBase[key];
+	      }
+
+	      /**
+	       * Set Content-Type to `type`, mapping values from `request.types`.
+	       *
+	       * Examples:
+	       *
+	       *      superagent.types.xml = 'application/xml';
+	       *
+	       *      request.post('/')
+	       *        .type('xml')
+	       *        .send(xmlstring)
+	       *        .end(callback);
+	       *
+	       *      request.post('/')
+	       *        .type('application/xml')
+	       *        .send(xmlstring)
+	       *        .end(callback);
+	       *
+	       * @param {String} type
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      Request.prototype.type = function (type) {
+	        this.set('Content-Type', request.types[type] || type);
+	        return this;
+	      };
+
+	      /**
+	       * Set responseType to `val`. Presently valid responseTypes are 'blob' and
+	       * 'arraybuffer'.
+	       *
+	       * Examples:
+	       *
+	       *      req.get('/')
+	       *        .responseType('blob')
+	       *        .end(callback);
+	       *
+	       * @param {String} val
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      Request.prototype.responseType = function (val) {
+	        this._responseType = val;
+	        return this;
+	      };
+
+	      /**
+	       * Set Accept to `type`, mapping values from `request.types`.
+	       *
+	       * Examples:
+	       *
+	       *      superagent.types.json = 'application/json';
+	       *
+	       *      request.get('/agent')
+	       *        .accept('json')
+	       *        .end(callback);
+	       *
+	       *      request.get('/agent')
+	       *        .accept('application/json')
+	       *        .end(callback);
+	       *
+	       * @param {String} accept
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      Request.prototype.accept = function (type) {
+	        this.set('Accept', request.types[type] || type);
+	        return this;
+	      };
+
+	      /**
+	       * Set Authorization field value with `user` and `pass`.
+	       *
+	       * @param {String} user
+	       * @param {String} pass
+	       * @param {Object} options with 'type' property 'auto' or 'basic' (default 'basic')
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      Request.prototype.auth = function (user, pass, options) {
+	        if (!options) {
+	          options = {
+	            type: 'basic'
+	          };
+	        }
+
+	        switch (options.type) {
+	          case 'basic':
+	            var str = btoa(user + ':' + pass);
+	            this.set('Authorization', 'Basic ' + str);
+	            break;
+
+	          case 'auto':
+	            this.username = user;
+	            this.password = pass;
+	            break;
+	        }
+	        return this;
+	      };
+
+	      /**
+	      * Add query-string `val`.
+	      *
+	      * Examples:
+	      *
+	      *   request.get('/shoes')
+	      *     .query('size=10')
+	      *     .query({ color: 'blue' })
+	      *
+	      * @param {Object|String} val
+	      * @return {Request} for chaining
+	      * @api public
+	      */
+
+	      Request.prototype.query = function (val) {
+	        if ('string' != typeof val) val = serialize(val);
+	        if (val) this._query.push(val);
+	        return this;
+	      };
+
+	      /**
+	       * Queue the given `file` as an attachment to the specified `field`,
+	       * with optional `filename`.
+	       *
+	       * ``` js
+	       * request.post('/upload')
+	       *   .attach('content', new Blob(['<a id="a"><b id="b">hey!</b></a>'], { type: "text/html"}))
+	       *   .end(callback);
+	       * ```
+	       *
+	       * @param {String} field
+	       * @param {Blob|File} file
+	       * @param {String} filename
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      Request.prototype.attach = function (field, file, filename) {
+	        this._getFormData().append(field, file, filename || file.name);
+	        return this;
+	      };
+
+	      Request.prototype._getFormData = function () {
+	        if (!this._formData) {
+	          this._formData = new root.FormData();
+	        }
+	        return this._formData;
+	      };
+
+	      /**
+	       * Invoke the callback with `err` and `res`
+	       * and handle arity check.
+	       *
+	       * @param {Error} err
+	       * @param {Response} res
+	       * @api private
+	       */
+
+	      Request.prototype.callback = function (err, res) {
+	        var fn = this._callback;
+	        this.clearTimeout();
+	        fn(err, res);
+	      };
+
+	      /**
+	       * Invoke callback with x-domain error.
+	       *
+	       * @api private
+	       */
+
+	      Request.prototype.crossDomainError = function () {
+	        var err = new Error('Request has been terminated\nPossible causes: the network is offline, Origin is not allowed by Access-Control-Allow-Origin, the page is being unloaded, etc.');
+	        err.crossDomain = true;
+
+	        err.status = this.status;
+	        err.method = this.method;
+	        err.url = this.url;
+
+	        this.callback(err);
+	      };
+
+	      /**
+	       * Invoke callback with timeout error.
+	       *
+	       * @api private
+	       */
+
+	      Request.prototype._timeoutError = function () {
+	        var timeout = this._timeout;
+	        var err = new Error('timeout of ' + timeout + 'ms exceeded');
+	        err.timeout = timeout;
+	        this.callback(err);
+	      };
+
+	      /**
+	       * Compose querystring to append to req.url
+	       *
+	       * @api private
+	       */
+
+	      Request.prototype._appendQueryString = function () {
+	        var query = this._query.join('&');
+	        if (query) {
+	          this.url += ~this.url.indexOf('?') ? '&' + query : '?' + query;
+	        }
+	      };
+
+	      /**
+	       * Initiate request, invoking callback `fn(res)`
+	       * with an instanceof `Response`.
+	       *
+	       * @param {Function} fn
+	       * @return {Request} for chaining
+	       * @api public
+	       */
+
+	      Request.prototype.end = function (fn) {
+	        var self = this;
+	        var xhr = this.xhr = request.getXHR();
+	        var timeout = this._timeout;
+	        var data = this._formData || this._data;
+
+	        // store callback
+	        this._callback = fn || noop;
+
+	        // state change
+	        xhr.onreadystatechange = function () {
+	          if (4 != xhr.readyState) return;
+
+	          // In IE9, reads to any property (e.g. status) off of an aborted XHR will
+	          // result in the error "Could not complete the operation due to error c00c023f"
+	          var status;
+	          try {
+	            status = xhr.status;
+	          } catch (e) {
+	            status = 0;
+	          }
+
+	          if (0 == status) {
+	            if (self.timedout) return self._timeoutError();
+	            if (self._aborted) return;
+	            return self.crossDomainError();
+	          }
+	          self.emit('end');
+	        };
+
+	        // progress
+	        var handleProgress = function handleProgress(e) {
+	          if (e.total > 0) {
+	            e.percent = e.loaded / e.total * 100;
+	          }
+	          e.direction = 'download';
+	          self.emit('progress', e);
+	        };
+	        if (this.hasListeners('progress')) {
+	          xhr.onprogress = handleProgress;
+	        }
+	        try {
+	          if (xhr.upload && this.hasListeners('progress')) {
+	            xhr.upload.onprogress = handleProgress;
+	          }
+	        } catch (e) {}
+	        // Accessing xhr.upload fails in IE from a web worker, so just pretend it doesn't exist.
+	        // Reported here:
+	        // https://connect.microsoft.com/IE/feedback/details/837245/xmlhttprequest-upload-throws-invalid-argument-when-used-from-web-worker-context
+
+
+	        // timeout
+	        if (timeout && !this._timer) {
+	          this._timer = setTimeout(function () {
+	            self.timedout = true;
+	            self.abort();
+	          }, timeout);
+	        }
+
+	        // querystring
+	        this._appendQueryString();
+
+	        // initiate request
+	        if (this.username && this.password) {
+	          xhr.open(this.method, this.url, true, this.username, this.password);
+	        } else {
+	          xhr.open(this.method, this.url, true);
+	        }
+
+	        // CORS
+	        if (this._withCredentials) xhr.withCredentials = true;
+
+	        // body
+	        if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !this._isHost(data)) {
+	          // serialize stuff
+	          var contentType = this._header['content-type'];
+	          var serialize = this._serializer || request.serialize[contentType ? contentType.split(';')[0] : ''];
+	          if (!serialize && isJSON(contentType)) serialize = request.serialize['application/json'];
+	          if (serialize) data = serialize(data);
+	        }
+
+	        // set header fields
+	        for (var field in this.header) {
+	          if (null == this.header[field]) continue;
+	          xhr.setRequestHeader(field, this.header[field]);
+	        }
+
+	        if (this._responseType) {
+	          xhr.responseType = this._responseType;
+	        }
+
+	        // send stuff
+	        this.emit('request', this);
+
+	        // IE11 xhr.send(undefined) sends 'undefined' string as POST payload (instead of nothing)
+	        // We need null here if data is undefined
+	        xhr.send(typeof data !== 'undefined' ? data : null);
+	        return this;
+	      };
+
+	      /**
+	       * Expose `Request`.
+	       */
+
+	      request.Request = Request;
+
+	      /**
+	       * GET `url` with optional callback `fn(res)`.
+	       *
+	       * @param {String} url
+	       * @param {Mixed|Function} data or fn
+	       * @param {Function} fn
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      request.get = function (url, data, fn) {
+	        var req = request('GET', url);
+	        if ('function' == typeof data) fn = data, data = null;
+	        if (data) req.query(data);
+	        if (fn) req.end(fn);
+	        return req;
+	      };
+
+	      /**
+	       * HEAD `url` with optional callback `fn(res)`.
+	       *
+	       * @param {String} url
+	       * @param {Mixed|Function} data or fn
+	       * @param {Function} fn
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      request.head = function (url, data, fn) {
+	        var req = request('HEAD', url);
+	        if ('function' == typeof data) fn = data, data = null;
+	        if (data) req.send(data);
+	        if (fn) req.end(fn);
+	        return req;
+	      };
+
+	      /**
+	       * OPTIONS query to `url` with optional callback `fn(res)`.
+	       *
+	       * @param {String} url
+	       * @param {Mixed|Function} data or fn
+	       * @param {Function} fn
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      request.options = function (url, data, fn) {
+	        var req = request('OPTIONS', url);
+	        if ('function' == typeof data) fn = data, data = null;
+	        if (data) req.send(data);
+	        if (fn) req.end(fn);
+	        return req;
+	      };
+
+	      /**
+	       * DELETE `url` with optional callback `fn(res)`.
+	       *
+	       * @param {String} url
+	       * @param {Function} fn
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      function del(url, fn) {
+	        var req = request('DELETE', url);
+	        if (fn) req.end(fn);
+	        return req;
+	      };
+
+	      request['del'] = del;
+	      request['delete'] = del;
+
+	      /**
+	       * PATCH `url` with optional `data` and callback `fn(res)`.
+	       *
+	       * @param {String} url
+	       * @param {Mixed} data
+	       * @param {Function} fn
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      request.patch = function (url, data, fn) {
+	        var req = request('PATCH', url);
+	        if ('function' == typeof data) fn = data, data = null;
+	        if (data) req.send(data);
+	        if (fn) req.end(fn);
+	        return req;
+	      };
+
+	      /**
+	       * POST `url` with optional `data` and callback `fn(res)`.
+	       *
+	       * @param {String} url
+	       * @param {Mixed} data
+	       * @param {Function} fn
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      request.post = function (url, data, fn) {
+	        var req = request('POST', url);
+	        if ('function' == typeof data) fn = data, data = null;
+	        if (data) req.send(data);
+	        if (fn) req.end(fn);
+	        return req;
+	      };
+
+	      /**
+	       * PUT `url` with optional `data` and callback `fn(res)`.
+	       *
+	       * @param {String} url
+	       * @param {Mixed|Function} data or fn
+	       * @param {Function} fn
+	       * @return {Request}
+	       * @api public
+	       */
+
+	      request.put = function (url, data, fn) {
+	        var req = request('PUT', url);
+	        if ('function' == typeof data) fn = data, data = null;
+	        if (data) req.send(data);
+	        if (fn) req.end(fn);
+	        return req;
+	      };
+	    }, { "./is-object": 1, "./request": 3, "./request-base": 2, "emitter": 4, "reduce": 5 }] }, {}, [6])(6);
+	});
+
+/***/ },
+/* 26 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -6554,1649 +8201,22 @@
 	module.exports = parseHdr;
 
 /***/ },
-/* 25 */
+/* 27 */
 /***/ function(module, exports) {
 
 	module.exports = "#extension GL_EXT_shader_texture_lod : enable\nprecision highp float;\nprecision highp int;\n#define GLSLIFY 1\n\nuniform mat4 modelViewMatrix;\n\n// material uniforms\nuniform vec3 base_color_constant;\nuniform float roughness_constant;\nuniform float metalicity;\nuniform float specular_level;\n\n// optional textures\nuniform int use_textures;\nuniform sampler2D base_color_map;\nuniform sampler2D roughness_map;\nuniform sampler2D normal_map;\n\n// lighting\nuniform sampler2D brdf_map;\nuniform sampler2D ibl_map;\nuniform float ibl_exposure;\nuniform float light_intensity;\nuniform vec3 light_color;\nuniform vec3 light_direction;\n\n// varying\nvarying vec3 vN;\nvarying vec2 vUV;\nvarying vec3 vP;\nvarying mat3 vTBN;\n\n#define MIN 0.0001\n#define NUM_LIGHTS 3\n\n// 2^8 = 256 texture resolution. 0-indexed, so subtract 1.\n#define IBL_MAX_LEVELS 9.0\n\n#ifndef PI\n#define PI 3.1415926\n#endif\n\nvec2 envMapEquirect_1_0(vec3 R) {\n  float theta = atan(-R.x, R.z) + PI;\n  theta /= 2.0 * PI;\n\n  float phi = acos(-R.y);\n  phi /= PI;\n  return vec2(theta, phi);\n}\n\n\n\n#ifndef MAX_RGBD_RANGE\n#define MAX_RGBD_RANGE 255.0\n#endif\n\nvec3 rgbdToRgb_2_1(vec4 rgbd)\n{\n  return rgbd.rgb * ((MAX_RGBD_RANGE / 255.0) / rgbd.a);\n}\n\n\n\nvec3 gamma_3_2(vec3 color) {\n  return pow(color, vec3(0.4545, 0.4545, 0.4545));\n}\n\n\n\nvec3 degamma_4_3(vec3 color) {\n  return pow(color, vec3(2.2, 2.2, 2.2));\n}\n\n\n\nvec3 getNormal_5_4(sampler2D normal_map, mat3 TBN, vec2 uv) {\n    vec3 Nm = texture2D(normal_map, uv).xyz;\n    Nm *= 2.0;\n    Nm -= vec3(1.0);\n    return normalize(TBN * Nm);\n}\n\n\n\nstruct Material_6_5 {\n  float metalicity;\n  float roughness;\n  vec3 base_color;\n  vec3 F0; // specular color if metal, else specular_level [0.2, 0.8]\n};\n\n\n\nfloat safeDot_9_6(vec3 u, vec3 v) {\n  return max(dot(u,v), 0.0);\n}\n\n\n\n\n\n#ifndef PI\n#define PI 3.14159\n#endif\n\n// Unreal GGX implementation (Unreal SIGGRAPH 2013)\n// http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf\n\n// Schlick approximation\nvec3 fresnelTerm_7_7(float VdH, vec3 F0) {\n  return F0 + (vec3(1.0, 1.0, 1.0)-F0) * pow(2.0, (-5.55473*VdH-6.98316)*VdH);\n}\n\nfloat geometryTerm_7_8(float roughness, vec3 V, vec3 N, vec3 H) {\n  // remapped roughness, to be used for the geometry term calculations,\n  // per Disney [16], Unreal [3]. N.B. don't do this in IBL\n  float roughness_remapped = 0.5 + roughness/2.0;\n\n  float NdV = max(0.0, dot(N,V));\n\n  float k = pow(roughness_remapped + 1.0, 2.0)/8.0;\n  return NdV/((NdV)*(1.0-k)+k);\n}\n\nfloat distributionTerm_7_9(float NdH, float alpha2) {\n  float D_denominator = ((NdH*NdH)*(alpha2-1.0)+1.0);\n  return alpha2/(PI * D_denominator * D_denominator + 0.0000001);\n}\n\nvec3 shade_7_10(vec3 L, float lightRadius, vec3 V, vec3 N, Material_6_5_7_11 material) {\n  float alpha2 = material.roughness * material.roughness;\n  alpha2 *= alpha2 + lightRadius;\n\n  vec3 H = normalize(V+L);\n\n  float VdH = safeDot_9_6(V, H);\n  float NdH = safeDot_9_6(N, H);\n  float NdL = safeDot_9_6(N, L);\n  float NdV = safeDot_9_6(N, V);\n\n  float D = distributionTerm_7_9(NdH, alpha2);\n  float Gl = geometryTerm_7_8(material.roughness, L, N, H);\n  float Gv = geometryTerm_7_8(material.roughness, V, N, H);\n  vec3 F = fresnelTerm_7_7(VdH, material.F0);\n\n  vec3 specular_contribution = F*(Gl*Gv*D/(4.0*NdL*NdV + 0.000001));\n\n  // metals don't have a diffuse contribution, so turn off the diffuse color\n  // when the material is metallic\n  vec3 diffuse_color = material.base_color * (1.0 - material.metalicity) / PI;\n\n  // use reflectance to calculate energy conservation\n  // diffuse_color *= vec3(1.0, 1.0, 1.0) - F0;\n\n  return (specular_contribution + diffuse_color) * NdL;\n}\n\nvec3 shade_7_10(vec3 L, vec3 V, vec3 N, Material_6_5_7_11 material) {\n  return shade_7_10(L, 0.0, V, N, material);\n}\n\n\n\nvec3 getF0_8_12(float specular_level, float metalicity, vec3 base_color) {\n  // Dielectrics have an F0 between 0.2 - 0.5. 0.04 is a reasonable default\n  // it is often exposed as a parameter called \"specular level.\"\n  // It might make sense to plug an existing specular map into this, and remap\n  // it to the 0-0.8 range, which are the bounds used by Unreal.\n  // Many implementations simply expose the value as a scalar on a per-material\n  // basis.\n  vec3 F0 = vec3(specular_level, specular_level, specular_level);\n\n  // metals use their base color as their specular color.\n  F0 = mix(F0, base_color, metalicity);\n  return F0;\n}\n\n\n\n\nfloat A_10_13 = 0.15;\nfloat B_10_14 = 0.50;\nfloat C_10_15 = 0.10;\nfloat D_10_16 = 0.20;\nfloat E_10_17 = 0.02;\nfloat F_10_18 = 0.30;\nfloat W_10_19 = 11.2;\n\nvec3 tonemapHelper_10_20(vec3 x)\n{\n   return ((x*(A_10_13*x+C_10_15*B_10_14)+D_10_16*E_10_17)/(x*(A_10_13*x+B_10_14)+D_10_16*F_10_18))-E_10_17/F_10_18;\n}\n\nvec3 tonemap_10_21(vec3 rgb, float exposureBias)\n{\n   vec3 curr = tonemapHelper_10_20(exposureBias*rgb);\n   vec3 whiteScale = 1.0/tonemapHelper_10_20(vec3(W_10_19));\n   vec3 color = curr*whiteScale;\n   return color;\n}\n\nvec3 tonemap_10_21(vec3 rgb)\n{\n  return tonemap_10_21(rgb, 2.2);\n}\n\n\n\n\n#ifndef PI\n#define PI 3.14159\n#endif\n\nvec3 sampleEnvironment(vec3 N, float roughness) {\n  vec2 env_uv = envMapEquirect_1_0(N);\n  return (rgbdToRgb_2_1(texture2DLodEXT(ibl_map, env_uv, roughness*IBL_MAX_LEVELS)));\n}\n\nvec3 getSpecularIBL(vec3 specular_color, float roughness, vec3 N, vec3 V, vec3 vertex_normal) {\n  const float horizon_amount = 1.3;\n  float NdV = safeDot_9_6(N, V);\n  vec3 R = 2.0 * dot(V, N) * N - V;\n\n  // Horizon correction, per http://marmosetco.tumblr.com/post/81245981087\n  vec3 reflected = normalize(reflect(N,V));\n  float horizon = clamp(1.0 + horizon_amount * dot(reflected, vertex_normal), 0.0, 1.0);\n  horizon *= horizon;\n\n  vec3 color = sampleEnvironment(R, roughness);\n  vec2 brdf_uv = vec2(roughness, NdV);\n  vec2 brdf = texture2D(brdf_map, brdf_uv).xy;\n  return color * (specular_color * brdf.x + brdf.y); // * horizon;\n}\n\nstruct Light {\n  vec3 dir;\n  vec3 color;\n  float intensity;\n  float radius;\n};\n\nLight lights[NUM_LIGHTS];\n\nvoid main() {\n  vec3 color_to_light_dir = 2.0 * light_direction - vec3(1.0, 1.0, 1.0);\n  lights[0] = Light(normalize(\n      (modelViewMatrix * vec4(color_to_light_dir, 0.0)).xyz\n    ),\n    light_color,\n    light_intensity,\n    0.003);\n  lights[1] = Light(normalize((modelViewMatrix * vec4(1.0, 0.0, 0.2, 0.0)).xyz),\n    vec3(1.0, 192.0/255.0, 99.0/255.0),\n    light_intensity,\n    0.1);\n  lights[2] = Light(normalize((modelViewMatrix * vec4(-1.0, 0.0, 0.2, 0.0)).xyz),\n    vec3(159.0/255.0, 193.0/255.0, 230.0/255.0),\n    light_intensity,\n    0.1);\n\n  vec3 base_color;\n  vec3 V = normalize(-vP);\n  vec3 N;\n  vec3 Ninit = normalize(vN);\n  float roughness; // reparameterized to roughness^2, for better control of lower values\n  float roughness_raw; // holds the original roughness value, unmodified\n\n  if (use_textures == 1) {\n    base_color = degamma_4_3(texture2D(base_color_map, vUV).rgb);\n    N = getNormal_5_4(normal_map, vTBN, vUV);\n    roughness_raw = roughness = texture2D(roughness_map, vUV).r;\n  } else {\n    base_color = degamma_4_3(base_color_constant);\n    N = Ninit;\n    roughness_raw = roughness = roughness_constant;\n  }\n\n  vec3 F0 = getF0_8_12(specular_level, metalicity, base_color);\n\n  Material_6_5 material = Material_6_5(\n    metalicity,\n    roughness,\n    base_color,\n    F0\n  );\n\n  vec3 accumulated_light = vec3(0.0, 0.0, 0.0);\n\n  for(int i=0; i < NUM_LIGHTS; i++) {\n    vec3 L = lights[i].dir;\n    accumulated_light += shade_7_10(L, V, N, material) * lights[i].color * lights[i].intensity;\n  }\n\n  // IBL contribution\n  // diffuse contribution from environment\n  accumulated_light += ibl_exposure * base_color * (sampleEnvironment(N, 0.9) / PI) * (1.0 - metalicity);\n  // specular contribution from environment\n  accumulated_light += ibl_exposure * getSpecularIBL(F0, roughness_raw, N, V, Ninit);\n  vec3 final = accumulated_light;\n  final = gamma_3_2(tonemap_10_21(final));\n\n  // gl_FragColor = vec4(getSpecularIBL(F0, roughness_raw, N, V, Ninit), 1.0); //N, 0.9), 1.0);\n  // gl_FragColor = vec4(getSpecular, 0.0, 1.0);\n  gl_FragColor = vec4(final, 1.0);\n}\n"
 
 /***/ },
-/* 26 */
+/* 28 */
 /***/ function(module, exports) {
 
 	module.exports = "precision highp float;\nprecision highp int;\n#define GLSLIFY 1\n\nuniform mat4 modelViewMatrix;\nuniform mat4 projectionMatrix;\nuniform mat3 normalMatrix;\n\nattribute vec3 position;\nattribute vec4 tangent;\nattribute vec2 uv;\nattribute vec3 normal;\n\nvarying vec3 vN;\nvarying vec2 vUV;\nvarying vec3 vP;\nvarying mat3 vTBN;\n\nmat3 makeTBN_1_0(mat3 normalMatrix, vec3 normal, vec4 tangent) {\n  vec3 N = normalize(normalMatrix * normal);\n  vec3 T = normalize(normalMatrix * tangent.xyz);\n  vec3 B = normalize(normalMatrix * cross(normal, tangent.xyz) * tangent.w);\n  return mat3(\n     T.x, T.y, T.z,\n     B.x, B.y, B.z,\n     N.x, N.y, N.z\n  );\n}\n\n\n\n\nvoid main() {\n    vUV = uv;\n    vN = normalMatrix * normal;\n    vTBN = makeTBN_1_0(normalMatrix, normal, tangent);\n\n    vec4 P4 = modelViewMatrix * vec4(position, 1.0);\n    vP = P4.xyz;\n    gl_Position = projectionMatrix * P4;\n}\n"
 
 /***/ },
-/* 27 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "1affe44287d83e05a1a16cab72d997eb.hdr";
-
-/***/ },
-/* 28 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* vdc.js (C) 2013-present SheetJS -- http://sheetjs.com */
-	/* vim: set ts=2: */
-	function VDC (opts) {
-		if(!(this instanceof VDC)) return new VDC(opts);
-		var o = opts || {b:2, n:0};
-		this._b = o.b || 2;
-		this._n = 0;
-		this.last = 0;
-		this.reset(o);
-	}
-
-	VDC.prototype.reset = function(opts) {
-		this._n = (opts||{n:0}).n||0;
-	};
-
-	VDC.prototype.next = function() {
-		var n = this._n++;
-		var p = 0, q = 1;
-		while(n >= 1) {
-			p = p * this._b + (n % this._b);
-			q *= this._b;
-			n = (n/this._b)>>>0;
-		}
-		this.last = p/q;
-		return this.last;
-	};
-
-	if(true) {
-		module.exports = VDC;
-	}
-
-
-/***/ },
 /* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Module dependencies.
-	 */
-
-	var Emitter = __webpack_require__(30);
-	var reduce = __webpack_require__(31);
-	var requestBase = __webpack_require__(32);
-	var isObject = __webpack_require__(33);
-
-	/**
-	 * Root reference for iframes.
-	 */
-
-	var root;
-	if (typeof window !== 'undefined') { // Browser window
-	  root = window;
-	} else if (typeof self !== 'undefined') { // Web Worker
-	  root = self;
-	} else { // Other environments
-	  root = this;
-	}
-
-	/**
-	 * Noop.
-	 */
-
-	function noop(){};
-
-	/**
-	 * Expose `request`.
-	 */
-
-	var request = module.exports = __webpack_require__(34).bind(null, Request);
-
-	/**
-	 * Determine XHR.
-	 */
-
-	request.getXHR = function () {
-	  if (root.XMLHttpRequest
-	      && (!root.location || 'file:' != root.location.protocol
-	          || !root.ActiveXObject)) {
-	    return new XMLHttpRequest;
-	  } else {
-	    try { return new ActiveXObject('Microsoft.XMLHTTP'); } catch(e) {}
-	    try { return new ActiveXObject('Msxml2.XMLHTTP.6.0'); } catch(e) {}
-	    try { return new ActiveXObject('Msxml2.XMLHTTP.3.0'); } catch(e) {}
-	    try { return new ActiveXObject('Msxml2.XMLHTTP'); } catch(e) {}
-	  }
-	  return false;
-	};
-
-	/**
-	 * Removes leading and trailing whitespace, added to support IE.
-	 *
-	 * @param {String} s
-	 * @return {String}
-	 * @api private
-	 */
-
-	var trim = ''.trim
-	  ? function(s) { return s.trim(); }
-	  : function(s) { return s.replace(/(^\s*|\s*$)/g, ''); };
-
-	/**
-	 * Serialize the given `obj`.
-	 *
-	 * @param {Object} obj
-	 * @return {String}
-	 * @api private
-	 */
-
-	function serialize(obj) {
-	  if (!isObject(obj)) return obj;
-	  var pairs = [];
-	  for (var key in obj) {
-	    if (null != obj[key]) {
-	      pushEncodedKeyValuePair(pairs, key, obj[key]);
-	    }
-	  }
-	  return pairs.join('&');
-	}
-
-	/**
-	 * Helps 'serialize' with serializing arrays.
-	 * Mutates the pairs array.
-	 *
-	 * @param {Array} pairs
-	 * @param {String} key
-	 * @param {Mixed} val
-	 */
-
-	function pushEncodedKeyValuePair(pairs, key, val) {
-	  if (Array.isArray(val)) {
-	    return val.forEach(function(v) {
-	      pushEncodedKeyValuePair(pairs, key, v);
-	    });
-	  } else if (isObject(val)) {
-	    for(var subkey in val) {
-	      pushEncodedKeyValuePair(pairs, key + '[' + subkey + ']', val[subkey]);
-	    }
-	    return;
-	  }
-	  pairs.push(encodeURIComponent(key)
-	    + '=' + encodeURIComponent(val));
-	}
-
-	/**
-	 * Expose serialization method.
-	 */
-
-	 request.serializeObject = serialize;
-
-	 /**
-	  * Parse the given x-www-form-urlencoded `str`.
-	  *
-	  * @param {String} str
-	  * @return {Object}
-	  * @api private
-	  */
-
-	function parseString(str) {
-	  var obj = {};
-	  var pairs = str.split('&');
-	  var pair;
-	  var pos;
-
-	  for (var i = 0, len = pairs.length; i < len; ++i) {
-	    pair = pairs[i];
-	    pos = pair.indexOf('=');
-	    if (pos == -1) {
-	      obj[decodeURIComponent(pair)] = '';
-	    } else {
-	      obj[decodeURIComponent(pair.slice(0, pos))] =
-	        decodeURIComponent(pair.slice(pos + 1));
-	    }
-	  }
-
-	  return obj;
-	}
-
-	/**
-	 * Expose parser.
-	 */
-
-	request.parseString = parseString;
-
-	/**
-	 * Default MIME type map.
-	 *
-	 *     superagent.types.xml = 'application/xml';
-	 *
-	 */
-
-	request.types = {
-	  html: 'text/html',
-	  json: 'application/json',
-	  xml: 'application/xml',
-	  urlencoded: 'application/x-www-form-urlencoded',
-	  'form': 'application/x-www-form-urlencoded',
-	  'form-data': 'application/x-www-form-urlencoded'
-	};
-
-	/**
-	 * Default serialization map.
-	 *
-	 *     superagent.serialize['application/xml'] = function(obj){
-	 *       return 'generated xml here';
-	 *     };
-	 *
-	 */
-
-	 request.serialize = {
-	   'application/x-www-form-urlencoded': serialize,
-	   'application/json': JSON.stringify
-	 };
-
-	 /**
-	  * Default parsers.
-	  *
-	  *     superagent.parse['application/xml'] = function(str){
-	  *       return { object parsed from str };
-	  *     };
-	  *
-	  */
-
-	request.parse = {
-	  'application/x-www-form-urlencoded': parseString,
-	  'application/json': JSON.parse
-	};
-
-	/**
-	 * Parse the given header `str` into
-	 * an object containing the mapped fields.
-	 *
-	 * @param {String} str
-	 * @return {Object}
-	 * @api private
-	 */
-
-	function parseHeader(str) {
-	  var lines = str.split(/\r?\n/);
-	  var fields = {};
-	  var index;
-	  var line;
-	  var field;
-	  var val;
-
-	  lines.pop(); // trailing CRLF
-
-	  for (var i = 0, len = lines.length; i < len; ++i) {
-	    line = lines[i];
-	    index = line.indexOf(':');
-	    field = line.slice(0, index).toLowerCase();
-	    val = trim(line.slice(index + 1));
-	    fields[field] = val;
-	  }
-
-	  return fields;
-	}
-
-	/**
-	 * Check if `mime` is json or has +json structured syntax suffix.
-	 *
-	 * @param {String} mime
-	 * @return {Boolean}
-	 * @api private
-	 */
-
-	function isJSON(mime) {
-	  return /[\/+]json\b/.test(mime);
-	}
-
-	/**
-	 * Return the mime type for the given `str`.
-	 *
-	 * @param {String} str
-	 * @return {String}
-	 * @api private
-	 */
-
-	function type(str){
-	  return str.split(/ *; */).shift();
-	};
-
-	/**
-	 * Return header field parameters.
-	 *
-	 * @param {String} str
-	 * @return {Object}
-	 * @api private
-	 */
-
-	function params(str){
-	  return reduce(str.split(/ *; */), function(obj, str){
-	    var parts = str.split(/ *= */)
-	      , key = parts.shift()
-	      , val = parts.shift();
-
-	    if (key && val) obj[key] = val;
-	    return obj;
-	  }, {});
-	};
-
-	/**
-	 * Initialize a new `Response` with the given `xhr`.
-	 *
-	 *  - set flags (.ok, .error, etc)
-	 *  - parse header
-	 *
-	 * Examples:
-	 *
-	 *  Aliasing `superagent` as `request` is nice:
-	 *
-	 *      request = superagent;
-	 *
-	 *  We can use the promise-like API, or pass callbacks:
-	 *
-	 *      request.get('/').end(function(res){});
-	 *      request.get('/', function(res){});
-	 *
-	 *  Sending data can be chained:
-	 *
-	 *      request
-	 *        .post('/user')
-	 *        .send({ name: 'tj' })
-	 *        .end(function(res){});
-	 *
-	 *  Or passed to `.send()`:
-	 *
-	 *      request
-	 *        .post('/user')
-	 *        .send({ name: 'tj' }, function(res){});
-	 *
-	 *  Or passed to `.post()`:
-	 *
-	 *      request
-	 *        .post('/user', { name: 'tj' })
-	 *        .end(function(res){});
-	 *
-	 * Or further reduced to a single call for simple cases:
-	 *
-	 *      request
-	 *        .post('/user', { name: 'tj' }, function(res){});
-	 *
-	 * @param {XMLHTTPRequest} xhr
-	 * @param {Object} options
-	 * @api private
-	 */
-
-	function Response(req, options) {
-	  options = options || {};
-	  this.req = req;
-	  this.xhr = this.req.xhr;
-	  // responseText is accessible only if responseType is '' or 'text' and on older browsers
-	  this.text = ((this.req.method !='HEAD' && (this.xhr.responseType === '' || this.xhr.responseType === 'text')) || typeof this.xhr.responseType === 'undefined')
-	     ? this.xhr.responseText
-	     : null;
-	  this.statusText = this.req.xhr.statusText;
-	  this._setStatusProperties(this.xhr.status);
-	  this.header = this.headers = parseHeader(this.xhr.getAllResponseHeaders());
-	  // getAllResponseHeaders sometimes falsely returns "" for CORS requests, but
-	  // getResponseHeader still works. so we get content-type even if getting
-	  // other headers fails.
-	  this.header['content-type'] = this.xhr.getResponseHeader('content-type');
-	  this._setHeaderProperties(this.header);
-	  this.body = this.req.method != 'HEAD'
-	    ? this._parseBody(this.text ? this.text : this.xhr.response)
-	    : null;
-	}
-
-	/**
-	 * Get case-insensitive `field` value.
-	 *
-	 * @param {String} field
-	 * @return {String}
-	 * @api public
-	 */
-
-	Response.prototype.get = function(field){
-	  return this.header[field.toLowerCase()];
-	};
-
-	/**
-	 * Set header related properties:
-	 *
-	 *   - `.type` the content type without params
-	 *
-	 * A response of "Content-Type: text/plain; charset=utf-8"
-	 * will provide you with a `.type` of "text/plain".
-	 *
-	 * @param {Object} header
-	 * @api private
-	 */
-
-	Response.prototype._setHeaderProperties = function(header){
-	  // content-type
-	  var ct = this.header['content-type'] || '';
-	  this.type = type(ct);
-
-	  // params
-	  var obj = params(ct);
-	  for (var key in obj) this[key] = obj[key];
-	};
-
-	/**
-	 * Parse the given body `str`.
-	 *
-	 * Used for auto-parsing of bodies. Parsers
-	 * are defined on the `superagent.parse` object.
-	 *
-	 * @param {String} str
-	 * @return {Mixed}
-	 * @api private
-	 */
-
-	Response.prototype._parseBody = function(str){
-	  var parse = request.parse[this.type];
-	  if (!parse && isJSON(this.type)) {
-	    parse = request.parse['application/json'];
-	  }
-	  return parse && str && (str.length || str instanceof Object)
-	    ? parse(str)
-	    : null;
-	};
-
-	/**
-	 * Set flags such as `.ok` based on `status`.
-	 *
-	 * For example a 2xx response will give you a `.ok` of __true__
-	 * whereas 5xx will be __false__ and `.error` will be __true__. The
-	 * `.clientError` and `.serverError` are also available to be more
-	 * specific, and `.statusType` is the class of error ranging from 1..5
-	 * sometimes useful for mapping respond colors etc.
-	 *
-	 * "sugar" properties are also defined for common cases. Currently providing:
-	 *
-	 *   - .noContent
-	 *   - .badRequest
-	 *   - .unauthorized
-	 *   - .notAcceptable
-	 *   - .notFound
-	 *
-	 * @param {Number} status
-	 * @api private
-	 */
-
-	Response.prototype._setStatusProperties = function(status){
-	  // handle IE9 bug: http://stackoverflow.com/questions/10046972/msie-returns-status-code-of-1223-for-ajax-request
-	  if (status === 1223) {
-	    status = 204;
-	  }
-
-	  var type = status / 100 | 0;
-
-	  // status / class
-	  this.status = this.statusCode = status;
-	  this.statusType = type;
-
-	  // basics
-	  this.info = 1 == type;
-	  this.ok = 2 == type;
-	  this.clientError = 4 == type;
-	  this.serverError = 5 == type;
-	  this.error = (4 == type || 5 == type)
-	    ? this.toError()
-	    : false;
-
-	  // sugar
-	  this.accepted = 202 == status;
-	  this.noContent = 204 == status;
-	  this.badRequest = 400 == status;
-	  this.unauthorized = 401 == status;
-	  this.notAcceptable = 406 == status;
-	  this.notFound = 404 == status;
-	  this.forbidden = 403 == status;
-	};
-
-	/**
-	 * Return an `Error` representative of this response.
-	 *
-	 * @return {Error}
-	 * @api public
-	 */
-
-	Response.prototype.toError = function(){
-	  var req = this.req;
-	  var method = req.method;
-	  var url = req.url;
-
-	  var msg = 'cannot ' + method + ' ' + url + ' (' + this.status + ')';
-	  var err = new Error(msg);
-	  err.status = this.status;
-	  err.method = method;
-	  err.url = url;
-
-	  return err;
-	};
-
-	/**
-	 * Expose `Response`.
-	 */
-
-	request.Response = Response;
-
-	/**
-	 * Initialize a new `Request` with the given `method` and `url`.
-	 *
-	 * @param {String} method
-	 * @param {String} url
-	 * @api public
-	 */
-
-	function Request(method, url) {
-	  var self = this;
-	  this._query = this._query || [];
-	  this.method = method;
-	  this.url = url;
-	  this.header = {}; // preserves header name case
-	  this._header = {}; // coerces header names to lowercase
-	  this.on('end', function(){
-	    var err = null;
-	    var res = null;
-
-	    try {
-	      res = new Response(self);
-	    } catch(e) {
-	      err = new Error('Parser is unable to parse the response');
-	      err.parse = true;
-	      err.original = e;
-	      // issue #675: return the raw response if the response parsing fails
-	      err.rawResponse = self.xhr && self.xhr.responseText ? self.xhr.responseText : null;
-	      // issue #876: return the http status code if the response parsing fails
-	      err.statusCode = self.xhr && self.xhr.status ? self.xhr.status : null;
-	      return self.callback(err);
-	    }
-
-	    self.emit('response', res);
-
-	    if (err) {
-	      return self.callback(err, res);
-	    }
-
-	    try {
-	      if (res.status >= 200 && res.status < 300) {
-	        return self.callback(err, res);
-	      }
-
-	      var new_err = new Error(res.statusText || 'Unsuccessful HTTP response');
-	      new_err.original = err;
-	      new_err.response = res;
-	      new_err.status = res.status;
-
-	      self.callback(new_err, res);
-	    } catch(e) {
-	      self.callback(e); // #985 touching res may cause INVALID_STATE_ERR on old Android
-	    }
-	  });
-	}
-
-	/**
-	 * Mixin `Emitter` and `requestBase`.
-	 */
-
-	Emitter(Request.prototype);
-	for (var key in requestBase) {
-	  Request.prototype[key] = requestBase[key];
-	}
-
-	/**
-	 * Set Content-Type to `type`, mapping values from `request.types`.
-	 *
-	 * Examples:
-	 *
-	 *      superagent.types.xml = 'application/xml';
-	 *
-	 *      request.post('/')
-	 *        .type('xml')
-	 *        .send(xmlstring)
-	 *        .end(callback);
-	 *
-	 *      request.post('/')
-	 *        .type('application/xml')
-	 *        .send(xmlstring)
-	 *        .end(callback);
-	 *
-	 * @param {String} type
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	Request.prototype.type = function(type){
-	  this.set('Content-Type', request.types[type] || type);
-	  return this;
-	};
-
-	/**
-	 * Set responseType to `val`. Presently valid responseTypes are 'blob' and
-	 * 'arraybuffer'.
-	 *
-	 * Examples:
-	 *
-	 *      req.get('/')
-	 *        .responseType('blob')
-	 *        .end(callback);
-	 *
-	 * @param {String} val
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	Request.prototype.responseType = function(val){
-	  this._responseType = val;
-	  return this;
-	};
-
-	/**
-	 * Set Accept to `type`, mapping values from `request.types`.
-	 *
-	 * Examples:
-	 *
-	 *      superagent.types.json = 'application/json';
-	 *
-	 *      request.get('/agent')
-	 *        .accept('json')
-	 *        .end(callback);
-	 *
-	 *      request.get('/agent')
-	 *        .accept('application/json')
-	 *        .end(callback);
-	 *
-	 * @param {String} accept
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	Request.prototype.accept = function(type){
-	  this.set('Accept', request.types[type] || type);
-	  return this;
-	};
-
-	/**
-	 * Set Authorization field value with `user` and `pass`.
-	 *
-	 * @param {String} user
-	 * @param {String} pass
-	 * @param {Object} options with 'type' property 'auto' or 'basic' (default 'basic')
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	Request.prototype.auth = function(user, pass, options){
-	  if (!options) {
-	    options = {
-	      type: 'basic'
-	    }
-	  }
-
-	  switch (options.type) {
-	    case 'basic':
-	      var str = btoa(user + ':' + pass);
-	      this.set('Authorization', 'Basic ' + str);
-	    break;
-
-	    case 'auto':
-	      this.username = user;
-	      this.password = pass;
-	    break;
-	  }
-	  return this;
-	};
-
-	/**
-	* Add query-string `val`.
-	*
-	* Examples:
-	*
-	*   request.get('/shoes')
-	*     .query('size=10')
-	*     .query({ color: 'blue' })
-	*
-	* @param {Object|String} val
-	* @return {Request} for chaining
-	* @api public
-	*/
-
-	Request.prototype.query = function(val){
-	  if ('string' != typeof val) val = serialize(val);
-	  if (val) this._query.push(val);
-	  return this;
-	};
-
-	/**
-	 * Queue the given `file` as an attachment to the specified `field`,
-	 * with optional `filename`.
-	 *
-	 * ``` js
-	 * request.post('/upload')
-	 *   .attach('content', new Blob(['<a id="a"><b id="b">hey!</b></a>'], { type: "text/html"}))
-	 *   .end(callback);
-	 * ```
-	 *
-	 * @param {String} field
-	 * @param {Blob|File} file
-	 * @param {String} filename
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	Request.prototype.attach = function(field, file, filename){
-	  this._getFormData().append(field, file, filename || file.name);
-	  return this;
-	};
-
-	Request.prototype._getFormData = function(){
-	  if (!this._formData) {
-	    this._formData = new root.FormData();
-	  }
-	  return this._formData;
-	};
-
-	/**
-	 * Invoke the callback with `err` and `res`
-	 * and handle arity check.
-	 *
-	 * @param {Error} err
-	 * @param {Response} res
-	 * @api private
-	 */
-
-	Request.prototype.callback = function(err, res){
-	  var fn = this._callback;
-	  this.clearTimeout();
-	  fn(err, res);
-	};
-
-	/**
-	 * Invoke callback with x-domain error.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype.crossDomainError = function(){
-	  var err = new Error('Request has been terminated\nPossible causes: the network is offline, Origin is not allowed by Access-Control-Allow-Origin, the page is being unloaded, etc.');
-	  err.crossDomain = true;
-
-	  err.status = this.status;
-	  err.method = this.method;
-	  err.url = this.url;
-
-	  this.callback(err);
-	};
-
-	/**
-	 * Invoke callback with timeout error.
-	 *
-	 * @api private
-	 */
-
-	Request.prototype._timeoutError = function(){
-	  var timeout = this._timeout;
-	  var err = new Error('timeout of ' + timeout + 'ms exceeded');
-	  err.timeout = timeout;
-	  this.callback(err);
-	};
-
-	/**
-	 * Compose querystring to append to req.url
-	 *
-	 * @api private
-	 */
-
-	Request.prototype._appendQueryString = function(){
-	  var query = this._query.join('&');
-	  if (query) {
-	    this.url += ~this.url.indexOf('?')
-	      ? '&' + query
-	      : '?' + query;
-	  }
-	};
-
-	/**
-	 * Initiate request, invoking callback `fn(res)`
-	 * with an instanceof `Response`.
-	 *
-	 * @param {Function} fn
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	Request.prototype.end = function(fn){
-	  var self = this;
-	  var xhr = this.xhr = request.getXHR();
-	  var timeout = this._timeout;
-	  var data = this._formData || this._data;
-
-	  // store callback
-	  this._callback = fn || noop;
-
-	  // state change
-	  xhr.onreadystatechange = function(){
-	    if (4 != xhr.readyState) return;
-
-	    // In IE9, reads to any property (e.g. status) off of an aborted XHR will
-	    // result in the error "Could not complete the operation due to error c00c023f"
-	    var status;
-	    try { status = xhr.status } catch(e) { status = 0; }
-
-	    if (0 == status) {
-	      if (self.timedout) return self._timeoutError();
-	      if (self._aborted) return;
-	      return self.crossDomainError();
-	    }
-	    self.emit('end');
-	  };
-
-	  // progress
-	  var handleProgress = function(e){
-	    if (e.total > 0) {
-	      e.percent = e.loaded / e.total * 100;
-	    }
-	    e.direction = 'download';
-	    self.emit('progress', e);
-	  };
-	  if (this.hasListeners('progress')) {
-	    xhr.onprogress = handleProgress;
-	  }
-	  try {
-	    if (xhr.upload && this.hasListeners('progress')) {
-	      xhr.upload.onprogress = handleProgress;
-	    }
-	  } catch(e) {
-	    // Accessing xhr.upload fails in IE from a web worker, so just pretend it doesn't exist.
-	    // Reported here:
-	    // https://connect.microsoft.com/IE/feedback/details/837245/xmlhttprequest-upload-throws-invalid-argument-when-used-from-web-worker-context
-	  }
-
-	  // timeout
-	  if (timeout && !this._timer) {
-	    this._timer = setTimeout(function(){
-	      self.timedout = true;
-	      self.abort();
-	    }, timeout);
-	  }
-
-	  // querystring
-	  this._appendQueryString();
-
-	  // initiate request
-	  if (this.username && this.password) {
-	    xhr.open(this.method, this.url, true, this.username, this.password);
-	  } else {
-	    xhr.open(this.method, this.url, true);
-	  }
-
-	  // CORS
-	  if (this._withCredentials) xhr.withCredentials = true;
-
-	  // body
-	  if ('GET' != this.method && 'HEAD' != this.method && 'string' != typeof data && !this._isHost(data)) {
-	    // serialize stuff
-	    var contentType = this._header['content-type'];
-	    var serialize = this._serializer || request.serialize[contentType ? contentType.split(';')[0] : ''];
-	    if (!serialize && isJSON(contentType)) serialize = request.serialize['application/json'];
-	    if (serialize) data = serialize(data);
-	  }
-
-	  // set header fields
-	  for (var field in this.header) {
-	    if (null == this.header[field]) continue;
-	    xhr.setRequestHeader(field, this.header[field]);
-	  }
-
-	  if (this._responseType) {
-	    xhr.responseType = this._responseType;
-	  }
-
-	  // send stuff
-	  this.emit('request', this);
-
-	  // IE11 xhr.send(undefined) sends 'undefined' string as POST payload (instead of nothing)
-	  // We need null here if data is undefined
-	  xhr.send(typeof data !== 'undefined' ? data : null);
-	  return this;
-	};
-
-
-	/**
-	 * Expose `Request`.
-	 */
-
-	request.Request = Request;
-
-	/**
-	 * GET `url` with optional callback `fn(res)`.
-	 *
-	 * @param {String} url
-	 * @param {Mixed|Function} data or fn
-	 * @param {Function} fn
-	 * @return {Request}
-	 * @api public
-	 */
-
-	request.get = function(url, data, fn){
-	  var req = request('GET', url);
-	  if ('function' == typeof data) fn = data, data = null;
-	  if (data) req.query(data);
-	  if (fn) req.end(fn);
-	  return req;
-	};
-
-	/**
-	 * HEAD `url` with optional callback `fn(res)`.
-	 *
-	 * @param {String} url
-	 * @param {Mixed|Function} data or fn
-	 * @param {Function} fn
-	 * @return {Request}
-	 * @api public
-	 */
-
-	request.head = function(url, data, fn){
-	  var req = request('HEAD', url);
-	  if ('function' == typeof data) fn = data, data = null;
-	  if (data) req.send(data);
-	  if (fn) req.end(fn);
-	  return req;
-	};
-
-	/**
-	 * OPTIONS query to `url` with optional callback `fn(res)`.
-	 *
-	 * @param {String} url
-	 * @param {Mixed|Function} data or fn
-	 * @param {Function} fn
-	 * @return {Request}
-	 * @api public
-	 */
-
-	request.options = function(url, data, fn){
-	  var req = request('OPTIONS', url);
-	  if ('function' == typeof data) fn = data, data = null;
-	  if (data) req.send(data);
-	  if (fn) req.end(fn);
-	  return req;
-	};
-
-	/**
-	 * DELETE `url` with optional callback `fn(res)`.
-	 *
-	 * @param {String} url
-	 * @param {Function} fn
-	 * @return {Request}
-	 * @api public
-	 */
-
-	function del(url, fn){
-	  var req = request('DELETE', url);
-	  if (fn) req.end(fn);
-	  return req;
-	};
-
-	request['del'] = del;
-	request['delete'] = del;
-
-	/**
-	 * PATCH `url` with optional `data` and callback `fn(res)`.
-	 *
-	 * @param {String} url
-	 * @param {Mixed} data
-	 * @param {Function} fn
-	 * @return {Request}
-	 * @api public
-	 */
-
-	request.patch = function(url, data, fn){
-	  var req = request('PATCH', url);
-	  if ('function' == typeof data) fn = data, data = null;
-	  if (data) req.send(data);
-	  if (fn) req.end(fn);
-	  return req;
-	};
-
-	/**
-	 * POST `url` with optional `data` and callback `fn(res)`.
-	 *
-	 * @param {String} url
-	 * @param {Mixed} data
-	 * @param {Function} fn
-	 * @return {Request}
-	 * @api public
-	 */
-
-	request.post = function(url, data, fn){
-	  var req = request('POST', url);
-	  if ('function' == typeof data) fn = data, data = null;
-	  if (data) req.send(data);
-	  if (fn) req.end(fn);
-	  return req;
-	};
-
-	/**
-	 * PUT `url` with optional `data` and callback `fn(res)`.
-	 *
-	 * @param {String} url
-	 * @param {Mixed|Function} data or fn
-	 * @param {Function} fn
-	 * @return {Request}
-	 * @api public
-	 */
-
-	request.put = function(url, data, fn){
-	  var req = request('PUT', url);
-	  if ('function' == typeof data) fn = data, data = null;
-	  if (data) req.send(data);
-	  if (fn) req.end(fn);
-	  return req;
-	};
-
-
-/***/ },
-/* 30 */
-/***/ function(module, exports, __webpack_require__) {
-
-	
-	/**
-	 * Expose `Emitter`.
-	 */
-
-	if (true) {
-	  module.exports = Emitter;
-	}
-
-	/**
-	 * Initialize a new `Emitter`.
-	 *
-	 * @api public
-	 */
-
-	function Emitter(obj) {
-	  if (obj) return mixin(obj);
-	};
-
-	/**
-	 * Mixin the emitter properties.
-	 *
-	 * @param {Object} obj
-	 * @return {Object}
-	 * @api private
-	 */
-
-	function mixin(obj) {
-	  for (var key in Emitter.prototype) {
-	    obj[key] = Emitter.prototype[key];
-	  }
-	  return obj;
-	}
-
-	/**
-	 * Listen on the given `event` with `fn`.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.on =
-	Emitter.prototype.addEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-	  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-	    .push(fn);
-	  return this;
-	};
-
-	/**
-	 * Adds an `event` listener that will be invoked a single
-	 * time then automatically removed.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.once = function(event, fn){
-	  function on() {
-	    this.off(event, on);
-	    fn.apply(this, arguments);
-	  }
-
-	  on.fn = fn;
-	  this.on(event, on);
-	  return this;
-	};
-
-	/**
-	 * Remove the given callback for `event` or all
-	 * registered callbacks.
-	 *
-	 * @param {String} event
-	 * @param {Function} fn
-	 * @return {Emitter}
-	 * @api public
-	 */
-
-	Emitter.prototype.off =
-	Emitter.prototype.removeListener =
-	Emitter.prototype.removeAllListeners =
-	Emitter.prototype.removeEventListener = function(event, fn){
-	  this._callbacks = this._callbacks || {};
-
-	  // all
-	  if (0 == arguments.length) {
-	    this._callbacks = {};
-	    return this;
-	  }
-
-	  // specific event
-	  var callbacks = this._callbacks['$' + event];
-	  if (!callbacks) return this;
-
-	  // remove all handlers
-	  if (1 == arguments.length) {
-	    delete this._callbacks['$' + event];
-	    return this;
-	  }
-
-	  // remove specific handler
-	  var cb;
-	  for (var i = 0; i < callbacks.length; i++) {
-	    cb = callbacks[i];
-	    if (cb === fn || cb.fn === fn) {
-	      callbacks.splice(i, 1);
-	      break;
-	    }
-	  }
-	  return this;
-	};
-
-	/**
-	 * Emit `event` with the given args.
-	 *
-	 * @param {String} event
-	 * @param {Mixed} ...
-	 * @return {Emitter}
-	 */
-
-	Emitter.prototype.emit = function(event){
-	  this._callbacks = this._callbacks || {};
-	  var args = [].slice.call(arguments, 1)
-	    , callbacks = this._callbacks['$' + event];
-
-	  if (callbacks) {
-	    callbacks = callbacks.slice(0);
-	    for (var i = 0, len = callbacks.length; i < len; ++i) {
-	      callbacks[i].apply(this, args);
-	    }
-	  }
-
-	  return this;
-	};
-
-	/**
-	 * Return array of callbacks for `event`.
-	 *
-	 * @param {String} event
-	 * @return {Array}
-	 * @api public
-	 */
-
-	Emitter.prototype.listeners = function(event){
-	  this._callbacks = this._callbacks || {};
-	  return this._callbacks['$' + event] || [];
-	};
-
-	/**
-	 * Check if this emitter has `event` handlers.
-	 *
-	 * @param {String} event
-	 * @return {Boolean}
-	 * @api public
-	 */
-
-	Emitter.prototype.hasListeners = function(event){
-	  return !! this.listeners(event).length;
-	};
-
-
-/***/ },
-/* 31 */
-/***/ function(module, exports) {
-
-	
-	/**
-	 * Reduce `arr` with `fn`.
-	 *
-	 * @param {Array} arr
-	 * @param {Function} fn
-	 * @param {Mixed} initial
-	 *
-	 * TODO: combatible error handling?
-	 */
-
-	module.exports = function(arr, fn, initial){  
-	  var idx = 0;
-	  var len = arr.length;
-	  var curr = arguments.length == 3
-	    ? initial
-	    : arr[idx++];
-
-	  while (idx < len) {
-	    curr = fn.call(null, curr, arr[idx], ++idx, arr);
-	  }
-	  
-	  return curr;
-	};
-
-/***/ },
-/* 32 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Module of mixed-in functions shared between node and client code
-	 */
-	var isObject = __webpack_require__(33);
-
-	/**
-	 * Clear previous timeout.
-	 *
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	exports.clearTimeout = function _clearTimeout(){
-	  this._timeout = 0;
-	  clearTimeout(this._timer);
-	  return this;
-	};
-
-	/**
-	 * Override default response body parser
-	 *
-	 * This function will be called to convert incoming data into request.body
-	 *
-	 * @param {Function}
-	 * @api public
-	 */
-
-	exports.parse = function parse(fn){
-	  this._parser = fn;
-	  return this;
-	};
-
-	/**
-	 * Override default request body serializer
-	 *
-	 * This function will be called to convert data set via .send or .attach into payload to send
-	 *
-	 * @param {Function}
-	 * @api public
-	 */
-
-	exports.serialize = function serialize(fn){
-	  this._serializer = fn;
-	  return this;
-	};
-
-	/**
-	 * Set timeout to `ms`.
-	 *
-	 * @param {Number} ms
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	exports.timeout = function timeout(ms){
-	  this._timeout = ms;
-	  return this;
-	};
-
-	/**
-	 * Promise support
-	 *
-	 * @param {Function} resolve
-	 * @param {Function} reject
-	 * @return {Request}
-	 */
-
-	exports.then = function then(resolve, reject) {
-	  if (!this._fullfilledPromise) {
-	    var self = this;
-	    this._fullfilledPromise = new Promise(function(innerResolve, innerReject){
-	      self.end(function(err, res){
-	        if (err) innerReject(err); else innerResolve(res);
-	      });
-	    });
-	  }
-	  return this._fullfilledPromise.then(resolve, reject);
-	}
-
-	/**
-	 * Allow for extension
-	 */
-
-	exports.use = function use(fn) {
-	  fn(this);
-	  return this;
-	}
-
-
-	/**
-	 * Get request header `field`.
-	 * Case-insensitive.
-	 *
-	 * @param {String} field
-	 * @return {String}
-	 * @api public
-	 */
-
-	exports.get = function(field){
-	  return this._header[field.toLowerCase()];
-	};
-
-	/**
-	 * Get case-insensitive header `field` value.
-	 * This is a deprecated internal API. Use `.get(field)` instead.
-	 *
-	 * (getHeader is no longer used internally by the superagent code base)
-	 *
-	 * @param {String} field
-	 * @return {String}
-	 * @api private
-	 * @deprecated
-	 */
-
-	exports.getHeader = exports.get;
-
-	/**
-	 * Set header `field` to `val`, or multiple fields with one object.
-	 * Case-insensitive.
-	 *
-	 * Examples:
-	 *
-	 *      req.get('/')
-	 *        .set('Accept', 'application/json')
-	 *        .set('X-API-Key', 'foobar')
-	 *        .end(callback);
-	 *
-	 *      req.get('/')
-	 *        .set({ Accept: 'application/json', 'X-API-Key': 'foobar' })
-	 *        .end(callback);
-	 *
-	 * @param {String|Object} field
-	 * @param {String} val
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	exports.set = function(field, val){
-	  if (isObject(field)) {
-	    for (var key in field) {
-	      this.set(key, field[key]);
-	    }
-	    return this;
-	  }
-	  this._header[field.toLowerCase()] = val;
-	  this.header[field] = val;
-	  return this;
-	};
-
-	/**
-	 * Remove header `field`.
-	 * Case-insensitive.
-	 *
-	 * Example:
-	 *
-	 *      req.get('/')
-	 *        .unset('User-Agent')
-	 *        .end(callback);
-	 *
-	 * @param {String} field
-	 */
-	exports.unset = function(field){
-	  delete this._header[field.toLowerCase()];
-	  delete this.header[field];
-	  return this;
-	};
-
-	/**
-	 * Write the field `name` and `val` for "multipart/form-data"
-	 * request bodies.
-	 *
-	 * ``` js
-	 * request.post('/upload')
-	 *   .field('foo', 'bar')
-	 *   .end(callback);
-	 * ```
-	 *
-	 * @param {String} name
-	 * @param {String|Blob|File|Buffer|fs.ReadStream} val
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-	exports.field = function(name, val) {
-	  this._getFormData().append(name, val);
-	  return this;
-	};
-
-	/**
-	 * Abort the request, and clear potential timeout.
-	 *
-	 * @return {Request}
-	 * @api public
-	 */
-	exports.abort = function(){
-	  if (this._aborted) {
-	    return this;
-	  }
-	  this._aborted = true;
-	  this.xhr && this.xhr.abort(); // browser
-	  this.req && this.req.abort(); // node
-	  this.clearTimeout();
-	  this.emit('abort');
-	  return this;
-	};
-
-	/**
-	 * Enable transmission of cookies with x-domain requests.
-	 *
-	 * Note that for this to work the origin must not be
-	 * using "Access-Control-Allow-Origin" with a wildcard,
-	 * and also must set "Access-Control-Allow-Credentials"
-	 * to "true".
-	 *
-	 * @api public
-	 */
-
-	exports.withCredentials = function(){
-	  // This is browser-only functionality. Node side is no-op.
-	  this._withCredentials = true;
-	  return this;
-	};
-
-	/**
-	 * Set the max redirects to `n`. Does noting in browser XHR implementation.
-	 *
-	 * @param {Number} n
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	exports.redirects = function(n){
-	  this._maxRedirects = n;
-	  return this;
-	};
-
-	/**
-	 * Convert to a plain javascript object (not JSON string) of scalar properties.
-	 * Note as this method is designed to return a useful non-this value,
-	 * it cannot be chained.
-	 *
-	 * @return {Object} describing method, url, and data of this request
-	 * @api public
-	 */
-
-	exports.toJSON = function(){
-	  return {
-	    method: this.method,
-	    url: this.url,
-	    data: this._data
-	  };
-	};
-
-	/**
-	 * Check if `obj` is a host object,
-	 * we don't want to serialize these :)
-	 *
-	 * TODO: future proof, move to compoent land
-	 *
-	 * @param {Object} obj
-	 * @return {Boolean}
-	 * @api private
-	 */
-
-	exports._isHost = function _isHost(obj) {
-	  var str = {}.toString.call(obj);
-
-	  switch (str) {
-	    case '[object File]':
-	    case '[object Blob]':
-	    case '[object FormData]':
-	      return true;
-	    default:
-	      return false;
-	  }
-	}
-
-	/**
-	 * Send `data` as the request body, defaulting the `.type()` to "json" when
-	 * an object is given.
-	 *
-	 * Examples:
-	 *
-	 *       // manual json
-	 *       request.post('/user')
-	 *         .type('json')
-	 *         .send('{"name":"tj"}')
-	 *         .end(callback)
-	 *
-	 *       // auto json
-	 *       request.post('/user')
-	 *         .send({ name: 'tj' })
-	 *         .end(callback)
-	 *
-	 *       // manual x-www-form-urlencoded
-	 *       request.post('/user')
-	 *         .type('form')
-	 *         .send('name=tj')
-	 *         .end(callback)
-	 *
-	 *       // auto x-www-form-urlencoded
-	 *       request.post('/user')
-	 *         .type('form')
-	 *         .send({ name: 'tj' })
-	 *         .end(callback)
-	 *
-	 *       // defaults to x-www-form-urlencoded
-	 *      request.post('/user')
-	 *        .send('name=tobi')
-	 *        .send('species=ferret')
-	 *        .end(callback)
-	 *
-	 * @param {String|Object} data
-	 * @return {Request} for chaining
-	 * @api public
-	 */
-
-	exports.send = function(data){
-	  var obj = isObject(data);
-	  var type = this._header['content-type'];
-
-	  // merge
-	  if (obj && isObject(this._data)) {
-	    for (var key in data) {
-	      this._data[key] = data[key];
-	    }
-	  } else if ('string' == typeof data) {
-	    // default to x-www-form-urlencoded
-	    if (!type) this.type('form');
-	    type = this._header['content-type'];
-	    if ('application/x-www-form-urlencoded' == type) {
-	      this._data = this._data
-	        ? this._data + '&' + data
-	        : data;
-	    } else {
-	      this._data = (this._data || '') + data;
-	    }
-	  } else {
-	    this._data = data;
-	  }
-
-	  if (!obj || this._isHost(data)) return this;
-
-	  // default to json
-	  if (!type) this.type('json');
-	  return this;
-	};
-
-
-/***/ },
-/* 33 */
-/***/ function(module, exports) {
-
-	/**
-	 * Check if `obj` is an object.
-	 *
-	 * @param {Object} obj
-	 * @return {Boolean}
-	 * @api private
-	 */
-
-	function isObject(obj) {
-	  return null !== obj && 'object' === typeof obj;
-	}
-
-	module.exports = isObject;
-
-
-/***/ },
-/* 34 */
-/***/ function(module, exports) {
-
-	// The node and browser modules expose versions of this with the
-	// appropriate constructor function bound as first argument
-	/**
-	 * Issue a request:
-	 *
-	 * Examples:
-	 *
-	 *    request('GET', '/users').end(callback)
-	 *    request('/users').end(callback)
-	 *    request('/users', callback)
-	 *
-	 * @param {String} method
-	 * @param {String|Function} url or callback
-	 * @return {Request}
-	 * @api public
-	 */
-
-	function request(RequestConstructor, method, url) {
-	  // callback
-	  if ('function' == typeof url) {
-	    return new RequestConstructor('GET', method).end(url);
-	  }
-
-	  // url first
-	  if (2 == arguments.length) {
-	    return new RequestConstructor('GET', method);
-	  }
-
-	  return new RequestConstructor(method, url);
-	}
-
-	module.exports = request;
-
+	module.exports = __webpack_require__.p + "engine/Newport_Loft_Ref-1affe44287d83e05a1a16cab72d997eb.hdr";
 
 /***/ }
 /******/ ]);
