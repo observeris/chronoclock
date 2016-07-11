@@ -15,7 +15,7 @@ module.exports = {
             loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
         }, {
             test: /\.(jpg|png|gif|hdr)$/,
-            loader: "file?name=engine/[name]-[hash].[ext]",
+            loader: "file?name=/[hash].[ext]",
         }, {
             test: /\.(frag|vert|glsl)$/,
             loaders: ["raw", "glslify"]
@@ -28,7 +28,8 @@ module.exports = {
     },
     output: {
         path: __dirname + "/engine",
-        filename: "./main.js"
+        filename: "./main.js",
+        publicPath: "/engine"
     },
     resolve: {
         root: [

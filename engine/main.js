@@ -34,7 +34,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/engine";
 
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -8216,7 +8216,7 @@
 /* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "engine/Newport_Loft_Ref-1affe44287d83e05a1a16cab72d997eb.hdr";
+	module.exports = __webpack_require__.p + "/1affe44287d83e05a1a16cab72d997eb.hdr";
 
 /***/ }
 /******/ ]);
