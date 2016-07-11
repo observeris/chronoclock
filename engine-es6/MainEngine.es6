@@ -113,6 +113,7 @@ export default class MainEngine {
         this.fCOLLADAWireFrame = true;
         this.fAnimateCamera = true;
 
+        this.fPBRMaterialHandler = null;
         this.document.addEventListener('mousemove', (event) => {
             this.onDocumentMouseMove(event);
         }, false);
@@ -172,6 +173,15 @@ export default class MainEngine {
         this.renderer.gammaOutput = true;
 
         this.renderer.shadowMap.enabled = true;
+
+        // PBR Material init:
+        const renderSystem = {
+            scene: this.scene,
+            renderer: this.renderer
+        };
+
+        this.fPBRMaterialHandler = new PBRMaterial();
+        this.fPBRMaterialHandler.generateMaterial(renderSystem);
 
         var sphere = new THREE.SphereGeometry(10.5, 16, 8);
         this.light1 = new THREE.PointLight(0xffffff, 2, 550);
@@ -238,7 +248,7 @@ export default class MainEngine {
                         const wireframeMaterial = new WireframeMaterial();
                         child.material = wireframeMaterial.fMaterial;
                     } else {
-                        child.material = material;
+                        child.material = this.fPBRMaterialHandler.fMaterial;
                     }
                     for (var i = 0; i < this.gDialCount; i += 1) {
                         var dial = new THREE.Mesh(child.geometry, child.material);
@@ -364,14 +374,6 @@ export default class MainEngine {
         this.window.addEventListener('resize', () => {
             this.onWindowResize();
         }, false);
-
-        const renderSystem = {
-            scene: this.scene,
-            renderer: this.renderer
-        };
-
-        const pbrMat = new PBRMaterial();
-        pbrMat.generateMaterial(renderSystem);
 
     }
 

@@ -41,7 +41,7 @@ varying mat3 vTBN;
 #pragma glslify: linearToGamma = require(../color/gamma)
 #pragma glslify: gammaToLinear = require(../color/degamma)
 #pragma glslify: getNormal = require(../normals/getNormal)
-#pragma glslify: Material = require(../pbr/Material)
+//Material = require(../pbr/Material)
 #pragma glslify: shade = require(../pbr/shade)
 #pragma glslify: getF0 = require(../pbr/getF0)
 #pragma glslify: safeDot = require(../math/safeDot)
@@ -117,7 +117,7 @@ void main() {
 
   vec3 F0 = getF0(specular_level, metalicity, base_color);
 
-  Material material = Material(
+  Material_10_6 material = Material_10_6(
     metalicity,
     roughness,
     base_color,
