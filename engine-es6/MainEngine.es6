@@ -239,7 +239,7 @@ export default class MainEngine {
                 if (child instanceof THREE.Mesh) {
                     var diffuseColor = new THREE.Color(1, 1, 1);
 
-                    var material = new THREE.MeshPhongMaterial({
+                    var defaultPhongMaterial = new THREE.MeshPhongMaterial({
                         color: diffuseColor
                     });
 
@@ -249,6 +249,7 @@ export default class MainEngine {
                         child.material = wireframeMaterial.fMaterial;
                     } else {
                         child.material = this.fPBRMaterialHandler.fMaterial;
+                        child.material = defaultPhongMaterial;
                     }
                     for (var i = 0; i < this.gDialCount; i += 1) {
                         var dial = new THREE.Mesh(child.geometry, child.material);

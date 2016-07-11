@@ -349,7 +349,7 @@
 	                    if (child instanceof _three2.default.Mesh) {
 	                        var diffuseColor = new _three2.default.Color(1, 1, 1);
 
-	                        var material = new _three2.default.MeshPhongMaterial({
+	                        var defaultPhongMaterial = new _three2.default.MeshPhongMaterial({
 	                            color: diffuseColor
 	                        });
 
@@ -359,6 +359,7 @@
 	                            child.material = wireframeMaterial.fMaterial;
 	                        } else {
 	                            child.material = _this2.fPBRMaterialHandler.fMaterial;
+	                            child.material = defaultPhongMaterial;
 	                        }
 	                        for (var i = 0; i < _this2.gDialCount; i += 1) {
 	                            var dial = new _three2.default.Mesh(child.geometry, child.material);
@@ -6396,7 +6397,7 @@
 /* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var require;var require;"use strict";
+	var require;var require;var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
