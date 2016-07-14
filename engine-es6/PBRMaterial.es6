@@ -17,7 +17,7 @@ export default class PBRMaterial {
             },
             roughness_constant: {
                 type: 'f',
-                value: 0.5
+                value: 0.1
             },
             metalicity: {
                 type: 'f',
