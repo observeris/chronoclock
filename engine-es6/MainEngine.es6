@@ -160,8 +160,11 @@ export default class MainEngine {
         // RENDERER
 
         this.renderer = new THREE.WebGLRenderer({
-            antialias: true
+            antialias: false,
+            premultipliedAlpha: false
         });
+
+        // new THREE.WebGLRenderer( { premultipliedAlpha : false } );
         this.renderer.setClearColor(this.scene.fog.color);
         this.renderer.setPixelRatio(this.window.devicePixelRatio);
         this.renderer.setSize(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
@@ -376,6 +379,64 @@ export default class MainEngine {
             this.onWindowResize();
         }, false);
 
+        var geo = new THREE.SphereGeometry(300, 64, 64);
+        var pbrmaterial = this.fPBRMaterialHandler.fMaterial;
+
+        // var loader = new THREE.TextureLoader();
+        //
+        // // load a resource
+        // loader.load(
+        //     // resource URL
+        //     'engine/land_ocean_ice_cloud_2048.jpg',
+        //     // Function when resource is loaded
+        //     function(texture) {
+        //         // do something with the texture
+        //         const dummyRGBA = new Float32Array(256 * 256 * 4);
+        //         let j = 0;
+        //         for (j = 0; j < 256 * 256; j += 1) {
+        //             // RGB from 0 to 255
+        //             dummyRGBA[4 * j] = 0.5;
+        //             dummyRGBA[4 * j + 1] = dummyRGBA[4 * j + 2] = 0.0;
+        //             // OPACITY
+        //             dummyRGBA[4 * j + 3] = 1.0;
+        //         }
+        //
+        //         const dummyRGBA_Uchar = new Uint8Array(256 * 256 * 4);
+        //         for (j = 0; j < 256 * 256; j += 1) {
+        //             // RGB from 0 to 255
+        //             dummyRGBA_Uchar[4 * j] = 255;
+        //             dummyRGBA_Uchar[4 * j + 1] = dummyRGBA_Uchar[4 * j + 2] =
+        //                 0;
+        //             // OPACITY
+        //             dummyRGBA_Uchar[4 * j + 3] = 255;
+        //         }
+        //         const dataTex = new THREE.DataTexture(dummyRGBA, 256, 256, THREE.RGBAFormat,
+        //             THREE.FloatType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping,
+        //             THREE.NearestFilter, THREE.NearestFilter, 1, THREE.LinearEnscoding);
+        //         dataTex.needsUpdate = true;
+        //
+        //         const dataTex_char = new THREE.DataTexture(dummyRGBA_Uchar, 256, 256, THREE.RGBAFormat,
+        //             THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping,
+        //             THREE.NearestFilter, THREE.NearestFilter, 1, THREE.LinearEnscoding);
+        //         dataTex_char.needsUpdate = true;
+        //
+        //         pbrmaterial.uniforms.ibl_map.value = dataTex;
+        //         pbrmaterial.uniforms.ibl_map.needsUpdate = true;
+        //     },
+        //     // Function called when download progresses
+        //     function(xhr) {
+        //         console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        //     },
+        //     // Function called when download errors
+        //     function(xhr) {
+        //         console.log('An error happened');
+        //     }
+        // );
+
+        this.testmesh = new THREE.Mesh(geo, pbrmaterial);
+
+        this.scene.add(this.testmesh);
+
     }
 
     /**
@@ -400,7 +461,7 @@ export default class MainEngine {
 
         this.mouseX = (event.clientX - this.windowHalfX);
         this.mouseY = (event.clientY - this.windowHalfY);
-        console.log(this.mouseX.toString() + " " + this.mouseY.toString());
+        // console.log(this.mouseX.toString() + " " + this.mouseY.toString());
 
     }
 

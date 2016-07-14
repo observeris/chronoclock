@@ -53,7 +53,8 @@ varying mat3 vTBN;
 
 vec3 sampleEnvironment(vec3 N, float roughness) {
   vec2 env_uv = normalToUv(N);
-  return (rgbdToRgb(texture2DLodEXT(ibl_map, env_uv, roughness*IBL_MAX_LEVELS)));
+  return texture2D(ibl_map, env_uv).rgb;
+  //return (rgbdToRgb(texture2DLodEXT(ibl_map, env_uv, roughness*IBL_MAX_LEVELS)));
 }
 
 vec3 getSpecularIBL(vec3 specular_color, float roughness, vec3 N, vec3 V, vec3 vertex_normal) {
@@ -141,5 +142,11 @@ void main() {
 
   // gl_FragColor = vec4(getSpecularIBL(F0, roughness_raw, N, V, Ninit), 1.0); //N, 0.9), 1.0);
   // gl_FragColor = vec4(getSpecular, 0.0, 1.0);
-  gl_FragColor = vec4(final, 1.0);
+  vec2 env_uv = normalToUv(N);
+
+  vec2 brdf = texture2D(brdf_map, env_uv).xy;
+  vec3 ibl = texture2D(ibl_map, env_uv).rgb;
+  //gl_FragColor = vec4(final, 1.0);
+  //gl_FragColor = vec4(brdf.x, brdf.y, 1.0, 1.0);
+  gl_FragColor = vec4(ibl.r, ibl.g, ibl.b, 1.0);
 }

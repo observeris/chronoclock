@@ -16,7 +16,7 @@ class ImageBasedLightGenerator {
         this.renderSystem = renderSystem;
 
         const vdcMap = this.createVdcMap(this.vdcResolution);
-
+        vdcMap.needsUpdate = true;
         this.brdf = (new Compute(this.renderSystem,
             StandardRawVert,
             BRDFIntegratorFrag, {
@@ -75,16 +75,21 @@ class ImageBasedLightGenerator {
     }
 
     generate(tex) {
+        tex.needsUpdate = true;
         this.uniforms.reflection_map.value = tex;
         this.uniforms.reflection_map.value.needsUpdate = true;
 
         const baseTexture = this.compute.run();
+
+        // return baseTexture;
+
         const baseImage = RenderUtil.createImage(this.renderSystem, baseTexture, this.resolution, this.resolution);
+        // baseImage.needsUpdate = true;
         const result = new THREE.CanvasTexture(baseImage);
         result.wrapS = THREE.RepeatWrapping;
         result.wrapT = THREE.RepeatWrapping;
-        result.minFilter = THREE.LinearMipMapLinearFilter;
-        result.magFilter = THREE.NearestFilter;
+        result.minFilter = THREE.LinearFilter;
+        result.magFilter = THREE.LinearFilter;
         result.format = THREE.RGBAFormat;
         result.generateMipmaps = false;
         result.mipmaps[0] = baseImage;
@@ -96,6 +101,7 @@ class ImageBasedLightGenerator {
             this.uniforms.roughness_constant.needsUpdate = true;
             this.compute.renderToTexture(mipLevel);
             const image = RenderUtil.createImage(this.renderSystem, mipLevel, res, res);
+            image.needsUpdate = true;
             result.mipmaps[i] = image;
         }
 

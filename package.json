@@ -23,7 +23,8 @@
     "gulp-babel": "^6.1.2",
     "gulp-print": "^2.0.1",
     "gulp-rename": "^1.2.2",
-    "merge-stream": "^1.0.0"
+    "merge-stream": "^1.0.0",
+    "three": "^0.78.0"
   },
   "devDependencies": {
     "babel-core": "^6.9.0",

@@ -5,7 +5,7 @@ var path = require('path');
 
 // Loaders need to be installed: either as a packaga.json dep or manually:
 // > npm install --save-dev glslify-loader raw-loader
-// > npm install --save-dev babel-loader babel-core babel-preset-es2015 
+// > npm install --save-dev babel-loader babel-core babel-preset-es2015
 module.exports = {
     context: __dirname,
     module: {
@@ -17,7 +17,9 @@ module.exports = {
             loader: "file?name=[name].[ext]",
         }, {
             test: /\.(js|es6)$/,
-            exclude: /node_modules|src\/lib\/three.js/,
+            exclude: [
+                path.resolve('./external/three/build/three.js'),
+            ],
             loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
         }, {
             test: /\.(jpg|png|gif|hdr)$/,
