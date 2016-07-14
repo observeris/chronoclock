@@ -110,7 +110,7 @@ export default class MainEngine {
         this.gLastSecondsLeft = 0;
 
         this.fOBJWireFrame = false;
-        this.fCOLLADAWireFrame = true;
+        this.fCOLLADAWireFrame = false;
         this.fAnimateCamera = true;
 
         this.fPBRMaterialHandler = null;
@@ -139,7 +139,7 @@ export default class MainEngine {
 
         this.scene = new THREE.Scene();
 
-        this.scene.fog = new THREE.Fog(0xffffff, 2000, 10000);
+        // this.scene.fog = new THREE.Fog(0xffffff, 2000, 10000);
 
         // cene.add( camera );
 
@@ -159,51 +159,64 @@ export default class MainEngine {
 
         // RENDERER
 
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: true
-        });
-        this.renderer.setClearColor(this.scene.fog.color);
+        this.renderer = new THREE.WebGLRenderer();
+        // {
+        //     antialias: true
+        // });
+        //
+        this.renderer.setClearColor(0xffffff);
         this.renderer.setPixelRatio(this.window.devicePixelRatio);
         this.renderer.setSize(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
         this.renderer.domElement.style.position = "relative";
 
         this.container.appendChild(this.renderer.domElement);
 
-        this.renderer.gammaInput = true;
-        this.renderer.gammaOutput = true;
+        this.renderer.gammaInput = false;
+        this.renderer.gammaOutput = false;
 
-        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.enabled = false;
 
         // PBR Material init:
         const renderSystem = {
             scene: this.scene,
             renderer: this.renderer
         };
+        const floatTexturesSupported = this.renderer.context.getExtension('OES_texture_float');
+        if (floatTexturesSupported !== true) {
+            console.log("FLOAT TEXTURES OK");
+        } else {
+            console.err("Float textures are not supported.");
+        }
 
         this.fPBRMaterialHandler = new PBRMaterial();
-        this.fPBRMaterialHandler.generateMaterial(renderSystem);
+        this.fPBRMaterialHandler.generateMaterial(
+            renderSystem);
 
-        var sphere = new THREE.SphereGeometry(10.5, 16, 8);
-        this.light1 = new THREE.PointLight(0xffffff, 2, 550);
-        this.light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-            color: 0xff0040
-        })));
-        this.scene.add(this.light1);
-        this.light2 = new THREE.PointLight(0x004040, 2, 550);
-        this.light2.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-            color: 0x0040ff
-        })));
-        this.scene.add(this.light2);
-        this.light3 = new THREE.PointLight(0x300f00, 2, 550);
-        this.light3.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-            color: 0x80ff80
-        })));
-        this.scene.add(this.light3);
-        this.light4 = new THREE.PointLight(0xff0000, 2, 550);
-        this.light4.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
-            color: 0xffaa00
-        })));
-        this.scene.add(this.light4);
+        // var sphere = new THREE.SphereGeometry(10.5, 16, 8);
+        // this.light1 = new THREE.PointLight(
+        //     0xffffff, 2, 550);
+        // this.light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+        //     color: 0xff0040
+        // })));
+        // this.scene.add(this.light1);
+        // this.light2 = new THREE.PointLight(0x004040, 2, 550);
+        // this
+        //     .light2.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+        //         color: 0x0040ff
+        //     })));
+        // this.scene.add(this.light2);
+        // this.light3 = new THREE.PointLight(0x300f00, 2, 550);
+        // this
+        //     .light3.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+        //         color: 0x80ff80
+        //     })));
+        // this.scene.add(this.light3);
+        // this.light4 = new THREE.PointLight(0xff0000, 2, 550);
+        // this
+        //     .light4.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+        //         color: 0xffaa00
+        //     })));
+        // this.scene.add(this.light4);
 
         // STATS
 
@@ -211,7 +224,8 @@ export default class MainEngine {
         this.container.appendChild(this.stats.dom);
 
         var manager = new THREE.LoadingManager();
-        manager.onProgress = function(item, loaded, total) {
+        manager.onProgress = function(item, loaded,
+            total) {
 
             console.log(item, loaded, total);
 
@@ -227,147 +241,152 @@ export default class MainEngine {
         var onError = function( /* xhr */ ) {
 
         };
-        const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
-            onProgress);
-
-        loaderPromise.then((object) => {
-
-            this.gDial = new NDigitDial();
-
-            object.traverse((child) => {
-
-                if (child instanceof THREE.Mesh) {
-                    var diffuseColor = new THREE.Color(1, 1, 1);
-
-                    var defaultPhongMaterial = new THREE.MeshPhongMaterial({
-                        color: diffuseColor
-                    });
-
-                    if (this.fOBJWireFrame) {
-                        WireframeMaterial.SetupWireframeShaderAttributes(child.geometry);
-                        const wireframeMaterial = new WireframeMaterial();
-                        child.material = wireframeMaterial.fMaterial;
-                    } else {
-                        child.material = this.fPBRMaterialHandler.fMaterial;
-                        //child.material = defaultPhongMaterial;
-                    }
-                    for (var i = 0; i < this.gDialCount; i += 1) {
-                        var dial = new THREE.Mesh(child.geometry, child.material);
-                        // here you can apply transformations, for this clone only
-                        dial.geometry.computeBoundingBox();
-                        dial.position.x = 0;
-                        dial.position.y = 0;
-                        dial.position.z = 0;
-
-                        this.scene.add(dial);
-
-                        let separatorGap = 0.0;
-                        const gapWidth = 10;
-                        if (i >= 2 && i < 4) {
-                            separatorGap = gapWidth;
-                        } else if (i >= 4) {
-                            separatorGap = gapWidth * 2;
-                        }
-
-                        const targetBBOX = new THREE.Box3({
-                            x: 50 * i - 20 + separatorGap,
-                            y: -200,
-                            z: -100
-                        }, {
-                            x: 50 * i + 20 + separatorGap,
-                            y: 200,
-                            z: 100
-                        });
-
-                        const dialRing = new DialRing(dial, i, targetBBOX, "easeNone");
-                        dialRing.ScheduleAngleInterpolation(0);
-                        this.gDial.AddNewDial(dialRing);
-                    }
-
-                    this.window.setInterval(() => {
-                        if (this.gDial === null) {
-                            return;
-                        }
-                        try {
-                            const seconds = Math.floor((this.gZeroMoment - Date.now()) /
-                                1000);
-                            if (seconds === this.LastSecondsLeft) {
-                                return;
-                            }
-
-                            const aHHMMSSString = DigitLib.toHHMMSS(String(
-                                seconds));
-
-                            this.gDial.SetDialsFromExactString(aHHMMSSString);
-                            this.LastSecondsLeft = seconds;
-                            this.gCounter += 1;
-                        } catch (e) {
-                            console.log("EXCEPTION: " + e.message);
-                        }
-
-                    }, 1000);
-                }
-
-            });
-
-        }).catch((xhr) => {
-            onError(xhr);
-        });
-        // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
-        const tickerLoaderPromise = COLLADALoadPromise(
-            'assets/models/dae/gear-system/animatedmechanism.dae',
-            manager,
-            onProgress);
-
-        tickerLoaderPromise.then((iColladaStuff) => {
-            const model = iColladaStuff.scene;
-
-            model.position.x = 120;
-            model.position.y = 0;
-            model.position.z = 0;
-
-            model.scale.x = model.scale.y = model.scale.z = 1.325; // 1/8 scale, modeled in cm
-            model.scale.x = 1.6;
-            model.rotateX(-Math.PI / 2);
-
-            // KeyFrame Animations
-            this.kfAnimationsLength = iColladaStuff.animations.length;
-
-            for (var i = 0; i < this.kfAnimationsLength; i += 1) {
-
-                var animation = iColladaStuff.animations[i];
-
-                const kfAnimation = new THREE.KeyFrameAnimation(animation);
-                kfAnimation.timeScale = 1;
-                this.kfAnimations.push(kfAnimation);
-
-            }
-
-            model.traverse((child) => {
-
-                if (child instanceof THREE.Mesh) {
-
-                    if (this.fCOLLADAWireFrame) {
-                        const geometry = new THREE.BufferGeometry().fromGeometry(child.geometry);
-
-                        WireframeMaterial.SetupWireframeShaderAttributes(geometry);
-                        const wireframeMaterial = new WireframeMaterial();
-
-                        child.geometry = geometry;
-                        child.material = wireframeMaterial.fMaterial;
-                    }
-                }
-            });
-            console.log("COLLADA LOAD OK");
-
-            this.scene.add(model);
-
-            this.keyframeAnimationStart();
-
-        }).catch((xhr) => {
-            console.error("COLLADA LOAD FAILED");
-            onError(xhr);
-        });
+        // const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj',
+        //     manager,
+        //     onProgress);
+        //
+        // loaderPromise.then((object) => {
+        //
+        //     this.gDial = new NDigitDial();
+        //
+        //     object.traverse((child) => {
+        //
+        //         if (child instanceof THREE.Mesh) {
+        //             var diffuseColor = new THREE.Color(1, 1, 1);
+        //
+        //             var defaultPhongMaterial = new THREE.MeshPhongMaterial({
+        //                 color: diffuseColor
+        //             });
+        //
+        //             if (this.fOBJWireFrame) {
+        //                 WireframeMaterial.SetupWireframeShaderAttributes(child.geometry);
+        //                 const wireframeMaterial = new WireframeMaterial();
+        //                 child.material = wireframeMaterial.fMaterial;
+        //             } else {
+        //                 // child.material = this.fPBRMaterialHandler.fMaterial;
+        //                 child.material = defaultPhongMaterial;
+        //             }
+        //             for (var i = 0; i < this.gDialCount; i += 1) {
+        //                 var dial = new THREE.Mesh(child.geometry, child.material);
+        //                 // here you can apply transformations, for this clone only
+        //                 dial.geometry.computeBoundingBox();
+        //                 dial.position.x = 0;
+        //                 dial.position.y = 0;
+        //                 dial.position.z = 0;
+        //
+        //                 this.scene.add(dial);
+        //
+        //                 let separatorGap = 0.0;
+        //                 const gapWidth = 10;
+        //                 if (i >= 2 && i < 4) {
+        //                     separatorGap = gapWidth;
+        //                 } else if (i >= 4) {
+        //                     separatorGap = gapWidth * 2;
+        //                 }
+        //
+        //                 const targetBBOX = new THREE.Box3({
+        //                     x: 50 * i - 20 + separatorGap,
+        //                     y: -200,
+        //                     z: -100
+        //                 }, {
+        //                     x: 50 * i + 20 + separatorGap,
+        //                     y: 200,
+        //                     z: 100
+        //                 });
+        //
+        //                 const dialRing = new DialRing(dial, i, targetBBOX, "easeNone");
+        //                 dialRing.ScheduleAngleInterpolation(0);
+        //                 this.gDial.AddNewDial(dialRing);
+        //             }
+        //
+        //             this.window.setInterval(() => {
+        //                 if (this.gDial === null) {
+        //                     return;
+        //                 }
+        //                 try {
+        //                     const seconds = Math.floor((this.gZeroMoment -
+        //                             Date.now()) /
+        //                         1000);
+        //                     if (seconds === this.LastSecondsLeft) {
+        //                         return;
+        //                     }
+        //
+        //                     const aHHMMSSString = DigitLib.toHHMMSS(String(
+        //                         seconds));
+        //
+        //                     this.gDial.SetDialsFromExactString(aHHMMSSString);
+        //                     this.LastSecondsLeft = seconds;
+        //                     this.gCounter += 1;
+        //                 } catch (e) {
+        //                     console.log("EXCEPTION: " + e.message);
+        //                 }
+        //
+        //             }, 1000);
+        //         }
+        //
+        //     });
+        //
+        // }).catch((xhr) => {
+        //     onError(xhr);
+        // });
+        // // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
+        // const tickerLoaderPromise = COLLADALoadPromise(
+        //     'assets/models/dae/gear-system/animatedmechanism.dae',
+        //     manager,
+        //     onProgress);
+        //
+        // tickerLoaderPromise.then((iColladaStuff) => {
+        //     const model = iColladaStuff.scene;
+        //
+        //     model.position.x = 120;
+        //     model.position.y = 0;
+        //     model.position.z = 0;
+        //
+        //     model.scale.x = model.scale.y = model.scale.z = 1.325; // 1/8 scale, modeled in cm
+        //     model.scale.x = 1.6;
+        //     model.rotateX(-Math.PI / 2);
+        //
+        //     // KeyFrame Animations
+        //     this.kfAnimationsLength = iColladaStuff.animations.length;
+        //
+        //     for (var i = 0; i < this.kfAnimationsLength; i += 1) {
+        //
+        //         var animation = iColladaStuff.animations[i];
+        //
+        //         const kfAnimation = new THREE.KeyFrameAnimation(animation);
+        //         kfAnimation.timeScale = 1;
+        //         this.kfAnimations.push(kfAnimation);
+        //
+        //     }
+        //
+        //     model.traverse((child) => {
+        //
+        //         if (child instanceof THREE.Mesh) {
+        //
+        //             if (this.fCOLLADAWireFrame) {
+        //                 const geometry = new THREE.BufferGeometry().fromGeometry(
+        //                     child.geometry);
+        //
+        //                 WireframeMaterial.SetupWireframeShaderAttributes(geometry);
+        //                 const wireframeMaterial = new WireframeMaterial();
+        //
+        //                 child.geometry = geometry;
+        //                 child.material = wireframeMaterial.fMaterial;
+        //             } else {
+        //                 child.material = this.fPBRMaterialHandler.fMaterial;
+        //             }
+        //         }
+        //     });
+        //     console.log("COLLADA LOAD OK");
+        //
+        //     this.scene.add(model);
+        //
+        //     this.keyframeAnimationStart();
+        //
+        // }).catch((xhr) => {
+        //     console.error("COLLADA LOAD FAILED");
+        //     onError(xhr);
+        // });
 
         // const loader = new THREE.OBJLoader(manager);
         // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
@@ -375,6 +394,64 @@ export default class MainEngine {
         this.window.addEventListener('resize', () => {
             this.onWindowResize();
         }, false);
+
+        var geo = new THREE.SphereGeometry(300, 64, 64);
+        var pbrmaterial = this.fPBRMaterialHandler.fMaterial;
+
+        var loader = new THREE.TextureLoader();
+
+        // load a resource
+        loader.load(
+            // resource URL
+            'engine/land_ocean_ice_cloud_2048.jpg',
+            // Function when resource is loaded
+            function(texture) {
+                // do something with the texture
+                const dummyRGBA = new Float32Array(256 * 256 * 4);
+                let j = 0;
+                for (j = 0; j < 256 * 256; j += 1) {
+                    // RGB from 0 to 255
+                    dummyRGBA[4 * j] = 0.5;
+                    dummyRGBA[4 * j + 1] = dummyRGBA[4 * j + 2] = 0.0;
+                    // OPACITY
+                    dummyRGBA[4 * j + 3] = 1.0;
+                }
+
+                const dummyRGBA_Uchar = new Uint8Array(256 * 256 * 4);
+                for (j = 0; j < 256 * 256; j += 1) {
+                    // RGB from 0 to 255
+                    dummyRGBA_Uchar[4 * j] = 255;
+                    dummyRGBA_Uchar[4 * j + 1] = dummyRGBA_Uchar[4 * j + 2] =
+                        0;
+                    // OPACITY
+                    dummyRGBA_Uchar[4 * j + 3] = 255;
+                }
+                const dataTex = new THREE.DataTexture(dummyRGBA, 256, 256, THREE.RGBAFormat,
+                    THREE.FloatType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping,
+                    THREE.NearestFilter, THREE.NearestFilter, 1, THREE.LinearEnscoding);
+                dataTex.needsUpdate = true;
+
+                const dataTex_char = new THREE.DataTexture(dummyRGBA_Uchar, 256, 256, THREE.RGBAFormat,
+                    THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping,
+                    THREE.NearestFilter, THREE.NearestFilter, 1, THREE.LinearEnscoding);
+                dataTex_char.needsUpdate = true;
+
+                pbrmaterial.uniforms.ibl_map.value = dataTex;
+                pbrmaterial.uniforms.ibl_map.needsUpdate = true;
+            },
+            // Function called when download progresses
+            function(xhr) {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            },
+            // Function called when download errors
+            function(xhr) {
+                console.log('An error happened');
+            }
+        );
+
+        this.testmesh = new THREE.Mesh(geo, pbrmaterial);
+
+        this.scene.add(this.testmesh);
 
     }
 
@@ -501,21 +578,21 @@ export default class MainEngine {
 
         let delta = this.clock.getDelta();
 
-        this.light1.position.x = 0;
-        this.light1.position.y = 100;
-        this.light1.position.z = 250;
-
-        this.light2.position.x = Math.cos(time * 0.3) * 100;
-        this.light2.position.y = Math.sin(time * 0.5) * 100;
-        this.light2.position.z = Math.sin(time * 0.7) * 100;
-
-        this.light3.position.x = Math.sin(time * 0.7) * 100;
-        this.light3.position.y = Math.cos(time * 0.3) * 100;
-        this.light3.position.z = Math.sin(time * 0.5) * 100;
-
-        this.light4.position.x = Math.sin(time * 0.3) * 300;
-        this.light4.position.y = Math.cos(time * 0.7) * 400;
-        this.light4.position.z = Math.sin(time * 0.5) * 300;
+        // this.light1.position.x = 0;
+        // this.light1.position.y = 100;
+        // this.light1.position.z = 250;
+        //
+        // this.light2.position.x = Math.cos(time * 0.3) * 100;
+        // this.light2.position.y = Math.sin(time * 0.5) * 100;
+        // this.light2.position.z = Math.sin(time * 0.7) * 100;
+        //
+        // this.light3.position.x = Math.sin(time * 0.7) * 100;
+        // this.light3.position.y = Math.cos(time * 0.3) * 100;
+        // this.light3.position.z = Math.sin(time * 0.5) * 100;
+        //
+        // this.light4.position.x = Math.sin(time * 0.3) * 300;
+        // this.light4.position.y = Math.cos(time * 0.7) * 400;
+        // this.light4.position.z = Math.sin(time * 0.5) * 300;
 
         delta = 0.75 * this.clock.getDelta();
 

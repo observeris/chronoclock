@@ -15,20 +15,20 @@ class ImageBasedLightGenerator {
         this.vdcResolution = 1024; // corresponds to number of samples in brdf integrator
         this.renderSystem = renderSystem;
 
-        const vdcMap = this.createVdcMap(this.vdcResolution);
+        // const vdcMap = this.createVdcMap(this.vdcResolution);
 
-        this.brdf = (new Compute(this.renderSystem,
-            StandardRawVert,
-            BRDFIntegratorFrag, {
-                resolution: this.brdfResolution,
-                uniforms: {
-                    'vdc_map': {
-                        type: 't',
-                        value: vdcMap
-                    },
-                },
-            }
-        )).run();
+        // this.brdf = (new Compute(this.renderSystem,
+        //     StandardRawVert,
+        //     BRDFIntegratorFrag, {
+        //         resolution: this.brdfResolution,
+        //         uniforms: {
+        //             'vdc_map': {
+        //                 type: 't',
+        //                 value: vdcMap
+        //             },
+        //         },
+        //     }
+        // )).run();
 
         this.promise = new Promise((resolve, reject) => {
             const hasTextureLOD = this.renderSystem.renderer.context.getExtension(
@@ -37,27 +37,27 @@ class ImageBasedLightGenerator {
                 reject('Texture LOD extension is unavailable.');
             }
 
-            this.uniforms = {
-                'vdc_map': {
-                    type: 't',
-                    value: vdcMap
-                },
-                'roughness_constant': {
-                    type: 'f',
-                    value: 0.0
-                },
-                'reflection_map': {
-                    type: 't',
-                    value: null,
-                },
-            };
+            // this.uniforms = {
+            //     'vdc_map': {
+            //         type: 't',
+            //         value: vdcMap
+            //     },
+            //     'roughness_constant': {
+            //         type: 'f',
+            //         value: 0.0
+            //     },
+            //     'reflection_map': {
+            //         type: 't',
+            //         value: null,
+            //     },
+            // };
 
             return loadHdrTexture(sourceTexture)
                 .then((tex) => {
                     try {
                         resolve({
-                            ibl: this.generate(tex),
-                            brdf: this.brdf
+                            ibl: tex, //this.generate(tex),
+                            brdf: null //this.brdf
                         });
                     } catch (e) {
                         reject(e);

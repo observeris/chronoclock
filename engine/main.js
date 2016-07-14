@@ -218,7 +218,7 @@
 	        this.gLastSecondsLeft = 0;
 
 	        this.fOBJWireFrame = false;
-	        this.fCOLLADAWireFrame = true;
+	        this.fCOLLADAWireFrame = false;
 	        this.fAnimateCamera = true;
 
 	        this.fPBRMaterialHandler = null;
@@ -253,7 +253,7 @@
 
 	            this.scene = new _three2.default.Scene();
 
-	            this.scene.fog = new _three2.default.Fog(0xffffff, 2000, 10000);
+	            // this.scene.fog = new THREE.Fog(0xffffff, 2000, 10000);
 
 	            // cene.add( camera );
 
@@ -273,51 +273,63 @@
 
 	            // RENDERER
 
-	            this.renderer = new _three2.default.WebGLRenderer({
-	                antialias: true
-	            });
-	            this.renderer.setClearColor(this.scene.fog.color);
+	            this.renderer = new _three2.default.WebGLRenderer();
+	            // {
+	            //     antialias: true
+	            // });
+	            //
+	            this.renderer.setClearColor(0xffffff);
 	            this.renderer.setPixelRatio(this.window.devicePixelRatio);
 	            this.renderer.setSize(this.SCREEN_WIDTH, this.SCREEN_HEIGHT);
 	            this.renderer.domElement.style.position = "relative";
 
 	            this.container.appendChild(this.renderer.domElement);
 
-	            this.renderer.gammaInput = true;
-	            this.renderer.gammaOutput = true;
+	            this.renderer.gammaInput = false;
+	            this.renderer.gammaOutput = false;
 
-	            this.renderer.shadowMap.enabled = true;
+	            this.renderer.shadowMap.enabled = false;
 
 	            // PBR Material init:
 	            var renderSystem = {
 	                scene: this.scene,
 	                renderer: this.renderer
 	            };
+	            var floatTexturesSupported = this.renderer.context.getExtension('OES_texture_float');
+	            if (floatTexturesSupported !== true) {
+	                console.log("FLOAT TEXTURES OK");
+	            } else {
+	                console.err("Float textures are not supported.");
+	            }
 
 	            this.fPBRMaterialHandler = new _PBRMaterial2.default();
 	            this.fPBRMaterialHandler.generateMaterial(renderSystem);
 
-	            var sphere = new _three2.default.SphereGeometry(10.5, 16, 8);
-	            this.light1 = new _three2.default.PointLight(0xffffff, 2, 550);
-	            this.light1.add(new _three2.default.Mesh(sphere, new _three2.default.MeshBasicMaterial({
-	                color: 0xff0040
-	            })));
-	            this.scene.add(this.light1);
-	            this.light2 = new _three2.default.PointLight(0x004040, 2, 550);
-	            this.light2.add(new _three2.default.Mesh(sphere, new _three2.default.MeshBasicMaterial({
-	                color: 0x0040ff
-	            })));
-	            this.scene.add(this.light2);
-	            this.light3 = new _three2.default.PointLight(0x300f00, 2, 550);
-	            this.light3.add(new _three2.default.Mesh(sphere, new _three2.default.MeshBasicMaterial({
-	                color: 0x80ff80
-	            })));
-	            this.scene.add(this.light3);
-	            this.light4 = new _three2.default.PointLight(0xff0000, 2, 550);
-	            this.light4.add(new _three2.default.Mesh(sphere, new _three2.default.MeshBasicMaterial({
-	                color: 0xffaa00
-	            })));
-	            this.scene.add(this.light4);
+	            // var sphere = new THREE.SphereGeometry(10.5, 16, 8);
+	            // this.light1 = new THREE.PointLight(
+	            //     0xffffff, 2, 550);
+	            // this.light1.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+	            //     color: 0xff0040
+	            // })));
+	            // this.scene.add(this.light1);
+	            // this.light2 = new THREE.PointLight(0x004040, 2, 550);
+	            // this
+	            //     .light2.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+	            //         color: 0x0040ff
+	            //     })));
+	            // this.scene.add(this.light2);
+	            // this.light3 = new THREE.PointLight(0x300f00, 2, 550);
+	            // this
+	            //     .light3.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+	            //         color: 0x80ff80
+	            //     })));
+	            // this.scene.add(this.light3);
+	            // this.light4 = new THREE.PointLight(0xff0000, 2, 550);
+	            // this
+	            //     .light4.add(new THREE.Mesh(sphere, new THREE.MeshBasicMaterial({
+	            //         color: 0xffaa00
+	            //     })));
+	            // this.scene.add(this.light4);
 
 	            // STATS
 
@@ -338,136 +350,152 @@
 	            };
 
 	            var onError = function onError() /* xhr */{};
-	            var loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager, onProgress);
-
-	            loaderPromise.then(function (object) {
-
-	                _this2.gDial = new _NDigitDial2.default();
-
-	                object.traverse(function (child) {
-
-	                    if (child instanceof _three2.default.Mesh) {
-	                        var diffuseColor = new _three2.default.Color(1, 1, 1);
-
-	                        var defaultPhongMaterial = new _three2.default.MeshPhongMaterial({
-	                            color: diffuseColor
-	                        });
-
-	                        if (_this2.fOBJWireFrame) {
-	                            _WireframeMaterial2.default.SetupWireframeShaderAttributes(child.geometry);
-	                            var wireframeMaterial = new _WireframeMaterial2.default();
-	                            child.material = wireframeMaterial.fMaterial;
-	                        } else {
-	                            child.material = _this2.fPBRMaterialHandler.fMaterial;
-	                            //child.material = defaultPhongMaterial;
-	                        }
-	                        for (var i = 0; i < _this2.gDialCount; i += 1) {
-	                            var dial = new _three2.default.Mesh(child.geometry, child.material);
-	                            // here you can apply transformations, for this clone only
-	                            dial.geometry.computeBoundingBox();
-	                            dial.position.x = 0;
-	                            dial.position.y = 0;
-	                            dial.position.z = 0;
-
-	                            _this2.scene.add(dial);
-
-	                            var separatorGap = 0.0;
-	                            var gapWidth = 10;
-	                            if (i >= 2 && i < 4) {
-	                                separatorGap = gapWidth;
-	                            } else if (i >= 4) {
-	                                separatorGap = gapWidth * 2;
-	                            }
-
-	                            var targetBBOX = new _three2.default.Box3({
-	                                x: 50 * i - 20 + separatorGap,
-	                                y: -200,
-	                                z: -100
-	                            }, {
-	                                x: 50 * i + 20 + separatorGap,
-	                                y: 200,
-	                                z: 100
-	                            });
-
-	                            var dialRing = new _DialRing2.default(dial, i, targetBBOX, "easeNone");
-	                            dialRing.ScheduleAngleInterpolation(0);
-	                            _this2.gDial.AddNewDial(dialRing);
-	                        }
-
-	                        _this2.window.setInterval(function () {
-	                            if (_this2.gDial === null) {
-	                                return;
-	                            }
-	                            try {
-	                                var seconds = Math.floor((_this2.gZeroMoment - Date.now()) / 1000);
-	                                if (seconds === _this2.LastSecondsLeft) {
-	                                    return;
-	                                }
-
-	                                var aHHMMSSString = DigitLib.toHHMMSS(String(seconds));
-
-	                                _this2.gDial.SetDialsFromExactString(aHHMMSSString);
-	                                _this2.LastSecondsLeft = seconds;
-	                                _this2.gCounter += 1;
-	                            } catch (e) {
-	                                console.log("EXCEPTION: " + e.message);
-	                            }
-	                        }, 1000);
-	                    }
-	                });
-	            }).catch(function (xhr) {
-	                onError(xhr);
-	            });
-	            // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
-	            var tickerLoaderPromise = COLLADALoadPromise('assets/models/dae/gear-system/animatedmechanism.dae', manager, onProgress);
-
-	            tickerLoaderPromise.then(function (iColladaStuff) {
-	                var model = iColladaStuff.scene;
-
-	                model.position.x = 120;
-	                model.position.y = 0;
-	                model.position.z = 0;
-
-	                model.scale.x = model.scale.y = model.scale.z = 1.325; // 1/8 scale, modeled in cm
-	                model.scale.x = 1.6;
-	                model.rotateX(-Math.PI / 2);
-
-	                // KeyFrame Animations
-	                _this2.kfAnimationsLength = iColladaStuff.animations.length;
-
-	                for (var i = 0; i < _this2.kfAnimationsLength; i += 1) {
-
-	                    var animation = iColladaStuff.animations[i];
-
-	                    var kfAnimation = new _three2.default.KeyFrameAnimation(animation);
-	                    kfAnimation.timeScale = 1;
-	                    _this2.kfAnimations.push(kfAnimation);
-	                }
-
-	                model.traverse(function (child) {
-
-	                    if (child instanceof _three2.default.Mesh) {
-
-	                        if (_this2.fCOLLADAWireFrame) {
-	                            var _geometry = new _three2.default.BufferGeometry().fromGeometry(child.geometry);
-
-	                            _WireframeMaterial2.default.SetupWireframeShaderAttributes(_geometry);
-	                            var wireframeMaterial = new _WireframeMaterial2.default();
-
-	                            child.geometry = _geometry;
-	                            child.material = wireframeMaterial.fMaterial;
-	                        }
-	                    }
-	                });
-	                console.log("COLLADA LOAD OK");
-
-	                _this2.scene.add(model);
-
-	                _this2.keyframeAnimationStart();
-	            }).catch(function (xhr) {
-	                console.error("COLLADA LOAD FAILED");
-	                onError(xhr);
-	            });
+	            // const loaderPromise = OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj',
+	            //     manager,
+	            //     onProgress);
+	            //
+	            // loaderPromise.then((object) => {
+	            //
+	            //     this.gDial = new NDigitDial();
+	            //
+	            //     object.traverse((child) => {
+	            //
+	            //         if (child instanceof THREE.Mesh) {
+	            //             var diffuseColor = new THREE.Color(1, 1, 1);
+	            //
+	            //             var defaultPhongMaterial = new THREE.MeshPhongMaterial({
+	            //                 color: diffuseColor
+	            //             });
+	            //
+	            //             if (this.fOBJWireFrame) {
+	            //                 WireframeMaterial.SetupWireframeShaderAttributes(child.geometry);
+	            //                 const wireframeMaterial = new WireframeMaterial();
+	            //                 child.material = wireframeMaterial.fMaterial;
+	            //             } else {
+	            //                 // child.material = this.fPBRMaterialHandler.fMaterial;
+	            //                 child.material = defaultPhongMaterial;
+	            //             }
+	            //             for (var i = 0; i < this.gDialCount; i += 1) {
+	            //                 var dial = new THREE.Mesh(child.geometry, child.material);
+	            //                 // here you can apply transformations, for this clone only
+	            //                 dial.geometry.computeBoundingBox();
+	            //                 dial.position.x = 0;
+	            //                 dial.position.y = 0;
+	            //                 dial.position.z = 0;
+	            //
+	            //                 this.scene.add(dial);
+	            //
+	            //                 let separatorGap = 0.0;
+	            //                 const gapWidth = 10;
+	            //                 if (i >= 2 && i < 4) {
+	            //                     separatorGap = gapWidth;
+	            //                 } else if (i >= 4) {
+	            //                     separatorGap = gapWidth * 2;
+	            //                 }
+	            //
+	            //                 const targetBBOX = new THREE.Box3({
+	            //                     x: 50 * i - 20 + separatorGap,
+	            //                     y: -200,
+	            //                     z: -100
+	            //                 }, {
+	            //                     x: 50 * i + 20 + separatorGap,
+	            //                     y: 200,
+	            //                     z: 100
+	            //                 });
+	            //
+	            //                 const dialRing = new DialRing(dial, i, targetBBOX, "easeNone");
+	            //                 dialRing.ScheduleAngleInterpolation(0);
+	            //                 this.gDial.AddNewDial(dialRing);
+	            //             }
+	            //
+	            //             this.window.setInterval(() => {
+	            //                 if (this.gDial === null) {
+	            //                     return;
+	            //                 }
+	            //                 try {
+	            //                     const seconds = Math.floor((this.gZeroMoment -
+	            //                             Date.now()) /
+	            //                         1000);
+	            //                     if (seconds === this.LastSecondsLeft) {
+	            //                         return;
+	            //                     }
+	            //
+	            //                     const aHHMMSSString = DigitLib.toHHMMSS(String(
+	            //                         seconds));
+	            //
+	            //                     this.gDial.SetDialsFromExactString(aHHMMSSString);
+	            //                     this.LastSecondsLeft = seconds;
+	            //                     this.gCounter += 1;
+	            //                 } catch (e) {
+	            //                     console.log("EXCEPTION: " + e.message);
+	            //                 }
+	            //
+	            //             }, 1000);
+	            //         }
+	            //
+	            //     });
+	            //
+	            // }).catch((xhr) => {
+	            //     onError(xhr);
+	            // });
+	            // // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
+	            // const tickerLoaderPromise = COLLADALoadPromise(
+	            //     'assets/models/dae/gear-system/animatedmechanism.dae',
+	            //     manager,
+	            //     onProgress);
+	            //
+	            // tickerLoaderPromise.then((iColladaStuff) => {
+	            //     const model = iColladaStuff.scene;
+	            //
+	            //     model.position.x = 120;
+	            //     model.position.y = 0;
+	            //     model.position.z = 0;
+	            //
+	            //     model.scale.x = model.scale.y = model.scale.z = 1.325; // 1/8 scale, modeled in cm
+	            //     model.scale.x = 1.6;
+	            //     model.rotateX(-Math.PI / 2);
+	            //
+	            //     // KeyFrame Animations
+	            //     this.kfAnimationsLength = iColladaStuff.animations.length;
+	            //
+	            //     for (var i = 0; i < this.kfAnimationsLength; i += 1) {
+	            //
+	            //         var animation = iColladaStuff.animations[i];
+	            //
+	            //         const kfAnimation = new THREE.KeyFrameAnimation(animation);
+	            //         kfAnimation.timeScale = 1;
+	            //         this.kfAnimations.push(kfAnimation);
+	            //
+	            //     }
+	            //
+	            //     model.traverse((child) => {
+	            //
+	            //         if (child instanceof THREE.Mesh) {
+	            //
+	            //             if (this.fCOLLADAWireFrame) {
+	            //                 const geometry = new THREE.BufferGeometry().fromGeometry(
+	            //                     child.geometry);
+	            //
+	            //                 WireframeMaterial.SetupWireframeShaderAttributes(geometry);
+	            //                 const wireframeMaterial = new WireframeMaterial();
+	            //
+	            //                 child.geometry = geometry;
+	            //                 child.material = wireframeMaterial.fMaterial;
+	            //             } else {
+	            //                 child.material = this.fPBRMaterialHandler.fMaterial;
+	            //             }
+	            //         }
+	            //     });
+	            //     console.log("COLLADA LOAD OK");
+	            //
+	            //     this.scene.add(model);
+	            //
+	            //     this.keyframeAnimationStart();
+	            //
+	            // }).catch((xhr) => {
+	            //     console.error("COLLADA LOAD FAILED");
+	            //     onError(xhr);
+	            // });
 
 	            // const loader = new THREE.OBJLoader(manager);
 	            // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);
@@ -475,6 +503,58 @@
 	            this.window.addEventListener('resize', function () {
 	                _this2.onWindowResize();
 	            }, false);
+
+	            var geo = new _three2.default.SphereGeometry(300, 64, 64);
+	            var pbrmaterial = this.fPBRMaterialHandler.fMaterial;
+
+	            var loader = new _three2.default.TextureLoader();
+
+	            // load a resource
+	            loader.load(
+	            // resource URL
+	            'engine/land_ocean_ice_cloud_2048.jpg',
+	            // Function when resource is loaded
+	            function (texture) {
+	                // do something with the texture
+	                var dummyRGBA = new Float32Array(256 * 256 * 4);
+	                var j = 0;
+	                for (j = 0; j < 256 * 256; j += 1) {
+	                    // RGB from 0 to 255
+	                    dummyRGBA[4 * j] = 0.5;
+	                    dummyRGBA[4 * j + 1] = dummyRGBA[4 * j + 2] = 0.0;
+	                    // OPACITY
+	                    dummyRGBA[4 * j + 3] = 1.0;
+	                }
+
+	                var dummyRGBA_Uchar = new Uint8Array(256 * 256 * 4);
+	                for (j = 0; j < 256 * 256; j += 1) {
+	                    // RGB from 0 to 255
+	                    dummyRGBA_Uchar[4 * j] = 255;
+	                    dummyRGBA_Uchar[4 * j + 1] = dummyRGBA_Uchar[4 * j + 2] = 0;
+	                    // OPACITY
+	                    dummyRGBA_Uchar[4 * j + 3] = 255;
+	                }
+	                var dataTex = new _three2.default.DataTexture(dummyRGBA, 256, 256, _three2.default.RGBAFormat, _three2.default.FloatType, _three2.default.UVMapping, _three2.default.ClampToEdgeWrapping, _three2.default.ClampToEdgeWrapping, _three2.default.NearestFilter, _three2.default.NearestFilter, 1, _three2.default.LinearEnscoding);
+	                dataTex.needsUpdate = true;
+
+	                var dataTex_char = new _three2.default.DataTexture(dummyRGBA_Uchar, 256, 256, _three2.default.RGBAFormat, _three2.default.UnsignedByteType, _three2.default.UVMapping, _three2.default.ClampToEdgeWrapping, _three2.default.ClampToEdgeWrapping, _three2.default.NearestFilter, _three2.default.NearestFilter, 1, _three2.default.LinearEnscoding);
+	                dataTex_char.needsUpdate = true;
+
+	                pbrmaterial.uniforms.ibl_map.value = dataTex;
+	                pbrmaterial.uniforms.ibl_map.needsUpdate = true;
+	            },
+	            // Function called when download progresses
+	            function (xhr) {
+	                console.log(xhr.loaded / xhr.total * 100 + '% loaded');
+	            },
+	            // Function called when download errors
+	            function (xhr) {
+	                console.log('An error happened');
+	            });
+
+	            this.testmesh = new _three2.default.Mesh(geo, pbrmaterial);
+
+	            this.scene.add(this.testmesh);
 	        }
 
 	        /**
@@ -607,21 +687,21 @@
 
 	            var delta = this.clock.getDelta();
 
-	            this.light1.position.x = 0;
-	            this.light1.position.y = 100;
-	            this.light1.position.z = 250;
-
-	            this.light2.position.x = Math.cos(time * 0.3) * 100;
-	            this.light2.position.y = Math.sin(time * 0.5) * 100;
-	            this.light2.position.z = Math.sin(time * 0.7) * 100;
-
-	            this.light3.position.x = Math.sin(time * 0.7) * 100;
-	            this.light3.position.y = Math.cos(time * 0.3) * 100;
-	            this.light3.position.z = Math.sin(time * 0.5) * 100;
-
-	            this.light4.position.x = Math.sin(time * 0.3) * 300;
-	            this.light4.position.y = Math.cos(time * 0.7) * 400;
-	            this.light4.position.z = Math.sin(time * 0.5) * 300;
+	            // this.light1.position.x = 0;
+	            // this.light1.position.y = 100;
+	            // this.light1.position.z = 250;
+	            //
+	            // this.light2.position.x = Math.cos(time * 0.3) * 100;
+	            // this.light2.position.y = Math.sin(time * 0.5) * 100;
+	            // this.light2.position.z = Math.sin(time * 0.7) * 100;
+	            //
+	            // this.light3.position.x = Math.sin(time * 0.7) * 100;
+	            // this.light3.position.y = Math.cos(time * 0.3) * 100;
+	            // this.light3.position.z = Math.sin(time * 0.5) * 100;
+	            //
+	            // this.light4.position.x = Math.sin(time * 0.3) * 300;
+	            // this.light4.position.y = Math.cos(time * 0.7) * 400;
+	            // this.light4.position.z = Math.sin(time * 0.5) * 300;
 
 	            delta = 0.75 * this.clock.getDelta();
 
@@ -5819,6 +5899,10 @@
 
 	var _Newport_Loft_Ref2 = _interopRequireDefault(_Newport_Loft_Ref);
 
+	var _red = __webpack_require__(30);
+
+	var _red2 = _interopRequireDefault(_red);
+
 	var _three = __webpack_require__(4);
 
 	var _three2 = _interopRequireDefault(_three);
@@ -5840,21 +5924,21 @@
 	            },
 	            roughness_constant: {
 	                type: 'f',
-	                value: 1.0
+	                value: 0.1
 	            },
 	            metalicity: {
 	                type: 'f',
-	                value: 0.0
+	                value: 1.0
 	            },
 	            specular_level: {
 	                type: 'f',
-	                value: 0.04,
+	                value: 0.08,
 	                min: 0.02,
 	                max: 0.08
 	            },
 	            light_color: {
 	                type: 'c',
-	                value: new _three2.default.Color(0xFFFFFF)
+	                value: new _three2.default.Color(0x000000)
 	            },
 	            light_direction: {
 	                type: 'c',
@@ -5862,7 +5946,7 @@
 	            },
 	            light_intensity: {
 	                type: 'f',
-	                value: 1.0
+	                value: 0.0
 	            },
 	            use_textures: {
 	                type: 'i',
@@ -5895,23 +5979,24 @@
 	            var _this = this;
 
 	            this.context = renderSystem;
-	            var makeIBLPromise = (0, _ImageBasedLightGenerator.generateImageBasedLight)(renderSystem, _Newport_Loft_Ref2.default);
-
-	            makeIBLPromise.then(function (_ref) {
-	                var ibl = _ref.ibl;
-	                var brdf = _ref.brdf;
-
-	                _this.uniforms.ibl_map.value = ibl;
-	                _this.uniforms.ibl_map.needsUpdate = true;
-
-	                _this.uniforms.brdf_map.value = brdf;
-	                _this.uniforms.brdf_map.needsUpdate = true;
-	            });
 
 	            this.fMaterial = new _three2.default.RawShaderMaterial({
 	                vertexShader: _StandardRawTBN2.default,
 	                fragmentShader: _PhysicallyBased2.default,
 	                uniforms: this.uniforms
+	            });
+
+	            var makeIBLPromise = (0, _ImageBasedLightGenerator.generateImageBasedLight)(renderSystem, _red2.default);
+
+	            makeIBLPromise.then(function (_ref) {
+	                var ibl = _ref.ibl;
+	                var brdf = _ref.brdf;
+
+	                _this.fMaterial.uniforms.ibl_map.value = ibl;
+	                _this.fMaterial.uniforms.ibl_map.needsUpdate = true;
+
+	                // this.uniforms.brdf_map.value = brdf;
+	                // this.uniforms.brdf_map.needsUpdate = true;
 	            });
 	        }
 	    }]);
@@ -5982,17 +6067,20 @@
 	        this.vdcResolution = 1024; // corresponds to number of samples in brdf integrator
 	        this.renderSystem = renderSystem;
 
-	        var vdcMap = this.createVdcMap(this.vdcResolution);
+	        // const vdcMap = this.createVdcMap(this.vdcResolution);
 
-	        this.brdf = new _Compute2.default(this.renderSystem, _StandardRaw2.default, _BRDFIntegrator2.default, {
-	            resolution: this.brdfResolution,
-	            uniforms: {
-	                'vdc_map': {
-	                    type: 't',
-	                    value: vdcMap
-	                }
-	            }
-	        }).run();
+	        // this.brdf = (new Compute(this.renderSystem,
+	        //     StandardRawVert,
+	        //     BRDFIntegratorFrag, {
+	        //         resolution: this.brdfResolution,
+	        //         uniforms: {
+	        //             'vdc_map': {
+	        //                 type: 't',
+	        //                 value: vdcMap
+	        //             },
+	        //         },
+	        //     }
+	        // )).run();
 
 	        this.promise = new Promise(function (resolve, reject) {
 	            var hasTextureLOD = _this.renderSystem.renderer.context.getExtension('EXT_shader_texture_lod');
@@ -6000,26 +6088,26 @@
 	                reject('Texture LOD extension is unavailable.');
 	            }
 
-	            _this.uniforms = {
-	                'vdc_map': {
-	                    type: 't',
-	                    value: vdcMap
-	                },
-	                'roughness_constant': {
-	                    type: 'f',
-	                    value: 0.0
-	                },
-	                'reflection_map': {
-	                    type: 't',
-	                    value: null
-	                }
-	            };
+	            // this.uniforms = {
+	            //     'vdc_map': {
+	            //         type: 't',
+	            //         value: vdcMap
+	            //     },
+	            //     'roughness_constant': {
+	            //         type: 'f',
+	            //         value: 0.0
+	            //     },
+	            //     'reflection_map': {
+	            //         type: 't',
+	            //         value: null,
+	            //     },
+	            // };
 
 	            return (0, _loadHdrTexture2.default)(sourceTexture).then(function (tex) {
 	                try {
 	                    resolve({
-	                        ibl: _this.generate(tex),
-	                        brdf: _this.brdf
+	                        ibl: tex, //this.generate(tex),
+	                        brdf: null //this.brdf
 	                    });
 	                } catch (e) {
 	                    reject(e);
@@ -6353,7 +6441,7 @@
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.default = loadHdrTexture;
 
@@ -6372,25 +6460,26 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function loadHdrTexture(url) {
-	  _superagent2.default.parse['application/octet-stream'] = function (obj) {
-	    return obj;
-	  };
+	    _superagent2.default.parse['application/octet-stream'] = function (obj) {
+	        return obj;
+	    };
 
-	  var promise = new Promise(function (resolve, reject) {
-	    _superagent2.default.get(url).on('request', function () {
-	      this.xhr.responseType = 'arraybuffer';
-	    }).end(function (err, res) {
-	      if (err) {
-	        return reject(err);
-	      }
+	    var promise = new Promise(function (resolve, reject) {
+	        _superagent2.default.get(url).on('request', function () {
+	            this.xhr.responseType = 'arraybuffer';
+	        }).end(function (err, res) {
+	            if (err) {
+	                return reject(err);
+	            }
 
-	      var hdr = (0, _parseHdr2.default)(res.body);
-	      var tex = new _three2.default.DataTexture(hdr.data, hdr.shape[0], hdr.shape[1], _three2.default.RGBAFormat, _three2.default.FloatType);
-	      resolve(tex);
+	            var hdr = (0, _parseHdr2.default)(res.body);
+	            var tex = new _three2.default.DataTexture(hdr.data, hdr.shape[0], hdr.shape[1], _three2.default.RGBAFormat, _three2.default.FloatType, _three2.default.UVMapping, _three2.default.ClampToEdgeWrapping, _three2.default.ClampToEdgeWrapping, _three2.default.NearestFilter, _three2.default.NearestFilter, 1, _three2.default.LinearEnscoding);
+
+	            resolve(tex);
+	        });
 	    });
-	  });
 
-	  return promise;
+	    return promise;
 	};
 
 /***/ },
@@ -8207,7 +8296,7 @@
 /* 27 */
 /***/ function(module, exports) {
 
-	module.exports = "#extension GL_EXT_shader_texture_lod : enable\nprecision highp float;\nprecision highp int;\n#define GLSLIFY 1\n\nuniform mat4 modelViewMatrix;\n\n// material uniforms\nuniform vec3 base_color_constant;\nuniform float roughness_constant;\nuniform float metalicity;\nuniform float specular_level;\n\n// optional textures\nuniform int use_textures;\nuniform sampler2D base_color_map;\nuniform sampler2D roughness_map;\nuniform sampler2D normal_map;\n\n// lighting\nuniform sampler2D brdf_map;\nuniform sampler2D ibl_map;\nuniform float ibl_exposure;\nuniform float light_intensity;\nuniform vec3 light_color;\nuniform vec3 light_direction;\n\n// varying\nvarying vec3 vN;\nvarying vec2 vUV;\nvarying vec3 vP;\nvarying mat3 vTBN;\n\n#define MIN 0.0001\n#define NUM_LIGHTS 3\n\n// 2^8 = 256 texture resolution. 0-indexed, so subtract 1.\n#define IBL_MAX_LEVELS 9.0\n\n#ifndef PI\n#define PI 3.1415926\n#endif\n\nvec2 envMapEquirect_1_0(vec3 R) {\n  float theta = atan(-R.x, R.z) + PI;\n  theta /= 2.0 * PI;\n\n  float phi = acos(-R.y);\n  phi /= PI;\n  return vec2(theta, phi);\n}\n\n\n\n#ifndef MAX_RGBD_RANGE\n#define MAX_RGBD_RANGE 255.0\n#endif\n\nvec3 rgbdToRgb_2_1(vec4 rgbd)\n{\n  return rgbd.rgb * ((MAX_RGBD_RANGE / 255.0) / rgbd.a);\n}\n\n\n\nvec3 gamma_3_2(vec3 color) {\n  return pow(color, vec3(0.4545, 0.4545, 0.4545));\n}\n\n\n\nvec3 degamma_4_3(vec3 color) {\n  return pow(color, vec3(2.2, 2.2, 2.2));\n}\n\n\n\nvec3 getNormal_5_4(sampler2D normal_map, mat3 TBN, vec2 uv) {\n    vec3 Nm = texture2D(normal_map, uv).xyz;\n    Nm *= 2.0;\n    Nm -= vec3(1.0);\n    return normalize(TBN * Nm);\n}\n\n\n\n//Material = require(../pbr/Material)\nfloat safeDot_8_5(vec3 u, vec3 v) {\n  return max(dot(u,v), 0.0);\n}\n\n\n\nstruct Material_10_6 {\n  float metalicity;\n  float roughness;\n  vec3 base_color;\n  vec3 F0; // specular color if metal, else specular_level [0.2, 0.8]\n};\n\n\n\n\n#ifndef PI\n#define PI 3.14159\n#endif\n\n// Unreal GGX implementation (Unreal SIGGRAPH 2013)\n// http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf\n\n// Schlick approximation\nvec3 fresnelTerm_6_7(float VdH, vec3 F0) {\n  return F0 + (vec3(1.0, 1.0, 1.0)-F0) * pow(2.0, (-5.55473*VdH-6.98316)*VdH);\n}\n\nfloat geometryTerm_6_8(float roughness, vec3 V, vec3 N, vec3 H) {\n  // remapped roughness, to be used for the geometry term calculations,\n  // per Disney [16], Unreal [3]. N.B. don't do this in IBL\n  float roughness_remapped = 0.5 + roughness/2.0;\n\n  float NdV = max(0.0, dot(N,V));\n\n  float k = pow(roughness_remapped + 1.0, 2.0)/8.0;\n  return NdV/((NdV)*(1.0-k)+k);\n}\n\nfloat distributionTerm_6_9(float NdH, float alpha2) {\n  float D_denominator = ((NdH*NdH)*(alpha2-1.0)+1.0);\n  return alpha2/(PI * D_denominator * D_denominator + 0.0000001);\n}\n\nvec3 shade_6_10(vec3 L, float lightRadius, vec3 V, vec3 N, Material_10_6 material) {\n  float alpha2 = material.roughness * material.roughness;\n  alpha2 *= alpha2 + lightRadius;\n\n  vec3 H = normalize(V+L);\n\n  float VdH = safeDot_8_5(V, H);\n  float NdH = safeDot_8_5(N, H);\n  float NdL = safeDot_8_5(N, L);\n  float NdV = safeDot_8_5(N, V);\n\n  float D = distributionTerm_6_9(NdH, alpha2);\n  float Gl = geometryTerm_6_8(material.roughness, L, N, H);\n  float Gv = geometryTerm_6_8(material.roughness, V, N, H);\n  vec3 F = fresnelTerm_6_7(VdH, material.F0);\n\n  vec3 specular_contribution = F*(Gl*Gv*D/(4.0*NdL*NdV + 0.000001));\n\n  // metals don't have a diffuse contribution, so turn off the diffuse color\n  // when the material is metallic\n  vec3 diffuse_color = material.base_color * (1.0 - material.metalicity) / PI;\n\n  // use reflectance to calculate energy conservation\n  // diffuse_color *= vec3(1.0, 1.0, 1.0) - F0;\n\n  return (specular_contribution + diffuse_color) * NdL;\n}\n\nvec3 shade_6_10(vec3 L, vec3 V, vec3 N, Material_10_6 material) {\n  return shade_6_10(L, 0.0, V, N, material);\n}\n\n\n\nvec3 getF0_7_11(float specular_level, float metalicity, vec3 base_color) {\n  // Dielectrics have an F0 between 0.2 - 0.5. 0.04 is a reasonable default\n  // it is often exposed as a parameter called \"specular level.\"\n  // It might make sense to plug an existing specular map into this, and remap\n  // it to the 0-0.8 range, which are the bounds used by Unreal.\n  // Many implementations simply expose the value as a scalar on a per-material\n  // basis.\n  vec3 F0 = vec3(specular_level, specular_level, specular_level);\n\n  // metals use their base color as their specular color.\n  F0 = mix(F0, base_color, metalicity);\n  return F0;\n}\n\n\n\n\nfloat A_9_12 = 0.15;\nfloat B_9_13 = 0.50;\nfloat C_9_14 = 0.10;\nfloat D_9_15 = 0.20;\nfloat E_9_16 = 0.02;\nfloat F_9_17 = 0.30;\nfloat W_9_18 = 11.2;\n\nvec3 tonemapHelper_9_19(vec3 x)\n{\n   return ((x*(A_9_12*x+C_9_14*B_9_13)+D_9_15*E_9_16)/(x*(A_9_12*x+B_9_13)+D_9_15*F_9_17))-E_9_16/F_9_17;\n}\n\nvec3 tonemap_9_20(vec3 rgb, float exposureBias)\n{\n   vec3 curr = tonemapHelper_9_19(exposureBias*rgb);\n   vec3 whiteScale = 1.0/tonemapHelper_9_19(vec3(W_9_18));\n   vec3 color = curr*whiteScale;\n   return color;\n}\n\nvec3 tonemap_9_20(vec3 rgb)\n{\n  return tonemap_9_20(rgb, 2.2);\n}\n\n\n\n\n#ifndef PI\n#define PI 3.14159\n#endif\n\nvec3 sampleEnvironment(vec3 N, float roughness) {\n  vec2 env_uv = envMapEquirect_1_0(N);\n  return (rgbdToRgb_2_1(texture2DLodEXT(ibl_map, env_uv, roughness*IBL_MAX_LEVELS)));\n}\n\nvec3 getSpecularIBL(vec3 specular_color, float roughness, vec3 N, vec3 V, vec3 vertex_normal) {\n  const float horizon_amount = 1.3;\n  float NdV = safeDot_8_5(N, V);\n  vec3 R = 2.0 * dot(V, N) * N - V;\n\n  // Horizon correction, per http://marmosetco.tumblr.com/post/81245981087\n  vec3 reflected = normalize(reflect(N,V));\n  float horizon = clamp(1.0 + horizon_amount * dot(reflected, vertex_normal), 0.0, 1.0);\n  horizon *= horizon;\n\n  vec3 color = sampleEnvironment(R, roughness);\n  vec2 brdf_uv = vec2(roughness, NdV);\n  vec2 brdf = texture2D(brdf_map, brdf_uv).xy;\n  return color * (specular_color * brdf.x + brdf.y); // * horizon;\n}\n\nstruct Light {\n  vec3 dir;\n  vec3 color;\n  float intensity;\n  float radius;\n};\n\nLight lights[NUM_LIGHTS];\n\nvoid main() {\n  vec3 color_to_light_dir = 2.0 * light_direction - vec3(1.0, 1.0, 1.0);\n  lights[0] = Light(normalize(\n      (modelViewMatrix * vec4(color_to_light_dir, 0.0)).xyz\n    ),\n    light_color,\n    light_intensity,\n    0.003);\n  lights[1] = Light(normalize((modelViewMatrix * vec4(1.0, 0.0, 0.2, 0.0)).xyz),\n    vec3(1.0, 192.0/255.0, 99.0/255.0),\n    light_intensity,\n    0.1);\n  lights[2] = Light(normalize((modelViewMatrix * vec4(-1.0, 0.0, 0.2, 0.0)).xyz),\n    vec3(159.0/255.0, 193.0/255.0, 230.0/255.0),\n    light_intensity,\n    0.1);\n\n  vec3 base_color;\n  vec3 V = normalize(-vP);\n  vec3 N;\n  vec3 Ninit = normalize(vN);\n  float roughness; // reparameterized to roughness^2, for better control of lower values\n  float roughness_raw; // holds the original roughness value, unmodified\n\n  if (use_textures == 1) {\n    base_color = degamma_4_3(texture2D(base_color_map, vUV).rgb);\n    N = getNormal_5_4(normal_map, vTBN, vUV);\n    roughness_raw = roughness = texture2D(roughness_map, vUV).r;\n  } else {\n    base_color = degamma_4_3(base_color_constant);\n    N = Ninit;\n    roughness_raw = roughness = roughness_constant;\n  }\n\n  vec3 F0 = getF0_7_11(specular_level, metalicity, base_color);\n\n  Material_10_6 material = Material_10_6(\n    metalicity,\n    roughness,\n    base_color,\n    F0\n  );\n\n  vec3 accumulated_light = vec3(0.0, 0.0, 0.0);\n\n  for(int i=0; i < NUM_LIGHTS; i++) {\n    vec3 L = lights[i].dir;\n    accumulated_light += shade_6_10(L, V, N, material) * lights[i].color * lights[i].intensity;\n  }\n\n  // IBL contribution\n  // diffuse contribution from environment\n  accumulated_light += ibl_exposure * base_color * (sampleEnvironment(N, 0.9) / PI) * (1.0 - metalicity);\n  // specular contribution from environment\n  accumulated_light += ibl_exposure * getSpecularIBL(F0, roughness_raw, N, V, Ninit);\n  vec3 final = accumulated_light;\n  final = gamma_3_2(tonemap_9_20(final));\n\n  // gl_FragColor = vec4(getSpecularIBL(F0, roughness_raw, N, V, Ninit), 1.0); //N, 0.9), 1.0);\n  // gl_FragColor = vec4(getSpecular, 0.0, 1.0);\n  gl_FragColor = vec4(final, 1.0);\n}\n"
+	module.exports = "precision highp float;\nprecision highp int;\n#define GLSLIFY 1\n\nuniform sampler2D ibl_map;\nvarying vec3 vN;\n\n#ifndef PI\n#define PI 3.1415926\n#endif\n\nvec2 envMapEquirect_1_0(vec3 R) {\n  float theta = atan(-R.x, R.z) + PI;\n  theta /= 2.0 * PI;\n\n  float phi = acos(-R.y);\n  phi /= PI;\n  return vec2(theta, phi);\n}\n\n\n\n\n\nvoid main() {\n\n  vec3 N = normalize(vN);\n  vec2 env_uv = envMapEquirect_1_0(N);\n  vec3 final = texture2D(ibl_map, env_uv).rgb;\n  //final = vec3(env_uv.r, env_uv.g, 0.0);\n  gl_FragColor = vec4(final, 1.0);\n\n\n}\n"
 
 /***/ },
 /* 28 */
@@ -8220,6 +8309,12 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "/1affe44287d83e05a1a16cab72d997eb.hdr";
+
+/***/ },
+/* 30 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__.p + "/aca31c102a3912741bb1717b0a6fb11f.hdr";
 
 /***/ }
 /******/ ]);
