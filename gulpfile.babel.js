@@ -39,7 +39,7 @@ gulp.task('ftp-deploy', function() {
       base: '.',
       buffer: false
     })
-    .pipe(conn.newer('/apps/countdown4d/')) // only upload newer files
-    .pipe(conn.dest('/apps/countdown4d/'));
+    .pipe(conn.newer('/apps/countdown3d/')) // only upload newer files
+    .pipe(conn.dest('/apps/countdown3d/'));
 
 });

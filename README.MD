@@ -33,16 +33,18 @@ index.html
 $ gulp ftp-deploy
 ```
 
-Must have `.deploy_config.json` in your root folder in a form:
-```
-{
-  "host": <HOST>
-  "user": <USER>
-  "password": <PASSWORD>
-}
+   * Script is set up to copy the deployment files into `/apps/countdown3d/` folder, relative to your FTP home folder.
 
-```
-Unless you are hosting your own FTP, the config data needs to come from your host provider. E.g. for BLUEHOST, it's https://my.bluehost.com/web-hosting/cplogin?goto_uri=/frontend/bluehost/ftp/accounts.html
+   * Must have `.deploy_config.json` in your root folder in a form:
+  ```
+  {
+    "host": <HOST>
+    "user": <USER>
+    "password": <PASSWORD>
+  }
+
+  ```
+   * Unless you are hosting your own FTP, the config data needs to come from your host provider. E.g. for BLUEHOST, it's https://my.bluehost.com/web-hosting/cplogin?goto_uri=/frontend/bluehost/ftp/accounts.html
 
 ## Issues
 
