@@ -44923,6 +44923,10 @@
 	    return obj;
 	  };
 
+	  _superagent2.default.parse['image/vnd.radiance'] = function (obj) {
+	    return obj;
+	  };
+
 	  var promise = new Promise(function (resolve, reject) {
 	    _superagent2.default.get(url).on('request', function () {
 	      this.xhr.responseType = 'arraybuffer';
