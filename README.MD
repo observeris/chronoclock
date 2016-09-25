@@ -48,17 +48,17 @@ $ gulp ftp-deploy
 
 ### Wordpress integration
 
-1. Pick a current theme.
-2. Clone theme's `index.php` as `showcase3d.php`, add this on top:
-```
-<?php
-/*
-Template Name: Showcase3D
-*/
-?>
-```
-3. In the `<div id="content" class="blog" > </div>`, empty everything.
-4. In the `<div id="content" class="blog" >`, add the following:
+   1. Pick a current theme.
+   2. Clone theme's `index.php` as `showcase3d.php`, add this on top:
+	```
+	<?php
+	/*
+	Template Name: Showcase3D
+	*/
+	?>
+	```
+   3. In the `<div id="content" class="blog" > </div>`, empty everything.
+   4. In the `<div id="content" class="blog" >`, add the following:
 
 ```
 		<div id="container"></div>
@@ -69,6 +69,6 @@ Template Name: Showcase3D
 			<script src="<?php bloginfo('stylesheet_directory'); ?>/3dshowcase/external/three/examples/js/libs/stats.min.js"></script>
 	    <script src="<?php bloginfo('stylesheet_directory'); ?>/3dshowcase/engine/main.js"></script>
 ```
-5. Copy app files into theme folder + `/3dshowcase`;
-6. In the WP Dashboard, create a new page, pick `Showcase3D` as the template. 
-7. Publish the page and view it.
+   5. Copy app files into theme folder + `/3dshowcase`;
+   6. In the WP Dashboard, create a new page, pick `Showcase3D` as the template. 
+   7. Publish the page and view it.
