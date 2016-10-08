@@ -1,4 +1,4 @@
-import request from 'superagent';
+import request from 'client';
 import parseHdr from './parseHdr';
 import THREE from 'three';
 

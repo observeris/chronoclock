@@ -19,8 +19,16 @@ module.exports = {
       test: /\.(js|es6)$/,
       exclude: [
         path.resolve('./external/three/build/three.js'),
+        /(node_modules)/
       ],
-      loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
+      loaders: ['babel']
+        //
+        // loaders: [{
+        //   test: /\.js?$/,
+        //   exclude: ,
+        //   loader: 'babel'
+        // }]
+
     }, {
       test: /\.(jpg|png|gif|hdr)$/,
       loader: "file?name=/[hash].[ext]",
@@ -30,9 +38,10 @@ module.exports = {
     }]
   },
   entry: {
-    app: [
-      "./engine-es6/main.es6"
-    ],
+    entry: ['babel-polyfill', './engine-es6/main.es6']
+      // app: [
+      //   "./engine-es6/main.es6"
+      // ],
   },
   output: {
     path: __dirname + "/engine",
