@@ -45,7 +45,7 @@ async function OBJLoadPromise(iOBJPath, iLoadingManager, iProgressCallback) {
  * @param {function} iProgressCallback, progress callback()
  * @return {Promise} A Promise that's resolved with an THREE object.
  */
-function COLLADALoadPromise(iCOLLADAPath, iLoadingManager, iProgressCallback) {
+async function COLLADALoadPromise(iCOLLADAPath, iLoadingManager, iProgressCallback) {
   const loaderPromise = new Promise((iResolveFunc, iRejectFunc) => {
 
     const loader = new THREE.ColladaLoader();
@@ -227,14 +227,15 @@ export default class MainEngine {
     var onError = function( /* xhr */ ) {
 
     };
+
     try {
 
-      const object = await OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
+      const objData = await OBJLoadPromise('assets/models/obj/numbers_ring/numbers_ring.obj', manager,
         onProgress);
 
       this.gDial = new NDigitDial();
 
-      object.traverse((child) => {
+      objData.traverse((child) => {
 
         if (child instanceof THREE.Mesh) {
           var diffuseColor = new THREE.Color(1, 1, 1);
@@ -312,14 +313,15 @@ export default class MainEngine {
     } catch (xhr) {
       onError(xhr);
     }
-    // COLLADALoadPromise('assets/models/dae/mecha/mecha8.dae',
-    const tickerLoaderPromise = COLLADALoadPromise(
-      'assets/models/dae/gear-system/animatedmechanism.dae',
-      manager,
-      onProgress);
 
-    tickerLoaderPromise.then((iColladaStuff) => {
-      const model = iColladaStuff.scene;
+    try {
+
+      const colladaData = await COLLADALoadPromise(
+        'assets/models/dae/gear-system/animatedmechanism.dae',
+        manager,
+        onProgress);
+
+      const model = colladaData.scene;
 
       model.position.x = 120;
       model.position.y = 0;
@@ -330,11 +332,11 @@ export default class MainEngine {
       model.rotateX(-Math.PI / 2);
 
       // KeyFrame Animations
-      this.kfAnimationsLength = iColladaStuff.animations.length;
+      this.kfAnimationsLength = colladaData.animations.length;
 
       for (var i = 0; i < this.kfAnimationsLength; i += 1) {
 
-        var animation = iColladaStuff.animations[i];
+        var animation = colladaData.animations[i];
 
         const kfAnimation = new THREE.KeyFrameAnimation(animation);
         kfAnimation.timeScale = 1;
@@ -363,10 +365,10 @@ export default class MainEngine {
 
       this.keyframeAnimationStart();
 
-    }).catch((xhr) => {
+    } catch (xhr) {
       console.error("COLLADA LOAD FAILED");
       onError(xhr);
-    });
+    }
 
     // const loader = new THREE.OBJLoader(manager);
     // loader.load('assets/models/obj/numbers_ring/numbers_ring.obj', , onProgress, onError);

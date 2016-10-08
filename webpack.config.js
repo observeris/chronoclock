@@ -19,6 +19,7 @@ module.exports = {
       test: /\.(js|es6)$/,
       exclude: [
         path.resolve('./external/three/build/three.js'),
+        path.resolve('./external/three/modules/collada/ColladaLoader.js'),
         /(node_modules)/
       ],
       loaders: ['babel']
