@@ -1,3 +1,17 @@
+
+# Before Building:
+
+Make sure `babel-cli` global is up to date:
+
+```
+$ npm install -g babel-cli
+```
+Make sure all modules are up to date, particularly `babel-*` etc.
+
+```
+$ npm install
+```
+
 # To Build and Run:
 
 Run the following:
