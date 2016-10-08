@@ -19,8 +19,17 @@ module.exports = {
       test: /\.(js|es6)$/,
       exclude: [
         path.resolve('./external/three/build/three.js'),
+        path.resolve('./external/three/modules/collada/ColladaLoader.js'),
+        /(node_modules)/
       ],
-      loaders: ['babel-loader?presets[]=react,presets[]=es2015'],
+      loaders: ['babel']
+        //
+        // loaders: [{
+        //   test: /\.js?$/,
+        //   exclude: ,
+        //   loader: 'babel'
+        // }]
+
     }, {
       test: /\.(jpg|png|gif|hdr)$/,
       loader: "file?name=/[hash].[ext]",
@@ -30,9 +39,10 @@ module.exports = {
     }]
   },
   entry: {
-    app: [
-      "./engine-es6/main.es6"
-    ],
+    entry: ['babel-polyfill', './engine-es6/main.es6']
+      // app: [
+      //   "./engine-es6/main.es6"
+      // ],
   },
   output: {
     path: __dirname + "/engine",
@@ -44,7 +54,8 @@ module.exports = {
       path.resolve('./external/three/build'),
       path.resolve('./external/three/modules'),
       path.resolve('./external/vdc'),
-      path.resolve('./external/superagent')
+      path.resolve('./external/superagent'),
+      path.resolve('./external/emitter')
     ],
     extensions: ["", ".webpack.js", ".web.js", ".js", ".es6"]
   }
